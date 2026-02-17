@@ -17,6 +17,7 @@ export type RootState = {
   setControl: (id: string, value: string) => void;
   setFormValue: (id: string, value: any) => void;
   mutateMock: (targetPath: string, operation: 'prepend' | 'prependMany', payload: any) => void;
+  computeFilteredAthletes: () => void;
 };
 
 const baseState = {
@@ -84,5 +85,61 @@ export const useAppStore = create<RootState>((set, get) => ({
       next.mockData.athletesFull = full;
       return next;
     });
+  },
+  computeFilteredAthletes: () => {
+    set((current) => {
+      const next = {
+        ...current,
+        mockData: structuredClone(current.mockData)
+      };
+      const search = next.state.athleteListSearch || '';
+      const sortBy = next.state.athleteListSort || 'Active';
+      let filtered = filterAndSortAthletes(next.mockData.athletes, search, sortBy);
+      const paginationInfo = getPaginationInfo(filtered.length, 10);
+      const page = Math.max(1, Math.min(next.state.athleteListPage, paginationInfo.pages));
+      const start = (page - 1) * paginationInfo.itemsPerPage;
+      const end = start + paginationInfo.itemsPerPage;
+      next.mockData.filteredAthletes = filtered.slice(start, end);
+      next.state.athleteListPages = paginationInfo.pages;
+      next.state.athleteListTotal = paginationInfo.total;
+      next.state.athleteListPage = page;
+      return next;
+    });
   }
 }));
+
+// Helper: Filter and sort athletes
+export function filterAndSortAthletes(athletes: any[], search: string, sortBy: string) {
+  let filtered = athletes;
+  
+  // Search filter (case-insensitive name matching)
+  if (search.trim()) {
+    const query = search.toLowerCase();
+    filtered = filtered.filter((a: any) => a.name.toLowerCase().includes(query));
+  }
+  
+  // Sort
+  if (sortBy === 'Name') {
+    filtered = filtered.sort((a: any, b: any) => a.name.localeCompare(b.name));
+  } else if (sortBy === 'Active') {
+    // Sort by: active first (by most recent activity date), then inactive
+    filtered = filtered.sort((a: any, b: any) => {
+      const aActive = a.status === 'active' ? 0 : 1;
+      const bActive = b.status === 'active' ? 0 : 1;
+      if (aActive !== bActive) return aActive - bActive;
+      // Within active/inactive, sort by date
+      return new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime();
+    });
+  }
+  
+  return filtered;
+}
+
+// Helper: Compute pagination
+export function getPaginationInfo(total: number, itemsPerPage: number = 10) {
+  return {
+    total,
+    itemsPerPage,
+    pages: Math.ceil(total / itemsPerPage)
+  };
+}

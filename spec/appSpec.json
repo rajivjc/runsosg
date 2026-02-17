@@ -8,12 +8,17 @@
       "tone": "calm_supportive_non_competitive",
       "privacyDefault": "strict"
     },
-    "roles": ["PARENT", "VOLUNTEER", "COACH", "ADMIN"]
+    "roles": ["CAREGIVER", "COACH", "ADMIN"]
   },
   "state": {
-    "role": "VOLUNTEER",
+    "role": "COACH",
     "authed": false,
     "linkedStrava": false,
+    "athleteListSearch": "",
+    "athleteListSort": "Active",
+    "athleteListPage": 1,
+    "athleteListPages": 3,
+    "athleteListTotal": 32,
     "strava": {
       "accessTokenPresent": false,
       "lastImportAt": null,
@@ -39,13 +44,12 @@
       "route": "login",
       "layout": { "type": "centered" },
       "components": [
-        { "type": "image", "id": "logo", "props": { "alt": "SOSG Logo", "placeholder": true } },
         { "type": "textInput", "id": "email", "props": { "label": "Email", "placeholder": "name@example.com" } },
         { "type": "passwordInput", "id": "password", "props": { "label": "Password" } },
         {
           "type": "select",
           "id": "role_selector",
-          "props": { "label": "Role (prototype)", "options": ["PARENT", "VOLUNTEER", "COACH", "ADMIN"], "default": "VOLUNTEER" },
+          "props": { "label": "Role", "options": ["CAREGIVER", "COACH", "ADMIN"], "default": "COACH" },
           "actions": [{ "type": "setState", "path": "state.role", "value": "{{value}}" }]
         },
         {
@@ -56,6 +60,12 @@
             { "type": "setState", "path": "state.authed", "value": true },
             { "type": "navigate", "to": "athlete_list" }
           ]
+        },
+        {
+          "type": "link",
+          "id": "link_register",
+          "props": { "text": "Don't have an account? Register" },
+          "actions": [{ "type": "navigate", "to": "register" }]
         }
       ]
     },
@@ -68,11 +78,44 @@
       "components": [
         { "type": "searchBar", "id": "athlete_search", "props": { "placeholder": "Search athlete..." } },
         {
+          "type": "segmentedControl",
+          "id": "athlete_sort",
+          "props": { "options": ["Name", "Active"], "default": "Active" }
+        },
+        {
           "type": "list",
           "id": "athlete_cards",
           "props": { "itemTemplate": "athleteCard" },
-          "dataBinding": "mockData.athletes",
+          "dataBinding": "mockData.filteredAthletes",
+          "emptyState": { "title": "No athletes found", "message": "Try adjusting your search or sort options" },
           "actions": [{ "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{item.id}}" } }]
+        },
+        {
+          "type": "kvList",
+          "id": "pagination_info",
+          "props": { "items": [
+            { "k": "Page", "v": "{{state.athleteListPage}} of {{state.athleteListPages}}" },
+            { "k": "Total", "v": "{{state.athleteListTotal}} athletes" }
+          ]}
+        },
+        {
+          "type": "card",
+          "id": "pagination_controls",
+          "props": { "title": "" },
+          "components": [
+            {
+              "type": "button",
+              "id": "btn_prev_page",
+              "props": { "label": "← Previous" },
+              "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage - 1}}" }]
+            },
+            {
+              "type": "button",
+              "id": "btn_next_page",
+              "props": { "label": "Next →" },
+              "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage + 1}}" }]
+            }
+          ]
         }
       ]
     },
@@ -114,7 +157,7 @@
             {
               "type": "button",
               "id": "btn_edit_cues",
-              "visibility": { "roles": ["VOLUNTEER", "COACH", "ADMIN"] },
+              "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
               "props": { "label": "Edit cues" },
               "actions": [{ "type": "navigate", "to": "edit_cues", "with": { "athleteId": "{{route.athleteId}}" } }]
             }
@@ -140,21 +183,21 @@
             {
               "type": "button",
               "id": "btn_add_note",
-              "visibility": { "roles": ["VOLUNTEER", "COACH", "ADMIN"] },
+              "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
               "props": { "label": "Add Note" },
               "actions": [{ "type": "navigate", "to": "add_coach_note", "with": { "athleteId": "{{route.athleteId}}" } }]
             },
             {
               "type": "button",
               "id": "btn_add_session",
-              "visibility": { "roles": ["VOLUNTEER", "COACH", "ADMIN"] },
+              "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
               "props": { "label": "Add Session" },
               "actions": [{ "type": "navigate", "to": "add_session", "with": { "athleteId": "{{route.athleteId}}" } }]
             },
             {
               "type": "button",
               "id": "btn_import_strava",
-              "visibility": { "roles": ["VOLUNTEER", "COACH", "ADMIN"] },
+              "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
               "props": { "label": "Import Strava" },
               "actions": [
                 { "type": "conditionalNavigate", "if": "state.strava.accessTokenPresent", "to": "strava_import_review", "elseTo": "strava_connect", "with": { "athleteId": "{{route.athleteId}}" } }
@@ -246,7 +289,7 @@
       "title": "Add Coach Note",
       "route": "add_coach_note/:athleteId",
       "layout": { "type": "form" },
-      "visibility": { "roles": ["VOLUNTEER", "COACH", "ADMIN"] },
+      "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
       "components": [
         { "type": "emojiPicker", "id": "mood_before", "props": { "label": "Mood before" } },
         { "type": "emojiPicker", "id": "mood_after", "props": { "label": "Mood after" } },
@@ -270,7 +313,7 @@
       "title": "Edit What Works",
       "route": "edit_cues/:athleteId",
       "layout": { "type": "form" },
-      "visibility": { "roles": ["VOLUNTEER", "COACH", "ADMIN"] },
+      "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
       "components": [
         { "type": "chipInput", "id": "helps", "props": { "label": "Helps (add multiple)" } },
         { "type": "chipInput", "id": "avoids", "props": { "label": "Avoid (add multiple)" } },
@@ -293,7 +336,7 @@
       "title": "Add Session",
       "route": "add_session/:athleteId",
       "layout": { "type": "form" },
-      "visibility": { "roles": ["VOLUNTEER", "COACH", "ADMIN"] },
+      "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
       "components": [
         { "type": "dateTimePicker", "id": "session_time", "props": { "label": "Date & time" } },
         { "type": "numberInput", "id": "distance_km", "props": { "label": "Distance (km)", "step": 0.1 } },
@@ -307,6 +350,39 @@
             { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prepend", "valueTemplate": "mockTemplates.newSessionManual" },
             { "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
+        }
+      ]
+    },
+
+    {
+      "id": "register",
+      "title": "Register",
+      "route": "register",
+      "layout": { "type": "centered" },
+      "components": [
+        { "type": "textInput", "id": "email", "props": { "label": "Email", "placeholder": "name@example.com" } },
+        { "type": "passwordInput", "id": "password", "props": { "label": "Password" } },
+        { "type": "passwordInput", "id": "confirm_password", "props": { "label": "Confirm Password" } },
+        {
+          "type": "select",
+          "id": "role_selector",
+          "props": { "label": "Role", "options": ["CAREGIVER", "COACH", "ADMIN"], "default": "CAREGIVER" },
+          "actions": [{ "type": "setState", "path": "state.role", "value": "{{value}}" }]
+        },
+        {
+          "type": "button",
+          "id": "btn_register",
+          "props": { "label": "Register" },
+          "actions": [
+            { "type": "setState", "path": "state.authed", "value": true },
+            { "type": "navigate", "to": "athlete_list" }
+          ]
+        },
+        {
+          "type": "link",
+          "id": "link_login",
+          "props": { "text": "Already have an account? Login" },
+          "actions": [{ "type": "navigate", "to": "login" }]
         }
       ]
     },
@@ -335,15 +411,46 @@
     }
   ],
   "templates": {
-    "athleteCard": { "type": "card", "title": "{{item.name}}", "subtitle": "Latest: {{item.latestMilestone}}", "rightMeta": "{{item.lastSeen}}" },
+    "athleteCard": { "type": "card", "title": "{{item.name}} [{{item.status}}]", "subtitle": "Last active: {{item.lastActivityFormatted}}", "rightMeta": "{{item.sessionCount}} sessions" },
     "timelineCard": { "type": "card", "title": "{{item.icon}} {{item.title}}", "subtitle": "{{item.subtitle}}", "body": "{{item.body}}", "meta": "{{item.date}}" },
     "stravaCandidateCard": { "type": "card", "title": "🏃 {{item.name}}", "subtitle": "{{item.distanceKm}} km • {{item.movingMin}} min • {{item.date}}", "body": "Tag: {{item.tag}} • Source: Strava", "meta": "{{item.id}}" }
   },
   "mockData": {
     "athletes": [
-      { "id": "a1", "name": "Daniel", "latestMilestone": "5 sessions completed", "lastSeen": "2 days ago" },
-      { "id": "a2", "name": "Ayesha", "latestMilestone": "First continuous 1km", "lastSeen": "1 week ago" }
+      { "id": "a1", "name": "Daniel", "status": "active", "lastActivity": "2025-02-15", "lastActivityFormatted": "2 days ago", "sessionCount": 5, "latestMilestone": "5 sessions completed", "lastSeen": "2 days ago" },
+      { "id": "a2", "name": "Ayesha", "status": "active", "lastActivity": "2025-02-14", "lastActivityFormatted": "3 days ago", "sessionCount": 8, "latestMilestone": "First continuous 1km", "lastSeen": "1 week ago" },
+      { "id": "a3", "name": "Marcus", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 12, "latestMilestone": "Milestone: 10 sessions", "lastSeen": "Today" },
+      { "id": "a4", "name": "Emma", "status": "active", "lastActivity": "2025-02-16", "lastActivityFormatted": "1 day ago", "sessionCount": 7, "latestMilestone": "Consistency week", "lastSeen": "1 day ago" },
+      { "id": "a5", "name": "James", "status": "inactive", "lastActivity": "2025-01-20", "lastActivityFormatted": "28 days ago", "sessionCount": 3, "latestMilestone": "Joined 2 weeks ago", "lastSeen": "28 days ago" },
+      { "id": "a6", "name": "Sarah", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 15, "latestMilestone": "Longest streak: 14 days", "lastSeen": "Today" },
+      { "id": "a7", "name": "Noah", "status": "inactive", "lastActivity": "2024-12-10", "lastActivityFormatted": "69 days ago", "sessionCount": 2, "latestMilestone": "First run", "lastSeen": "69 days ago" },
+      { "id": "a8", "name": "Olivia", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 9, "latestMilestone": "3 KM personal best", "lastSeen": "Today" },
+      { "id": "a9", "name": "Liam", "status": "active", "lastActivity": "2025-02-10", "lastActivityFormatted": "7 days ago", "sessionCount": 6, "latestMilestone": "5 sessions", "lastSeen": "7 days ago" },
+      { "id": "a10", "name": "Ava", "status": "inactive", "lastActivity": "2025-01-05", "lastActivityFormatted": "43 days ago", "sessionCount": 1, "latestMilestone": "First activity", "lastSeen": "43 days ago" },
+      { "id": "a11", "name": "Ethan", "status": "active", "lastActivity": "2025-02-16", "lastActivityFormatted": "1 day ago", "sessionCount": 11, "latestMilestone": "10 sessions", "lastSeen": "1 day ago" },
+      { "id": "a12", "name": "Sophia", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 13, "latestMilestone": "2 week streak", "lastSeen": "Today" },
+      { "id": "a13", "name": "Alexander", "status": "inactive", "lastActivity": "2025-01-15", "lastActivityFormatted": "33 days ago", "sessionCount": 4, "latestMilestone": "4 sessions", "lastSeen": "33 days ago" },
+      { "id": "a14", "name": "Isabella", "status": "active", "lastActivity": "2025-02-13", "lastActivityFormatted": "4 days ago", "sessionCount": 10, "latestMilestone": "Consistency bonus", "lastSeen": "4 days ago" },
+      { "id": "a15", "name": "Mason", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 8, "latestMilestone": "8 sessions", "lastSeen": "Today" },
+      { "id": "a16", "name": "Mia", "status": "inactive", "lastActivity": "2024-11-20", "lastActivityFormatted": "89 days ago", "sessionCount": 1, "latestMilestone": "Joined", "lastSeen": "89 days ago" },
+      { "id": "a17", "name": "Benjamin", "status": "active", "lastActivity": "2025-02-12", "lastActivityFormatted": "5 days ago", "sessionCount": 6, "latestMilestone": "Milestone", "lastSeen": "5 days ago" },
+      { "id": "a18", "name": "Charlotte", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 14, "latestMilestone": "14 sessions", "lastSeen": "Today" },
+      { "id": "a19", "name": "Lucas", "status": "inactive", "lastActivity": "2025-01-10", "lastActivityFormatted": "38 days ago", "sessionCount": 2, "latestMilestone": "2 sessions", "lastSeen": "38 days ago" },
+      { "id": "a20", "name": "Amelia", "status": "active", "lastActivity": "2025-02-16", "lastActivityFormatted": "1 day ago", "sessionCount": 7, "latestMilestone": "7 sessions", "lastSeen": "1 day ago" },
+      { "id": "a21", "name": "Michael", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 11, "latestMilestone": "11 sessions", "lastSeen": "Today" },
+      { "id": "a22", "name": "Harper", "status": "inactive", "lastActivity": "2025-01-25", "lastActivityFormatted": "23 days ago", "sessionCount": 3, "latestMilestone": "3 sessions", "lastSeen": "23 days ago" },
+      { "id": "a23", "name": "William", "status": "active", "lastActivity": "2025-02-14", "lastActivityFormatted": "3 days ago", "sessionCount": 9, "latestMilestone": "9 sessions", "lastSeen": "3 days ago" },
+      { "id": "a24", "name": "Evelyn", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 16, "latestMilestone": "16 sessions", "lastSeen": "Today" },
+      { "id": "a25", "name": "Henry", "status": "inactive", "lastActivity": "2024-12-01", "lastActivityFormatted": "78 days ago", "sessionCount": 1, "latestMilestone": "Joined", "lastSeen": "78 days ago" },
+      { "id": "a26", "name": "Abigail", "status": "active", "lastActivity": "2025-02-15", "lastActivityFormatted": "2 days ago", "sessionCount": 8, "latestMilestone": "8 sessions", "lastSeen": "2 days ago" },
+      { "id": "a27", "name": "Jacob", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 10, "latestMilestone": "10 sessions", "lastSeen": "Today" },
+      { "id": "a28", "name": "Elizabeth", "status": "inactive", "lastActivity": "2025-02-01", "lastActivityFormatted": "16 days ago", "sessionCount": 2, "latestMilestone": "2 sessions", "lastSeen": "16 days ago" },
+      { "id": "a29", "name": "Jackson", "status": "active", "lastActivity": "2025-02-13", "lastActivityFormatted": "4 days ago", "sessionCount": 5, "latestMilestone": "5 sessions", "lastSeen": "4 days ago" },
+      { "id": "a30", "name": "Ella", "status": "active", "lastActivity": "2025-02-17", "lastActivityFormatted": "Today", "sessionCount": 12, "latestMilestone": "12 sessions", "lastSeen": "Today" },
+      { "id": "a31", "name": "Sebastian", "status": "inactive", "lastActivity": "2025-01-30", "lastActivityFormatted": "18 days ago", "sessionCount": 3, "latestMilestone": "3 sessions", "lastSeen": "18 days ago" },
+      { "id": "a32", "name": "Grace", "status": "active", "lastActivity": "2025-02-16", "lastActivityFormatted": "1 day ago", "sessionCount": 9, "latestMilestone": "9 sessions", "lastSeen": "1 day ago" }
     ],
+    "filteredAthletes": [],
     "athletesFull": [
       {
         "id": "a1",

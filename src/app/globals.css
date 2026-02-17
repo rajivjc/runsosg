@@ -5,4 +5,5 @@
 button,input,select,textarea{min-height:44px;border:var(--border);border-radius:var(--radius-sm);padding:var(--space-2)}
 button{background:var(--accent);color:var(--accent-contrast)}
 .chip{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--border-color);font-size:var(--text-meta);width:fit-content}
-.chip-accent{border-color:var(--accent);color:var(--accent)}
+.chip-accent{border-color:var(--accent);color:var(--accent)}.badge-active{display:inline-block;padding:2px 8px;border-radius:6px;background-color:#d1fae5;color:#065f46;font-size:var(--text-meta);font-weight:500}
+.badge-inactive{display:inline-block;padding:2px 8px;border-radius:6px;background-color:#fef3c7;color:#92400e;font-size:var(--text-meta);font-weight:500}
