@@ -858,7 +858,8 @@
       "className": "strava-candidate-item",
       "components": [
         { "type": "div", "props": { "className": "strava-candidate-title" }, "content": "🏃 {{item.name}}" },
-        { "type": "div", "props": { "className": "strava-candidate-meta" }, "content": "{{item.distanceKm}} km • {{item.movingMin}} min • {{item.date}}" }
+        { "type": "div", "props": { "className": "strava-candidate-meta" }, "content": "{{item.distanceKm}} km • {{item.movingMin}} min • {{item.date}}{{item.hr ? ' • HR: ' + item.hr + ' bpm' : ''}}" },
+        { "type": "div", "props": { "className": "strava-candidate-description" }, "content": "{{item.description || 'No description'}}" }
       ]
     },
     "cuesHistoryEntry": {
@@ -977,8 +978,36 @@
       "timeline": []
     },
     "stravaCandidates": [
-      { "id": "s101", "name": "Morning Run", "distanceKm": 2.1, "movingMin": 22, "date": "Sun 09:15", "tag": "#sosg" },
-      { "id": "s102", "name": "Park Jog", "distanceKm": 3.0, "movingMin": 31, "date": "Wed 18:40", "tag": "" }
+      { 
+        "id": "s101", 
+        "name": "Morning Run", 
+        "distanceKm": 2.1, 
+        "movingMin": 22, 
+        "date": "Sun 09:15", 
+        "hr": 145,
+        "description": "#daniel #cues:steady breathing, lamp posts #feel:good Great start to the day!",
+        "tag": "#daniel"
+      },
+      { 
+        "id": "s102", 
+        "name": "Park Jog", 
+        "distanceKm": 3.0, 
+        "movingMin": 31, 
+        "date": "Wed 18:40",
+        "hr": null,
+        "description": "#daniel Easy recovery run",
+        "tag": "#daniel"
+      },
+      { 
+        "id": "s103", 
+        "name": "Evening Run", 
+        "distanceKm": 5.2, 
+        "movingMin": 48, 
+        "date": "Fri 17:30",
+        "hr": 152,
+        "description": "Solo run - no tags",
+        "tag": ""
+      }
     ],
     "stravaCandidatesSelectedAsTimelineEvents": [
       { "type": "session", "source": "STRAVA", "icon": "🏃", "title": "Session", "subtitle": "2.1 km • 22 min • Effort: OK", "body": "Imported from Strava.", "date": "Just now" }

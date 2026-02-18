@@ -15,6 +15,55 @@ function isVisible(visibility: any, role: string) {
   return visibility.roles.includes(role);
 }
 
+/**
+ * Parse Strava activity description for hashtag-based mapping
+ * Returns: { athleteTag, cues, feel, confidence,
+
+ parseNote }
+ */
+function parseStravaDescription(description: string = '') {
+  const result: any = {
+    athleteTag: null,
+    cues: null,
+    feel: null,
+    confidence: 'none',
+    parseNote: null
+  };
+
+  // Extract athlete hashtag (e.g., #daniel, #sarah)
+  const athleteMatch = description.match(/#([a-zA-Z]+)(?:\s|$)/);
+  if (athleteMatch) {
+    result.athleteTag = athleteMatch[1].toLowerCase();
+    result.confidence = 'high';
+  }
+
+  // Extract cues (e.g., #cues:steady breathing, lamp posts)
+  const cuesMatch = description.match(/#cues:([^#\n]+)/);
+  if (cuesMatch) {
+    result.cues = cuesMatch[1].trim();
+  }
+
+  // Extract feel (e.g., #feel:good, #feel:tired)
+  const feelMatch = description.match(/#feel:([a-zA-Z]+)/);
+  if (feelMatch) {
+    result.feel = feelMatch[1].toLowerCase();
+  }
+
+  // Set parse note
+  if (!result.athleteTag) {
+    result.parseNote = '⚠️ No athlete tag found - manual assignment needed';
+    result.confidence = 'none';
+  } else if (result.cues || result.feel) {
+    result.parseNote = `✓ Mapped to ${result.athleteTag} with coaching metadata`;
+    result.confidence = 'high';
+  } else {
+    result.parseNote = `✓ Mapped to ${result.athleteTag}`;
+    result.confidence = 'medium';
+  }
+
+  return result;
+}
+
 export function runAction(action: any, ctx: any) {
   try {
     const { store, routeParams, router } = ctx;
@@ -72,26 +121,59 @@ export function runAction(action: any, ctx: any) {
     }
 
     if (action.type === 'autoSyncStrava') {
-      // Simulate Strava auto-sync: find candidates with matching hashtag and auto-import them
-      const hashtag = store.getByPath('state.strava.hashtag') || '#sosg';
+      // Enhanced Strava auto-sync with hashtag-based parsing
       const candidates = store.getByPath('mockData.stravaCandidates') || [];
-      const matching = candidates.filter((c: any) => c.tag === hashtag);
+      const selectedAthleteName = store.getByPath('mockData.selectedAthlete.name') || '';
       
-      if (matching.length > 0 && store.getByPath('state.strava.accessTokenPresent')) {
-        // Convert matching candidates to timeline events and prepend
-        const timelineEvents = matching.map((m: any) => ({
-          type: 'session',
-          source: 'STRAVA',
-          icon: '🏃',
-          title: 'Session',
-          subtitle: `${m.distanceKm} km • ${m.movingMin} min • Effort: OK`,
-          body: `Auto-imported from Strava (${m.name}).`,
-          date: m.date,
-          id: `strava-${m.id}`
-        }));
+      if (candidates.length > 0 && store.getByPath('state.strava.accessTokenPresent')) {
+        // Parse each candidate and match to current athlete
+        const timelineEvents = candidates
+          .map((c: any) => {
+            const parsed = parseStravaDescription(c.description);
+            
+            // Match by athlete tag (case-insensitive)
+            const athleteNameMatch = selectedAthleteName.toLowerCase() === parsed.athleteTag;
+            
+            if (!athleteNameMatch && !parsed.athleteTag) {
+              // No tag - skip auto-import (would need manual assignment)
+              return null;
+            }
+            
+            if (!athleteNameMatch) {
+              // Tagged for different athlete - skip
+              return null;
+            }
+            
+            // Calculate pace
+            const pace = (c.movingMin / c.distanceKm).toFixed(1);
+            
+            // Build subtitle with available data
+            let subtitle = `${c.distanceKm} km • ${c.movingMin} min • Pace: ${pace} min/km`;
+            if (c.hr) subtitle += ` • HR: ${c.hr} bpm`;
+            
+            // Build body with parsed metadata
+            let body = `Auto-imported from Strava (${c.name}).\n${parsed.parseNote}`;
+            if (parsed.feel) body += `\n**Feel:** ${parsed.feel}`;
+            if (parsed.cues) body += `\n**Cues used:** ${parsed.cues}`;
+            
+            return {
+              type: 'session',
+              source: 'STRAVA',
+              icon: '🏃',
+              title: 'Session',
+              subtitle,
+              body,
+              date: c.date,
+              id: `strava-${c.id}`,
+              parseConfidence: parsed.confidence
+            };
+          })
+          .filter(Boolean); // Remove nulls
         
-        store.mutateMock('mockData.selectedAthlete.timeline', 'prependMany', timelineEvents);
-        store.setByPath('state.strava.lastImportAt', new Date().toISOString());
+        if (timelineEvents.length > 0) {
+          store.mutateMock('mockData.selectedAthlete.timeline', 'prependMany', timelineEvents);
+          store.setByPath('state.strava.lastImportAt', new Date().toISOString());
+        }
       }
     }
   } catch (e) {
