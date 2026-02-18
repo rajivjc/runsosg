@@ -240,6 +240,7 @@ export default function ScreenRenderer({ screenId, routeParams }: { screenId: st
       <div data-testid={`screen-${screen.id}`} className="auth-outer">
         <div className="auth-card">
           <div className="auth-header">
+            <div className="auth-logo">🏃</div>
             <h1 className="auth-title">{screen.title}</h1>
             {subtitle && <p className="auth-subtitle">{subtitle}</p>}
           </div>
@@ -458,7 +459,10 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
     return <button data-testid={`btn-${id}`} className={variantClass} onClick={() => run(component.actions)}>{component.props?.label}</button>;
   }
 
-  if (component.type === 'link') return <a data-testid={`link-${id}`} onClick={() => run(component.actions)} style={{ cursor: 'pointer', color: 'var(--accent)', textDecoration: 'underline' }}>{component.props?.text}</a>;
+  if (component.type === 'link') {
+    const className = component.props?.variant === 'forgot' ? 'auth-forgot-link' : 'auth-footer-link';
+    return <a data-testid={`link-${id}`} onClick={() => run(component.actions)} className={className}>{component.props?.text}</a>;
+  }
 
   if (['textInput', 'passwordInput', 'numberInput', 'textArea', 'dateTimePicker', 'chipInput', 'emojiPicker'].includes(component.type)) {
     const Tag = component.type === 'textArea' ? 'textarea' : 'input';
