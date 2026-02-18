@@ -287,7 +287,9 @@
                 "options": [
                   { "label": "All", "value": "all" },
                   { "label": "Sessions", "value": "session" },
-                  { "label": "Notes", "value": "note" }
+                  { "label": "Notes", "value": "note" },
+                  { "label": "Manual", "value": "manual" },
+                  { "label": "Strava", "value": "strava" }
                 ],
                 "default": "all",
                 "stateBinding": "state.timelineFilter",
@@ -303,7 +305,7 @@
               "id": "timeline_feed",
               "props": { "itemTemplate": "timelineCard", "className": "feed-container" },
               "dataBinding": "mockData.selectedAthlete.timeline",
-              "filterBinding": { "controlId": "timeline_filter", "map": { "all": "*", "session": "session", "note": "note", "milestone": "milestone" } },
+              "filterBinding": { "controlId": "timeline_filter", "map": { "all": "*", "session": "session", "note": "note", "milestone": "milestone", "manual": { "filters": [{ "field": "source", "value": "MANUAL" }] }, "strava": { "filters": [{ "field": "source", "value": "STRAVA" }] } } },
               "emptyState": { "title": "No activities yet", "message": "Add a session or enable Strava to start the athlete's journey." },
               "actions": [
                 { "type": "setState", "path": "state.uiState.selectedActivityId", "value": "{{item.id}}" }
@@ -317,17 +319,17 @@
               "components": [
                 {
                   "type": "button",
+                  "id": "btn_log_run",
+                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                  "props": { "label": "Log Run" },
+                  "actions": [{ "type": "setState", "path": "state.uiState.activeModal", "value": "addSession" }]
+                },
+                {
+                  "type": "button",
                   "id": "btn_add_note",
                   "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
                   "props": { "label": "Add Note", "variant": "secondary" },
                   "actions": [{ "type": "setState", "path": "state.uiState.activeModal", "value": "addNote" }]
-                },
-                {
-                  "type": "button",
-                  "id": "btn_add_session",
-                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
-                  "props": { "label": "Add Session" },
-                  "actions": [{ "type": "setState", "path": "state.uiState.activeModal", "value": "addSession" }]
                 },
                 {
                   "type": "conditionalRender",
