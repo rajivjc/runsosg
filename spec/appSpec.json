@@ -327,6 +327,22 @@
                   "actions": [{ "type": "navigate", "to": "edit_cues", "with": { "athleteId": "{{route.athleteId}}" } }]
                 }
               ]
+            },
+
+            {
+              "type": "card",
+              "id": "card_cues_history",
+              "props": { "title": "Cues History", "collapsible": false },
+              "dataBinding": "mockData.selectedAthlete.cuesHistory",
+              "emptyState": { "title": "No history yet", "message": "Changes to cues will appear here over time." },
+              "components": [
+                {
+                  "type": "list",
+                  "id": "cues_history_list",
+                  "props": { "itemTemplate": "cuesHistoryEntry", "className": "history-list" },
+                  "dataBinding": "mockData.selectedAthlete.cuesHistory"
+                }
+              ]
             }
           ]
         },
@@ -790,6 +806,18 @@
         { "type": "div", "props": { "className": "strava-candidate-title" }, "content": "🏃 {{item.name}}" },
         { "type": "div", "props": { "className": "strava-candidate-meta" }, "content": "{{item.distanceKm}} km • {{item.movingMin}} min • {{item.date}}" }
       ]
+    },
+    "cuesHistoryEntry": {
+      "type": "div",
+      "className": "cues-history-entry",
+      "components": [
+        { "type": "div", "props": { "className": "history-header" }, "components": [
+          { "type": "text", "props": { "text": "{{item.dateFormatted}}", "className": "history-date" } },
+          { "type": "text", "props": { "text": "by {{item.changedBy}}", "className": "history-author" } }
+        ]},
+        { "type": "div", "props": { "className": "history-changes" }, "content": "{{item.changes}}" },
+        { "type": "div", "props": { "className": "history-reason" }, "content": "{{item.reason ? '💡 ' + item.reason : ''}}" }
+      ]
     }
   },
   "mockData": {
@@ -842,6 +870,32 @@
           "bestCues": "2 more lamp posts, steady breathing",
           "kit": "Water at 15 min, cap"
         },
+        "cuesHistory": [
+          {
+            "id": "ch3",
+            "date": "2025-02-15",
+            "dateFormatted": "3 days ago",
+            "changedBy": "Coach Sarah",
+            "changes": "Updated Kit: added 'cap' → clarified sun protection need",
+            "reason": "Athlete mentioned squinting during morning runs"
+          },
+          {
+            "id": "ch2",
+            "date": "2025-02-08",
+            "dateFormatted": "10 days ago",
+            "changedBy": "Coach Sarah",
+            "changes": "Updated Helps: added 'consistent route' → reduced transition anxiety",
+            "reason": "After observing improved confidence on familiar path"
+          },
+          {
+            "id": "ch1",
+            "date": "2025-02-01",
+            "dateFormatted": "17 days ago",
+            "changedBy": "Coach Sarah",
+            "changes": "Initial cues setup: helps, avoids, best cues, kit all defined",
+            "reason": "First session baseline after intake discussion"
+          }
+        ],
         "timeline": [
           { "type": "session", "source": "STRAVA", "icon": "🏃", "title": "Session", "subtitle": "2.3 km • 24 min • Effort: OK", "body": "Imported from Strava (tag #sosg).", "date": "Sat 10:10", "id": "t1" },
           { "type": "note", "icon": "📝", "title": "Coach note", "subtitle": "Mood 😐 → 😊", "body": "Went well: steady pace. Hard: tired at 20 min. Next: water at 15.", "date": "Sat 10:35", "id": "t2" },
