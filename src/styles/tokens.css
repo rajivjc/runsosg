@@ -1295,6 +1295,16 @@ textarea {
   flex-wrap: wrap;
 }
 
+.strava-candidate-description {
+  font-size: var(--type-body-size);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+  font-style: italic;
+  padding: var(--space-2);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-sm);
+}
+
 /* Athlete Detail - Refined Stats */
 .card-stats {
   background-color: var(--color-surface);
