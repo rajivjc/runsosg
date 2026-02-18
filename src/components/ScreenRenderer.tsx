@@ -225,6 +225,41 @@ export default function ScreenRenderer({ screenId, routeParams }: { screenId: st
 
   const ctxBase = { store, routeParams, route: routeParams, state: store.state, data: null, router };
 
+  if ((screen as any).layout?.type === 'centered') {
+    const subtitleMap: Record<string, string> = {
+      login: 'Welcome back — sign in to continue',
+      register: 'Create your account to get started',
+    };
+    const subtitle = subtitleMap[screen.id] || '';
+
+    // Separate form fields from footer links
+    const formComponents = screen.components.filter((c: any) => c.type !== 'link');
+    const linkComponents = screen.components.filter((c: any) => c.type === 'link');
+
+    return (
+      <div data-testid={`screen-${screen.id}`} className="auth-outer">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1 className="auth-title">{screen.title}</h1>
+            {subtitle && <p className="auth-subtitle">{subtitle}</p>}
+          </div>
+          <div className="auth-form">
+            {formComponents.map((c: any) => (
+              <ComponentRenderer key={c.id} component={c} ctx={ctxBase} />
+            ))}
+          </div>
+          {linkComponents.length > 0 && (
+            <div className="auth-footer">
+              {linkComponents.map((c: any) => (
+                <ComponentRenderer key={c.id} component={c} ctx={ctxBase} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div data-testid={`screen-${screen.id}`}>
       {(screen as any).layout?.type !== 'centered' && <h1>{screen.title}</h1>}
