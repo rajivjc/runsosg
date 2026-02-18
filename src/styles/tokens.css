@@ -893,6 +893,43 @@ dd {
   height: 80px;
 }
 
+/* Page header - structured header with back/title/action */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-header-left,
+.page-header-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.page-header-center {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.page-header-title {
+  margin: 0;
+  font-size: var(--type-h3-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ============================================
    RESPONSIVE
    ============================================ */
