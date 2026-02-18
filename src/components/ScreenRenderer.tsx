@@ -148,6 +148,91 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
   };
   const id = component.id;
 
+  // Loading skeleton component
+  if (component.type === 'loadingSkeleton') {
+    const count = component.props?.count || 3;
+    return (
+      <div data-testid={`loading-${id}`}>
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} className="skeleton-list-item">
+            <div className="loading-skeleton skeleton-text" style={{ width: '60%' }}></div>
+            <div className="loading-skeleton skeleton-text" style={{ width: '40%' }}></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Empty state component
+  if (component.type === 'emptyState') {
+    return (
+      <div className="empty-state" data-testid={`empty-${id}`}>
+        <div className="empty-state-icon">{component.props?.icon || '📭'}</div>
+        <h3 className="empty-state-title">{component.props?.title || 'No data'}</h3>
+        <p className="empty-state-message">{component.props?.message || 'Try adjusting your search or filters'}</p>
+        {component.props?.ctaLabel && (
+          <button className="empty-state-cta" onClick={() => run(component.actions || [])}>
+            {component.props.ctaLabel}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // Error state component
+  if (component.type === 'errorBanner') {
+    return (
+      <div className="error-banner" role="alert" data-testid={`error-${id}`}>
+        <div className="error-banner-icon">⚠️</div>
+        <div className="error-banner-content">
+          <h4 className="error-banner-title">{component.props?.title || 'Error'}</h4>
+          <p className="error-banner-message">{component.props?.message || 'Something went wrong'}</p>
+          {component.actions && component.actions.length > 0 && (
+            <div className="error-banner-action">
+              <button onClick={() => run(component.actions)} className="primary">
+                {component.props?.retryLabel || 'Retry'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Success message component
+  if (component.type === 'successMessage') {
+    return (
+      <div className="success-message" role="status" data-testid={`success-${id}`}>
+        <div className="success-message-icon">✓</div>
+        <p className="success-message-text">{component.props?.message || 'Success'}</p>
+      </div>
+    );
+  }
+
+  // Toast notification component
+  if (component.type === 'toast') {
+    return (
+      <div className="toast" role="status" aria-live="polite" data-testid={`toast-${id}`}>
+        <span className="toast-icon">{component.props?.icon || '✓'}</span>
+        <div className="toast-content">{component.props?.message || 'Success'}</div>
+        {component.props?.dismissible && (
+          <button className="toast-close" onClick={() => {}} aria-label="Close notification">✕</button>
+        )}
+      </div>
+    );
+  }
+
+  // Warning banner component
+  if (component.type === 'warningBanner') {
+    return (
+      <div className="warning-banner" role="status" data-testid={`warning-${id}`}>
+        <div className="warning-banner-icon">⚡</div>
+        <p className="warning-banner-text">{component.props?.message || 'Warning'}</p>
+      </div>
+    );
+  }
+
+
   // Conditional render - show/hide based on condition
   if (component.type === 'conditionalRender') {
     const condition = interpolate(component.condition, { ...ctx, item });
@@ -254,33 +339,64 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
     const isTabs = component.props?.isTabs || component.id?.includes('tabs') || component.id?.includes('detail_tabs');
 
     if (isTabs) {
-      // Tab style - underline beneath each tab
+      // Tab style - underline beneath each tab with keyboard navigation
+      const handleKeyDown = (e: React.KeyboardEvent, tabIndex: number) => {
+        const tabArray = isObjectOptions ? options.map((o: any) => o.value) : options;
+        let newIndex = tabIndex;
+        
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          newIndex = (tabIndex + 1) % tabArray.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          newIndex = (tabIndex - 1 + tabArray.length) % tabArray.length;
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          newIndex = 0;
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          newIndex = tabArray.length - 1;
+        } else {
+          return;
+        }
+        
+        const newValue = tabArray[newIndex];
+        store.setByPath(component.props.stateBinding || '', newValue);
+        run(component.actions, { value: newValue });
+      };
+
       return (
-        <div className="tab-container">
+        <div className="tab-container" role="tablist">
           {isObjectOptions ? (
-            options.map((o: any) => (
+            options.map((o: any, idx: number) => (
               <button 
                 key={o.value}
                 type="button"
+                role="tab"
+                aria-selected={value === o.value}
                 className={`tab-button ${value === o.value ? 'active' : ''}`}
                 onClick={() => {
                   store.setByPath(component.props.stateBinding || '', o.value);
                   run(component.actions, { value: o.value });
                 }}
+                onKeyDown={(e) => handleKeyDown(e, idx)}
               >
                 {o.label}
               </button>
             ))
           ) : (
-            options.map((o: string) => (
+            options.map((o: string, idx: number) => (
               <button
                 key={o}
                 type="button"
+                role="tab"
+                aria-selected={value === o}
                 className={`tab-button ${value === o ? 'active' : ''}`}
                 onClick={() => {
                   store.setByPath(component.props.stateBinding || '', o);
                   run(component.actions, { value: o });
                 }}
+                onKeyDown={(e) => handleKeyDown(e, idx)}
               >
                 {o}
               </button>
