@@ -501,16 +501,21 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
     if (!items.length && component.emptyState) return <div data-testid={`list-${id}`}><strong>{component.emptyState.title}</strong><p>{component.emptyState.message}</p></div>;
     return <div data-testid={`list-${id}`} className={component.props?.className || ''}>{items.map((it: any, idx: number) => {
       if (component.props?.itemTemplate === 'athleteCard') {
-        // Render athleteCard template as a button that triggers navigation
+        // Render athleteCard template as an interactive card
         const template = appSpec.templates.athleteCard;
+        const statusBadge = it.status ? (
+          <span className={`badge badge-${it.status.toLowerCase()}`}>{it.status}</span>
+        ) : null;
         return (
-          <button key={it.id} data-testid={`athlete-card-${it.id}`} onClick={() => run(component.actions, { item: it })} className="athlete-row-item" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100%', textAlign: 'left' }}>
+          <button key={it.id} data-testid={`athlete-card-${it.id}`} onClick={() => run(component.actions, { item: it })} className="athlete-row-item">
             <div className="athlete-row">
               <div className="athlete-row-content">
-                <div className="athlete-name">{interpolate(template.components?.[0]?.components?.[0]?.content || template.title || '{{item.name}}', { ...ctx, item: it })}</div>
-                <div className="athlete-meta">{interpolate(template.components?.[0]?.components?.[1]?.content || template.meta || '{{item.lastActivityFormatted}} • {{item.sessionCount}} sessions', { ...ctx, item: it })}</div>
+                <div className="athlete-row-info">
+                  <div className="athlete-name">{interpolate(template.components?.[0]?.components?.[0]?.content || template.title || '{{item.name}}', { ...ctx, item: it })}</div>
+                  <div className="athlete-meta">{interpolate(template.components?.[0]?.components?.[1]?.content || template.meta || '{{item.lastActivityFormatted}} • {{item.sessionCount}} sessions', { ...ctx, item: it })}</div>
+                </div>
+                {statusBadge && <div className="athlete-status-badge">{statusBadge}</div>}
               </div>
-              <div className="divider"></div>
             </div>
           </button>
         );
