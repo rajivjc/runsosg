@@ -264,6 +264,8 @@ p {
 /* ============================================
    BUTTONS
    ============================================ */
+
+/* --- Button base reset (structural only) --- */
 button,
 [role="button"],
 .button {
@@ -280,17 +282,7 @@ button,
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
-  width: 100%;
-}
-
-button {
-  background-color: var(--color-brand);
-  color: var(--color-brand-contrast);
-}
-
-button:hover {
-  background-color: var(--color-brand-hover);
-  box-shadow: var(--shadow-md);
+  /* width intentionally NOT set here — variants control it */
 }
 
 button:active {
@@ -305,17 +297,84 @@ button:focus {
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
+/* --- .btn-primary : filled brand CTA (full-width) --- */
+.btn-primary,
+button.primary {
+  background-color: var(--color-brand);
+  color: var(--color-brand-contrast);
+  width: 100%;
+}
+
+.btn-primary:hover,
+button.primary:hover {
+  background-color: var(--color-brand-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- Legacy bare <button> (no variant class) used in forms / auth:
+       maintain brand fill + full-width so existing screens keep working --- */
+button:not(.btn-primary):not(.btn-secondary):not(.btn-ghost):not(.btn-icon):not(.secondary):not(.icon-button):not(.tab-button):not(.segmented-button):not(.modal-close):not(.toast-close):not(.athlete-row-item):not(.empty-state-cta):not([class]) {
+  background-color: var(--color-brand);
+  color: var(--color-brand-contrast);
+  width: 100%;
+}
+
+button:not(.btn-primary):not(.btn-secondary):not(.btn-ghost):not(.btn-icon):not(.secondary):not(.icon-button):not(.tab-button):not(.segmented-button):not(.modal-close):not(.toast-close):not(.athlete-row-item):not(.empty-state-cta):not([class]):hover {
+  background-color: var(--color-brand-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- .btn-secondary : outlined, brand text --- */
+.btn-secondary,
 button.secondary {
   background-color: var(--color-surface);
   color: var(--color-brand);
   border: 1px solid var(--color-border);
+  width: 100%;
 }
 
+.btn-secondary:hover,
 button.secondary:hover {
   background-color: var(--color-surface-subtle);
   border-color: var(--color-border-strong);
+}
+
+/* --- .btn-ghost : text-only, no fill, auto width --- */
+.btn-ghost {
+  background: none;
+  color: var(--color-brand);
+  border: none;
+  width: auto;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 500;
+  min-height: unset;
+}
+
+.btn-ghost:hover {
+  text-decoration: underline;
+  background: none;
+}
+
+/* --- .btn-icon : square icon-only button --- */
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: var(--space-2);
+  color: var(--color-text-primary);
+  transition: color var(--transition-fast);
+  width: auto;
+  min-height: auto;
+  border-radius: var(--radius-sm);
+}
+
+.btn-icon:hover {
+  color: var(--color-accent);
+  background-color: var(--color-surface-subtle);
 }
 
 /* ============================================
@@ -776,10 +835,12 @@ dd {
   transition: color var(--transition-fast);
   width: auto;
   min-height: auto;
+  border-radius: var(--radius-sm);
 }
 
 .icon-button:hover {
   color: var(--color-accent);
+  background-color: var(--color-surface-subtle);
 }
 
 /* Navigation Tabs - sticky below topbar */
