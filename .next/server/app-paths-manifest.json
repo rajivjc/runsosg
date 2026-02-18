@@ -1,5 +1,17 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/add_coach_note/[athleteId]/page": "app/add_coach_note/[athleteId]/page.js",
+  "/add_session/[athleteId]/page": "app/add_session/[athleteId]/page.js",
+  "/athlete_detail/[athleteId]/page": "app/athlete_detail/[athleteId]/page.js",
+  "/athlete_list/page": "app/athlete_list/page.js",
+  "/athlete_settings/[athleteId]/page": "app/athlete_settings/[athleteId]/page.js",
+  "/athlete_timeline/[athleteId]/page": "app/athlete_timeline/[athleteId]/page.js",
+  "/edit_cues/[athleteId]/page": "app/edit_cues/[athleteId]/page.js",
   "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js",
   "/register/page": "app/register/page.js",
-  "/athlete_list/page": "app/athlete_list/page.js"
+  "/strava_connect/[athleteId]/page": "app/strava_connect/[athleteId]/page.js",
+  "/strava_connect_init/[athleteId]/page": "app/strava_connect_init/[athleteId]/page.js",
+  "/strava_import_review/[athleteId]/page": "app/strava_import_review/[athleteId]/page.js"
 }

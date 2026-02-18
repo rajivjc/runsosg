@@ -116,3 +116,129 @@ select:focus {
   font-size: var(--text-meta);
   font-weight: 500;
 }
+
+/* Definition list (kvList) */
+dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+dt {
+  font-weight: 600;
+  color: var(--text);
+  font-size: var(--text-meta);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+dd {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--text-body);
+  font-weight: 500;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: flex-end;
+  z-index: 999;
+}
+
+.modal-content {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  max-height: 80vh;
+  overflow-y: auto;
+  width: 100%;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease;
+  padding: var(--space-4);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  gap: var(--space-3);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Form elements */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-4);
+}
+
+.form-group label {
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+}
+
+/* Sections */
+.section-title {
+  font-size: var(--text-h2);
+  font-weight: 600;
+  margin: var(--space-4) 0 var(--space-3) 0;
+  color: var(--text);
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: var(--space-3) 0;
+}
+
+/* Feed items */
+.feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.feed-item-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: rgba(13, 148, 136, 0.12);
+  color: var(--accent);
+}
+
+.feed-item-badge-strava-sync {
+  background-color: rgba(14, 165, 233, 0.1);
+  color: #0EA5E9;
+}
