@@ -155,7 +155,7 @@
             "titleBinding": "mockData.selectedAthlete.name",
             "rightIcon": "⚙️"
           },
-          "actions": [{ "type": "navigate", "to": "athlete_settings", "with": { "athleteId": "{{route.athleteId}}" } }]
+          "actions": [{ "type": "setState", "path": "state.currentDetailTab", "value": "settings" }]
         },
 
         {
@@ -425,7 +425,7 @@
             "titleBinding": "mockData.selectedAthlete.name",
             "rightIcon": "⚙️"
           },
-          "actions": [{ "type": "navigate", "to": "athlete_settings", "with": { "athleteId": "{{route.athleteId}}" } }]
+          "actions": [{ "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }]
         },
 
         {
