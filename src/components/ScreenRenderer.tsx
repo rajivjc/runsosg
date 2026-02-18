@@ -385,7 +385,18 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
           </article>
         );
       }
-      return <article className="card" key={it.id}><strong>{interpolate(appSpec.templates.stravaCandidateCard.title, { ...ctx, item: it })}</strong></article>;
+      if (component.props?.itemTemplate === 'stravaCandidateCard') {
+        // Render stravaCandidateCard as a clickable div
+        const template = appSpec.templates.stravaCandidateCard;
+        return (
+          <div key={it.id} data-testid={`strava-candidate-${it.id}`} onClick={() => run(component.actions, { item: it })} className={`${template.className || 'strava-candidate-item'}`} style={{ cursor: 'pointer' }}>
+            {template.components?.map((child: any) => (
+              <ComponentRenderer key={child.id || it.id} component={child} ctx={{ ...ctx, item: it }} item={it} />
+            ))}
+          </div>
+        );
+      }
+      return <article className="card" key={it.id}><strong>{interpolate(appSpec.templates.stravaCandidateCard.title || '{{item.name}}', { ...ctx, item: it })}</strong></article>;
     })}</div>;
   }
 

@@ -572,14 +572,15 @@
       "route": "strava_connect_init/:athleteId",
       "layout": { "type": "stack" },
       "components": [
-        { "type": "text", "id": "strava_info", "props": { "text": "Connect a Strava account to auto-import runs with your coaching hashtag. In production, this uses OAuth. For now, simulate the connection." } },
+        { "type": "div", "props": { "className": "strava-info" }, "components": [
+          { "type": "text", "id": "strava_info", "props": { "text": "Connect a Strava account to auto-import runs with your coaching hashtag. In production, this uses OAuth." } }
+        ]},
         {
           "type": "button",
           "id": "btn_simulate_strava_connect",
-          "props": { "label": "Simulate Strava Connect" },
+          "props": { "label": "Connect Strava (simulate)" },
           "actions": [
             { "type": "setState", "path": "state.strava.accessTokenPresent", "value": true },
-            { "type": "toast", "message": "Strava connected (prototype)." },
             { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
         }
@@ -592,20 +593,22 @@
       "route": "strava_import_review/:athleteId",
       "layout": { "type": "stack" },
       "components": [
-        { "type": "text", "id": "rules_title", "props": { "text": "Review & import Strava activities" } },
+        { "type": "div", "props": { "className": "strava-info" }, "components": [
+          { "type": "text", "id": "rules_title", "props": { "text": "Review & import Strava activities" } }
+        ]},
         {
           "type": "select",
           "id": "import_mode",
-          "props": { "label": "Mode", "options": ["TAG", "TIME_WINDOW"], "default": "TAG" },
+          "props": { "label": "Import mode", "options": ["TAG", "TIME_WINDOW"], "default": "TAG" },
           "actions": [{ "type": "setState", "path": "state.strava.importRules.mode", "value": "{{value}}" }]
         },
-        { "type": "textInput", "id": "tag", "props": { "label": "Tag (if TAG mode)", "placeholder": "#sosg" } },
-        { "type": "numberInput", "id": "time_window", "props": { "label": "Time window minutes (if TIME_WINDOW)", "step": 15 } },
+        { "type": "textInput", "id": "tag", "props": { "label": "Tag (if MODE=TAG)", "placeholder": "#sosg" } },
+        { "type": "numberInput", "id": "time_window", "props": { "label": "Time window (minutes)", "step": 15 } },
         { "type": "divider", "id": "div2" },
         {
           "type": "list",
           "id": "candidate_activities",
-          "props": { "itemTemplate": "stravaCandidateCard" },
+          "props": { "itemTemplate": "stravaCandidateCard", "className": "strava-candidates" },
           "dataBinding": "mockData.stravaCandidates"
         },
         {
@@ -615,7 +618,6 @@
           "actions": [
             { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prependMany", "valueBinding": "mockData.stravaCandidatesSelectedAsTimelineEvents" },
             { "type": "setState", "path": "state.strava.lastImportAt", "value": "NOW" },
-            { "type": "toast", "message": "Imported (prototype)." },
             { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
         }
@@ -684,18 +686,40 @@
       "route": "profile",
       "layout": { "type": "stack" },
       "components": [
-        { "type": "avatar", "id": "user_avatar", "props": { "placeholder": true } },
-        { "type": "kvList", "id": "user_info", "props": { "items": [
-          { "k": "Name", "v": "Prototype User" },
-          { "k": "Role", "v": "{{state.role}}" }
-        ]}},
         {
-          "type": "button",
-          "id": "btn_logout",
-          "props": { "label": "Logout" },
-          "actions": [
-            { "type": "setState", "path": "state.authed", "value": false },
-            { "type": "navigate", "to": "login" }
+          "type": "div",
+          "id": "profile_header",
+          "props": { "className": "profile-header" },
+          "components": [
+            { "type": "div", "props": { "className": "profile-avatar" }, "content": "👤" },
+            { "type": "text", "props": { "text": "{{state.role}}" } }
+          ]
+        },
+        {
+          "type": "div",
+          "id": "profile_info",
+          "props": { "className": "profile-info" },
+          "components": [
+            { "type": "kvList", "id": "user_info", "props": { "items": [
+              { "k": "Role", "v": "{{state.role}}" },
+              { "k": "Status", "v": "{{state.authed ? 'Authenticated' : 'Guest'}}" }
+            ]}}
+          ]
+        },
+        {
+          "type": "div",
+          "id": "profile_actions",
+          "props": { "className": "profile-actions" },
+          "components": [
+            {
+              "type": "button",
+              "id": "btn_logout",
+              "props": { "label": "Logout" },
+              "actions": [
+                { "type": "setState", "path": "state.authed", "value": false },
+                { "type": "navigate", "to": "login" }
+              ]
+            }
           ]
         }
       ]
@@ -723,11 +747,12 @@
       "badge": "{{item.source === 'STRAVA' ? 'Auto-synced' : ''}}"
     },
     "stravaCandidateCard": {
-      "type": "card",
-      "title": "🏃 {{item.name}}",
-      "subtitle": "{{item.distanceKm}} km • {{item.movingMin}} min • {{item.date}}",
-      "body": "Tag: {{item.tag}} • Source: Strava",
-      "meta": "{{item.id}}"
+      "type": "div",
+      "className": "strava-candidate-item",
+      "components": [
+        { "type": "div", "props": { "className": "strava-candidate-title" }, "content": "🏃 {{item.name}}" },
+        { "type": "div", "props": { "className": "strava-candidate-meta" }, "content": "{{item.distanceKm}} km • {{item.movingMin}} min • {{item.date}}" }
+      ]
     }
   },
   "mockData": {
