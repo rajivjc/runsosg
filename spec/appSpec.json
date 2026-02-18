@@ -89,7 +89,8 @@
           "id": "athlete_sort",
           "props": { 
             "options": ["Name", "Active"],
-            "default": "Active"
+            "default": "Active",
+            "stateBinding": "state.athleteListSort"
           },
           "actions": [
             { "type": "setState", "path": "state.athleteListSort", "value": "{{value}}" }
@@ -172,9 +173,9 @@
               "id": "stats_list",
               "props": {
                 "items": [
-                  { "k": "Sessions", "v": "{{mockData.selectedAthlete.sessionCount}}", "icon": "🏃" },
-                  { "k": "Last activity", "v": "{{mockData.selectedAthlete.lastActivityFormatted}}", "icon": "📅" },
-                  { "k": "Status", "v": "{{mockData.selectedAthlete.status}}", "icon": "✓" }
+                  { "k": "Sessions", "v": "{{mockData.selectedAthlete.sessionCount}}", "icon": "🏃", "className": "stat-row" },
+                  { "k": "Last activity", "v": "{{mockData.selectedAthlete.lastActivityFormatted}}", "icon": "📅", "className": "stat-row" },
+                  { "k": "Status", "v": "{{mockData.selectedAthlete.status}}", "icon": "✓", "className": "stat-row" }
                 ]
               }
             }
@@ -190,7 +191,8 @@
               { "label": "Cues", "value": "cues" },
               { "label": "Settings", "value": "settings" }
             ],
-            "default": "feed"
+            "default": "feed",
+            "stateBinding": "state.currentDetailTab"
           },
           "actions": [
             { "type": "setState", "path": "state.currentDetailTab", "value": "{{value}}" }
@@ -211,7 +213,8 @@
                   { "label": "Sessions", "value": "session" },
                   { "label": "Notes", "value": "note" }
                 ],
-                "default": "all"
+                "default": "all",
+                "stateBinding": "state.timelineFilter"
               },
               "actions": [
                 { "type": "setState", "path": "state.timelineFilter", "value": "{{value}}" }

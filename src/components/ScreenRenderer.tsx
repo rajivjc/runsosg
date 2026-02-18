@@ -190,7 +190,24 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
     }} />;
   }
   if (component.type === 'header') return <div className="card"><button onClick={() => run([component.props.leftAction])}>Back</button><strong>{store.getByPath(component.props.titleBinding)}</strong><button onClick={() => run(component.actions)}>{component.props.rightIcon}</button></div>;
-  if (component.type === 'kvList') return <dl>{component.props.items.map((kv: any) => <div key={kv.k}><dt>{kv.k}</dt><dd>{interpolate(kv.v, { ...ctx, data: ctx.data, item })}</dd></div>)}</dl>;
+  if (component.type === 'kvList') {
+    return (
+      <dl style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', margin: 0 }}>
+        {component.props.items.map((kv: any) => {
+          const displayValue = interpolate(kv.v, { ...ctx, data: ctx.data, item });
+          return (
+            <div key={kv.k} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }} className={kv.className}>
+              {kv.icon && <span style={{ fontSize: '20px' }}>{kv.icon}</span>}
+              <div style={{ flex: 1 }}>
+                <dt style={{ fontSize: 'var(--text-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-secondary)', margin: 0 }}>{kv.k}</dt>
+                <dd style={{ fontSize: 'var(--text-body)', fontWeight: 500, color: 'var(--text)', margin: '2px 0 0 0' }}>{displayValue}</dd>
+              </div>
+            </div>
+          );
+        })}
+      </dl>
+    );
+  }
   if (component.type === 'toggle') return <label><input data-testid={`toggle-${id}`} type="checkbox" defaultChecked={component.props?.default} />{component.props?.label}</label>;
 
   if (component.type === 'button') return <button data-testid={`btn-${id}`} onClick={() => run(component.actions)}>{component.props?.label}</button>;
