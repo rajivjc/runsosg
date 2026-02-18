@@ -85,15 +85,23 @@
       "components": [
         { "type": "searchBar", "id": "athlete_search", "props": { "placeholder": "Search athletes...", "autoFocus": true } },
         {
-          "type": "segmentedControl",
-          "id": "athlete_sort",
-          "props": { 
-            "options": ["Name", "Active"],
-            "default": "Active",
-            "stateBinding": "state.athleteListSort"
-          },
-          "actions": [
-            { "type": "setState", "path": "state.athleteListSort", "value": "{{value}}" }
+          "type": "div",
+          "id": "sort_container",
+          "props": { "className": "sort-filter-container" },
+          "components": [
+            { "type": "text", "id": "sort_label", "props": { "text": "Sort by:", "className": "filter-label" } },
+            {
+              "type": "segmentedControl",
+              "id": "athlete_sort",
+              "props": { 
+                "options": ["Name", "Active"],
+                "default": "Active",
+                "stateBinding": "state.athleteListSort"
+              },
+              "actions": [
+                { "type": "setState", "path": "state.athleteListSort", "value": "{{value}}" }
+              ]
+            }
           ]
         },
         {

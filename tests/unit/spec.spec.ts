@@ -201,7 +201,9 @@ describe('Spec Configuration Tests', () => {
     });
 
     test('Unit-40 Athlete list has sort segmented control', () => {
-      const sortControl = athleteListScreen?.components.find((c: any) => c.id === 'athlete_sort');
+      const sortContainer = athleteListScreen?.components.find((c: any) => c.id === 'sort_container');
+      expect(sortContainer).toBeDefined();
+      const sortControl = sortContainer?.components?.find((c: any) => c.id === 'athlete_sort');
       expect(sortControl).toBeDefined();
       expect(sortControl?.type).toBe('segmentedControl');
       expect(sortControl?.props.options).toContain('Name');
