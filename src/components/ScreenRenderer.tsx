@@ -739,7 +739,18 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
       const controlId = component.filterBinding.controlId;
       const selected = store.controls[controlId] || store.getByPath(`state.${controlId}`) || component.filterBinding.default || 'all';
       const mapped = component.filterBinding.map[selected];
-      if (mapped && mapped !== '*') items = items.filter((x: any) => x.type === mapped);
+      if (mapped && mapped !== '*') {
+        items = items.filter((x: any) => {
+          if (typeof mapped === 'string') {
+            // Backward compatible: simple type matching
+            return x.type === mapped;
+          } else if (typeof mapped === 'object' && mapped.filters) {
+            // Compound filter: match ALL conditions
+            return mapped.filters.every((filter: any) => x[filter.field] === filter.value);
+          }
+          return true;
+        });
+      }
     }
     if (!items.length && component.emptyState) return <div data-testid={`list-${id}`}><strong>{component.emptyState.title}</strong><p>{component.emptyState.message}</p></div>;
     return <div data-testid={`list-${id}`} className={component.props?.className || ''}>{items.map((it: any, idx: number) => {
