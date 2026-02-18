@@ -54,6 +54,12 @@
         { "type": "textInput", "id": "email", "props": { "label": "Email", "placeholder": "name@example.com" } },
         { "type": "passwordInput", "id": "password", "props": { "label": "Password" } },
         {
+          "type": "link",
+          "id": "link_forgot_password",
+          "props": { "text": "Forgot password?", "variant": "forgot" },
+          "actions": []
+        },
+        {
           "type": "select",
           "id": "role_selector",
           "props": { "label": "Role", "options": ["CAREGIVER", "COACH", "ADMIN"], "default": "COACH" },
