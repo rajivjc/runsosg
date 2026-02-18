@@ -328,6 +328,17 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
     }
   }
 
+  if (component.type === 'div') {
+    const className = component.props?.className || '';
+    const content = component.content ? interpolate(component.content, { ...ctx, item }) : null;
+    return (
+      <div className={className} data-testid={`div-${id}`}>
+        {content && <span>{content}</span>}
+        {component.components?.map((child: any) => <ComponentRenderer key={child.id} component={child} ctx={ctx} item={item} />)}
+      </div>
+    );
+  }
+
   if (component.type === 'card') {
     const data = component.dataBinding ? store.getByPath(component.dataBinding) : null;
     return <section className="card" data-testid={`card-${id}`}><h3>{component.props?.title}</h3>{component.components?.map((child: any) => <ComponentRenderer key={child.id} component={child} ctx={{ ...ctx, data }} />)}{component.footerActions?.map((b: any) => <ComponentRenderer key={b.id} component={b} ctx={ctx} />)}</section>;
@@ -346,7 +357,21 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
     }
     if (!items.length && component.emptyState) return <div data-testid={`list-${id}`}><strong>{component.emptyState.title}</strong><p>{component.emptyState.message}</p></div>;
     return <div data-testid={`list-${id}`} className={component.props?.className || ''}>{items.map((it: any, idx: number) => {
-      if (component.props?.itemTemplate === 'athleteCard') return <button className="card" key={it.id} data-testid={`athlete-card-${it.id}`} onClick={() => run(component.actions, { item: it })}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}><strong>{interpolate(appSpec.templates.athleteCard.title, { ...ctx, item: it })}</strong>{it.status && <span className={`badge-${it.status}`}>{it.status}</span>}</div><span>{interpolate(appSpec.templates.athleteCard.subtitle, { ...ctx, item: it })}</span><span style={{ fontSize: 'var(--text-meta)', color: 'var(--text-secondary)' }}>{interpolate(appSpec.templates.athleteCard.meta, { ...ctx, item: it })}</span></button>;
+      if (component.props?.itemTemplate === 'athleteCard') {
+        // Render athleteCard template as a button that triggers navigation
+        const template = appSpec.templates.athleteCard;
+        return (
+          <button key={it.id} data-testid={`athlete-card-${it.id}`} onClick={() => run(component.actions, { item: it })} className="athlete-row-item" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', width: '100%', textAlign: 'left' }}>
+            <div className="athlete-row">
+              <div className="athlete-row-content">
+                <div className="athlete-name">{interpolate(template.components?.[0]?.components?.[0]?.content || template.title || '{{item.name}}', { ...ctx, item: it })}</div>
+                <div className="athlete-meta">{interpolate(template.components?.[0]?.components?.[1]?.content || template.meta || '{{item.lastActivityFormatted}} • {{item.sessionCount}} sessions', { ...ctx, item: it })}</div>
+              </div>
+              <div className="divider"></div>
+            </div>
+          </button>
+        );
+      }
       if (component.props?.itemTemplate === 'timelineCard') {
         const template = appSpec.templates.timelineCard;
         const badge = interpolate(template.badge, { ...ctx, item: it });

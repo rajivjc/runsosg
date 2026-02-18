@@ -99,7 +99,7 @@
         {
           "type": "list",
           "id": "athlete_cards",
-          "props": { "itemTemplate": "athleteCard", "infiniteScroll": true },
+          "props": { "itemTemplate": "athleteCard", "className": "athlete-list" },
           "dataBinding": "mockData.filteredAthletes",
           "emptyState": { "title": "No athletes found", "message": "Try adjusting your search or filters" },
           "actions": [{ "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{item.id}}" } }]
@@ -111,30 +111,25 @@
           "dataBinding": "mockData.filteredAthletes"
         },
         {
-          "type": "kvList",
-          "id": "pagination_info",
-          "props": { "items": [
-            { "k": "Page", "v": "{{state.athleteListPage}} of {{state.athleteListPages}}" },
-            { "k": "Total", "v": "{{state.athleteListTotal}} athletes" }
-          ]}
-        },
-        {
-          "type": "card",
+          "type": "div",
           "id": "pagination_controls",
-          "props": { "title": "" },
+          "props": { "className": "pagination-controls" },
           "components": [
-            {
-              "type": "button",
-              "id": "btn_prev_page",
-              "props": { "label": "← Previous" },
-              "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage - 1}}" }]
-            },
-            {
-              "type": "button",
-              "id": "btn_next_page",
-              "props": { "label": "Next →" },
-              "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage + 1}}" }]
-            }
+            { "type": "text", "props": { "text": "Page {{state.athleteListPage}} of {{state.athleteListPages}}", "className": "pagination-text" } },
+            { "type": "div", "props": { "className": "pagination-buttons" }, "components": [
+              {
+                "type": "button",
+                "id": "btn_prev_page",
+                "props": { "label": "← Previous" },
+                "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage - 1}}" }]
+              },
+              {
+                "type": "button",
+                "id": "btn_next_page",
+                "props": { "label": "Next →" },
+                "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage + 1}}" }]
+              }
+            ]}
           ]
         }
       ]
@@ -708,11 +703,15 @@
   ],
   "templates": {
     "athleteCard": {
-      "type": "card",
-      "className": "athlete-card",
-      "title": "{{item.name}}",
-      "subtitle": "Last active: {{item.lastActivityFormatted}}",
-      "meta": "{{item.sessionCount}} sessions • {{item.status}}"
+      "type": "div",
+      "className": "athlete-row",
+      "components": [
+        { "type": "div", "props": { "className": "athlete-row-content" }, "components": [
+          { "type": "div", "props": { "className": "athlete-name" }, "content": "{{item.name}}" },
+          { "type": "div", "props": { "className": "athlete-meta" }, "content": "{{item.lastActivityFormatted}} • {{item.sessionCount}} sessions" }
+        ]},
+        { "type": "div", "props": { "className": "divider" } }
+      ]
     },
     "timelineCard": {
       "type": "card",

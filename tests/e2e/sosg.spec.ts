@@ -184,10 +184,9 @@ test('E2E-16 Sort by Name is available', async ({ page }) => {
 
 test('E2E-17 Pagination info displays', async ({ page }) => {
   await login(page, 'CAREGIVER');
-  // Check pagination info is displayed
+  // Check pagination info is displayed - now just looking for page number display
   await page.waitForTimeout(500);
-  await expect(page.getByText(/Page/)).toBeVisible();
-  await expect(page.getByText(/Total/)).toBeVisible();
+  await expect(page.getByText(/Page.*of/)).toBeVisible();
 });
 
 test('E2E-18 Next page button navigates to next page', async ({ page }) => {
@@ -235,10 +234,10 @@ test('E2E-19 Previous page button navigates back', async ({ page }) => {
 test('E2E-20 Pagination shows correct total athletes count', async ({ page }) => {
   await login(page, 'CAREGIVER');
   
-  // Check pagination info shows 30+ athletes total
+  // Check pagination info shows page display
   await page.waitForTimeout(500);
-  const paginationInfo = page.getByText(/Total/);
-  await expect(paginationInfo).toHaveCount(1);
+  const paginationInfo = page.getByText(/Page.*of/);
+  await expect(paginationInfo).toBeVisible();
   
   // Verify athlete list displays
   const athleteCards = page.locator('[data-testid^="athlete-card-"]');

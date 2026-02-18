@@ -214,9 +214,7 @@ describe('Spec Configuration Tests', () => {
     });
 
     test('Unit-42 Athlete list has pagination controls', () => {
-      const paginationInfo = athleteListScreen?.components.find((c: any) => c.id === 'pagination_info');
       const paginationControls = athleteListScreen?.components.find((c: any) => c.id === 'pagination_controls');
-      expect(paginationInfo).toBeDefined();
       expect(paginationControls).toBeDefined();
     });
 

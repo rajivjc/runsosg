@@ -1,157 +1,25 @@
 {
   "pages": {
-    "/_not-found/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/app/_not-found/page-279227c832917da5.js"
+    "/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/login/page.js"
     ],
     "/layout": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/css/fffb7955dc993b8e.css",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/app/layout-c73cef9ce61d3933.js"
-    ],
-    "/add_coach_note/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/add_coach_note/[athleteId]/page-8735fd09a4a51c94.js"
-    ],
-    "/add_session/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/add_session/[athleteId]/page-5944b880b994da8c.js"
-    ],
-    "/athlete_list/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/athlete_list/page-9f8b5ec7910739a2.js"
-    ],
-    "/athlete_settings/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/athlete_settings/[athleteId]/page-90b439b19179bf14.js"
-    ],
-    "/athlete_timeline/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/athlete_timeline/[athleteId]/page-168f0a9f512fb71b.js"
-    ],
-    "/edit_cues/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/edit_cues/[athleteId]/page-85e4542f3f41acaf.js"
-    ],
-    "/login/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/login/page-40165bd5f9a943bd.js"
-    ],
-    "/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/app/page-0a8b9a7b052e6eac.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
     ],
     "/register/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/register/page-88890ea741bf56ff.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/register/page.js"
     ],
-    "/strava_connect/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/strava_connect/[athleteId]/page-1da998e58388f584.js"
-    ],
-    "/profile/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/profile/page-23667aeb909f292c.js"
-    ],
-    "/strava_import_review/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/strava_import_review/[athleteId]/page-f6aa3d19b44a31fb.js"
-    ],
-    "/strava_connect_init/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/strava_connect_init/[athleteId]/page-3e59146bda215e0b.js"
-    ],
-    "/athlete_detail/[athleteId]/page": [
-      "static/chunks/webpack-d93c226c8b657246.js",
-      "static/chunks/fd9d1056-dd785a9be624f934.js",
-      "static/chunks/117-e08e412a07f3b93f.js",
-      "static/chunks/main-app-8199fab90bc78490.js",
-      "static/chunks/420-c7b7011955d67dcf.js",
-      "static/chunks/371-2d4c76205c45b95d.js",
-      "static/chunks/986-1d942b70ab64c257.js",
-      "static/chunks/app/athlete_detail/[athleteId]/page-b6bce00d23c0bb9d.js"
+    "/athlete_list/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/athlete_list/page.js"
     ]
   }
 }
