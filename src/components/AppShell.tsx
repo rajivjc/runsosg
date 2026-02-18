@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { appSpec } from '@/lib/spec';
 
@@ -27,6 +28,7 @@ export default function AppShell({
   pageActions,
   filterContent,
 }: AppShellProps) {
+  const router = useRouter();
   const store = useAppStore();
   const isAuthed = store.state.authed;
   const role = store.state.role;
@@ -62,7 +64,7 @@ export default function AppShell({
                 key={tab.id}
                 className={`app-nav-tab ${screenId === tab.route ? 'active' : ''}`}
                 onClick={() => {
-                  window.location.href = `/${tab.route}`;
+                  router.push(`/${tab.route}`);
                 }}
               >
                 <span className="app-nav-icon">{tab.icon}</span>
