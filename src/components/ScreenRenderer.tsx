@@ -10,9 +10,60 @@ import { buildPath } from '@/lib/path';
 import { getValueByPath } from '@/lib/paths';
 import { useAppStore } from '@/lib/store';
 
-function isVisible(visibility: any, role: string) {
-  if (!visibility?.roles) return true;
-  return visibility.roles.includes(role);
+function evaluateBooleanCondition(condition: string, ctx: any, item?: any) {
+  const expression = condition.trim();
+  if (!expression) return false;
+
+  const expressionContext = { ...ctx, item };
+  const tokens = expression.split(/(\&\&|\|\|)/).map((part) => part.trim()).filter(Boolean);
+
+  const resolveTerm = (term: string) => {
+    if (term === 'true') return true;
+    if (term === 'false') return false;
+
+    let notCount = 0;
+    while (term.startsWith('!')) {
+      notCount += 1;
+      term = term.slice(1).trim();
+    }
+
+    const value = getValueByPath(expressionContext, term) ?? ctx.store?.getByPath?.(term);
+    let boolValue = !!value;
+    if (notCount % 2 === 1) boolValue = !boolValue;
+    return boolValue;
+  };
+
+  let result = resolveTerm(tokens[0]);
+  for (let index = 1; index < tokens.length; index += 2) {
+    const operator = tokens[index];
+    const nextValue = resolveTerm(tokens[index + 1] || 'false');
+    if (operator === '&&') result = result && nextValue;
+    if (operator === '||') result = result || nextValue;
+  }
+
+  return result;
+}
+
+function isVisible(visibility: any, ctx: any, item?: any) {
+  if (!visibility) return true;
+
+  if (visibility.roles && !visibility.roles.includes(ctx.role)) {
+    return false;
+  }
+
+  if (typeof visibility.condition !== 'undefined') {
+    if (typeof visibility.condition === 'boolean') return visibility.condition;
+    if (typeof visibility.condition === 'string') {
+      const rawCondition = visibility.condition.trim();
+      const expression = rawCondition.startsWith('{{') && rawCondition.endsWith('}}')
+        ? rawCondition.slice(2, -2).trim()
+        : rawCondition;
+
+      return evaluateBooleanCondition(expression, ctx, item);
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -120,6 +171,10 @@ export function runAction(action: any, ctx: any) {
       }
     }
 
+    if (action.type === 'computeFilteredAthletes') {
+      store.computeFilteredAthletes();
+    }
+
     if (action.type === 'autoSyncStrava') {
       // Enhanced Strava auto-sync with hashtag-based parsing
       const candidates = store.getByPath('mockData.stravaCandidates') || [];
@@ -218,12 +273,20 @@ export default function ScreenRenderer({ screenId, routeParams }: { screenId: st
     }
   }, [store.state.athleteListSearch, store.state.athleteListSort, store.state.athleteListPage, screenId]);
 
+  useEffect(() => {
+    if (screenId !== 'athlete_list') return;
+    const shouldBeReady = !store.state.athleteListLoading && !store.state.athleteListError;
+    if (store.state.athleteListReady !== shouldBeReady) {
+      store.setByPath('state.athleteListReady', shouldBeReady);
+    }
+  }, [screenId, store.state.athleteListLoading, store.state.athleteListError, store.state.athleteListReady]);
+
   if (!screen) return <div>Screen missing: {screenId}</div>;
-  if (!isVisible(screen.visibility, store.state.role)) {
+  if (!isVisible(screen.visibility, { store, routeParams, route: routeParams, state: store.state, role: store.state.role, data: null, router })) {
     return <div data-testid={`screen-${screen.id}`}><p>Access denied</p><Link href="/athlete_list">Go to athlete list</Link></div>;
   }
 
-  const ctxBase = { store, routeParams, route: routeParams, state: store.state, data: null, router };
+  const ctxBase = { store, routeParams, route: routeParams, state: store.state, data: null, router, screenId };
 
   if ((screen as any).layout?.type === 'centered') {
     const subtitleMap: Record<string, string> = {
@@ -265,7 +328,17 @@ export default function ScreenRenderer({ screenId, routeParams }: { screenId: st
     <div data-testid={`screen-${screen.id}`}>
       {(screen as any).layout?.type !== 'centered' && <h1>{screen.title}</h1>}
       {screen.components.map((c) => {
-        if (!isVisible(c.visibility, store.state.role)) return null;
+        if (screen.id === 'athlete_list') {
+          const isLoading = !!store.state.athleteListLoading;
+          const isError = !!store.state.athleteListError;
+          const dataComponentIds = ['athlete_cards', 'athletes_count', 'pagination_controls'];
+
+          if (c.id === 'list_loading' && !isLoading) return null;
+          if (c.id === 'list_error' && (isLoading || !isError)) return null;
+          if (dataComponentIds.includes(c.id) && (isLoading || isError)) return null;
+        }
+
+        if (!isVisible(c.visibility, { ...ctxBase, role: store.state.role })) return null;
         return <ComponentRenderer key={c.id} component={c} ctx={ctxBase} />;
       })}
     </div>
@@ -274,8 +347,8 @@ export default function ScreenRenderer({ screenId, routeParams }: { screenId: st
 
 function ComponentRenderer({ component, ctx, item, index }: any) {
   const store = ctx.store;
-  const role = store.state.role;
-  if (!isVisible(component.visibility, role)) return null;
+  const isAthleteListManagedVisibility = ctx.screenId === 'athlete_list' && ['list_loading', 'list_error', 'athlete_cards', 'athletes_count', 'pagination_controls'].includes(component.id);
+  if (!isAthleteListManagedVisibility && !isVisible(component.visibility, { ...ctx, role: store.state.role }, item)) return null;
   const run = (actions: any[] = [], extra: any = {}) => {
     const finalItem = extra.item ?? item;  // Use extra.item if provided, otherwise use component's item
     actions.forEach((a) => runAction(a, { ...ctx, ...extra, item: finalItem }));

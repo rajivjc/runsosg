@@ -673,6 +673,10 @@ dd {
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
 }
 
 .filter-label {
@@ -680,6 +684,26 @@ dd {
   font-weight: 600;
   color: var(--color-text-secondary);
   flex-shrink: 0;
+  letter-spacing: 0.01em;
+}
+
+.sort-filter-container .segmented-group {
+  gap: var(--space-2);
+}
+
+.sort-filter-container .segmented-button {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--type-body-sm-size);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+}
+
+.sort-filter-container .segmented-button.active {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
 }
 
 /* ============================================
@@ -891,11 +915,23 @@ dd {
 }
 
 .app-nav-icon {
-  font-size: 20px;
+  font-size: 16px;
+  opacity: 0.65;
 }
 
 .app-nav-label {
   font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  .app-nav-tab {
+    gap: 0;
+    padding: 0 var(--space-5);
+  }
+
+  .app-nav-icon {
+    display: none;
+  }
 }
 
 /* Content wrapper - main scrollable area */
@@ -1066,6 +1102,7 @@ dd {
 }
 
 .athlete-row-item {
+  display: block;
   background: none;
   border: none;
   padding: 0;
@@ -1073,6 +1110,7 @@ dd {
   width: 100%;
   text-align: left;
   font-family: inherit;
+  min-height: auto;
 }
 
 .athlete-row-item:focus {
@@ -1091,9 +1129,8 @@ dd {
 }
 
 .athlete-row:hover {
-  border-color: var(--color-accent);
+  border-color: var(--color-border-strong);
   box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
 }
 
 .athlete-row-item:focus .athlete-row {
@@ -1102,8 +1139,7 @@ dd {
 }
 
 .athlete-row-item:active .athlete-row {
-  transform: translateY(0);
-  box-shadow: none;
+  border-color: var(--color-border-strong);
 }
 
 .athlete-row-content {

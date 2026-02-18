@@ -19,6 +19,9 @@
     "athleteListPages": 2,
     "athleteListTotal": 32,
     "athleteListPageSize": 20,
+    "athleteListReady": true,
+    "athleteListLoading": false,
+    "athleteListError": false,
     "currentDetailTab": "feed",
     "timelineFilter": "all",
     "uiState": {
@@ -95,7 +98,7 @@
           "id": "sort_container",
           "props": { "className": "sort-filter-container" },
           "components": [
-            { "type": "text", "id": "sort_label", "props": { "text": "Sort by:", "className": "filter-label" } },
+            { "type": "text", "id": "sort_label", "props": { "text": "Sort", "className": "filter-label" } },
             {
               "type": "segmentedControl",
               "id": "athlete_sort",
@@ -120,13 +123,22 @@
           "type": "errorBanner",
           "id": "list_error",
           "props": { "title": "Could not load athletes", "message": "Check your connection and try again.", "retryLabel": "Retry" },
-          "visibility": { "condition": "state.athleteListError" }
+          "visibility": { "condition": "state.athleteListError" },
+          "actions": [
+            { "type": "setState", "path": "state.athleteListError", "value": false },
+            { "type": "setState", "path": "state.athleteListReady", "value": false },
+            { "type": "setState", "path": "state.athleteListLoading", "value": true },
+            { "type": "computeFilteredAthletes" },
+            { "type": "setState", "path": "state.athleteListLoading", "value": false },
+            { "type": "setState", "path": "state.athleteListReady", "value": true }
+          ]
         },
         {
           "type": "list",
           "id": "athlete_cards",
           "props": { "itemTemplate": "athleteCard", "className": "athlete-list" },
           "dataBinding": "mockData.filteredAthletes",
+          "visibility": { "condition": "state.athleteListReady" },
           "emptyState": { "title": "No athletes found", "message": "Try adjusting your search or filters" },
           "actions": [{ "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{item.id}}" } }]
         },
@@ -134,12 +146,14 @@
           "type": "text",
           "id": "athletes_count",
           "props": { "text": "Showing {{mockData.filteredAthletes.length}} athlete(s)" },
-          "dataBinding": "mockData.filteredAthletes"
+          "dataBinding": "mockData.filteredAthletes",
+          "visibility": { "condition": "state.athleteListReady" }
         },
         {
           "type": "div",
           "id": "pagination_controls",
           "props": { "className": "pagination-controls" },
+          "visibility": { "condition": "state.athleteListReady" },
           "components": [
             { "type": "text", "props": { "text": "Page {{state.athleteListPage}} of {{state.athleteListPages}}", "className": "pagination-text" } },
             { "type": "div", "props": { "className": "pagination-buttons" }, "components": [
