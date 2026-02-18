@@ -96,12 +96,22 @@ export const useAppStore = create<RootState>((set, get) => ({
       };
       const search = next.state.athleteListSearch || '';
       const sortBy = next.state.athleteListSort || 'active';
-      let filtered = filterAndSortAthletes(next.mockData.athletes, search, sortBy);
+      const statusFilter = next.state.athleteListStatusFilter || 'all';
+      let filtered = filterAndSortAthletes(next.mockData.athletes, search, sortBy, statusFilter);
+      
+      // Update pagination info based on filtered results
       const pageSize = next.state.athleteListPageSize || 20;
-      const page = Math.max(0, next.state.athleteListPage || 0);
-      const end = (page + 1) * pageSize;
-      // For infinite scroll, load all items up to the current page
-      next.mockData.filteredAthletes = filtered.slice(0, end);
+      const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+      const currentPage = Math.min(next.state.athleteListPage || 1, totalPages);
+      
+      next.state.athleteListPages = totalPages;
+      next.state.athleteListTotal = filtered.length;
+      next.state.athleteListPage = currentPage;
+      
+      const page = currentPage - 1;
+      const start = page * pageSize;
+      const end = start + pageSize;
+      next.mockData.filteredAthletes = filtered.slice(start, end);
       return next;
     });
   },
@@ -116,8 +126,17 @@ export const useAppStore = create<RootState>((set, get) => ({
 }));
 
 // Helper: Filter and sort athletes
-export function filterAndSortAthletes(athletes: any[], search: string, sortBy: string) {
+export function filterAndSortAthletes(athletes: any[], search: string, sortBy: string, statusFilter?: string) {
   let filtered = athletes;
+  
+  // Status filter
+  const status = (statusFilter || 'all').toLowerCase();
+  if (status === 'active') {
+    filtered = filtered.filter((a: any) => a.status === 'active');
+  } else if (status === 'inactive') {
+    filtered = filtered.filter((a: any) => a.status === 'inactive');
+  }
+  // 'all' shows all athletes
   
   // Search filter (case-insensitive name matching)
   if (search.trim()) {
