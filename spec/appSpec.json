@@ -5,7 +5,7 @@
     "design": {
       "layout": "mobile_first",
       "navigation": "bottom_tabs",
-      "tone": "calm_supportive_non_competitive",
+      "tone": "warm_supportive_coaching",
       "privacyDefault": "strict"
     },
     "roles": ["CAREGIVER", "COACH", "ADMIN"]
@@ -13,18 +13,26 @@
   "state": {
     "role": "COACH",
     "authed": false,
-    "linkedStrava": false,
     "athleteListSearch": "",
     "athleteListSort": "Active",
     "athleteListPage": 1,
-    "athleteListPages": 3,
+    "athleteListPages": 2,
     "athleteListTotal": 32,
+    "athleteListPageSize": 20,
+    "currentDetailTab": "feed",
+    "timelineFilter": "all",
+    "uiState": {
+      "activeModal": null,
+      "cuesSidebarExpanded": true,
+      "selectedActivityId": null
+    },
     "strava": {
       "accessTokenPresent": false,
       "lastImportAt": null,
+      "hashtag": "#sosg",
+      "autoImportEnabled": true,
       "importRules": {
         "mode": "TAG",
-        "tag": "#sosg",
         "timeWindowMinutes": 240
       }
     }
@@ -32,7 +40,6 @@
   "routes": {
     "initial": "login",
     "tabs": [
-      { "id": "tab_timeline", "label": "Timeline", "icon": "🏃", "route": "athlete_list" },
       { "id": "tab_athletes", "label": "Athletes", "icon": "👥", "route": "athlete_list" },
       { "id": "tab_profile", "label": "Profile", "icon": "⚙️", "route": "profile" }
     ]
@@ -76,19 +83,31 @@
       "route": "athlete_list",
       "layout": { "type": "list" },
       "components": [
-        { "type": "searchBar", "id": "athlete_search", "props": { "placeholder": "Search athlete..." } },
+        { "type": "searchBar", "id": "athlete_search", "props": { "placeholder": "Search athletes...", "autoFocus": true } },
         {
           "type": "segmentedControl",
           "id": "athlete_sort",
-          "props": { "options": ["Name", "Active"], "default": "Active" }
+          "props": { 
+            "options": ["Name", "Active"],
+            "default": "Active"
+          },
+          "actions": [
+            { "type": "setState", "path": "state.athleteListSort", "value": "{{value}}" }
+          ]
         },
         {
           "type": "list",
           "id": "athlete_cards",
-          "props": { "itemTemplate": "athleteCard" },
+          "props": { "itemTemplate": "athleteCard", "infiniteScroll": true },
           "dataBinding": "mockData.filteredAthletes",
-          "emptyState": { "title": "No athletes found", "message": "Try adjusting your search or sort options" },
-          "actions": [{ "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{item.id}}" } }]
+          "emptyState": { "title": "No athletes found", "message": "Try adjusting your search or filters" },
+          "actions": [{ "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{item.id}}" } }]
+        },
+        {
+          "type": "text",
+          "id": "athletes_count",
+          "props": { "text": "Showing {{mockData.filteredAthletes.length}} athlete(s)" },
+          "dataBinding": "mockData.filteredAthletes"
         },
         {
           "type": "kvList",
@@ -114,6 +133,275 @@
               "id": "btn_next_page",
               "props": { "label": "Next →" },
               "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage + 1}}" }]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "athlete_detail",
+      "title": "Athlete Hub",
+      "route": "athlete_detail/:athleteId",
+      "layout": { "type": "stack" },
+      "onEnter": [
+        { "type": "selectAthleteByRouteParam", "param": "athleteId", "from": "mockData.athletesFull", "target": "mockData.selectedAthlete" },
+        { "type": "setState", "path": "state.uiState.activeModal", "value": null },
+        { "type": "setState", "path": "state.currentDetailTab", "value": "feed" },
+        { "type": "autoSyncStrava" }
+      ],
+      "components": [
+        {
+          "type": "header",
+          "id": "hdr_athlete",
+          "props": {
+            "leftAction": { "type": "navigate", "to": "athlete_list" },
+            "titleBinding": "mockData.selectedAthlete.name",
+            "rightIcon": "⚙️"
+          },
+          "actions": [{ "type": "navigate", "to": "athlete_settings", "with": { "athleteId": "{{route.athleteId}}" } }]
+        },
+
+        {
+          "type": "card",
+          "id": "card_athlete_stats",
+          "props": { "title": "Overview", "className": "card-stats" },
+          "components": [
+            {
+              "type": "kvList",
+              "id": "stats_list",
+              "props": {
+                "items": [
+                  { "k": "Sessions", "v": "{{mockData.selectedAthlete.sessionCount}}", "icon": "🏃" },
+                  { "k": "Last activity", "v": "{{mockData.selectedAthlete.lastActivityFormatted}}", "icon": "📅" },
+                  { "k": "Status", "v": "{{mockData.selectedAthlete.status}}", "icon": "✓" }
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "type": "segmentedControl",
+          "id": "detail_tabs",
+          "props": {
+            "options": [
+              { "label": "Feed", "value": "feed" },
+              { "label": "Cues", "value": "cues" },
+              { "label": "Settings", "value": "settings" }
+            ],
+            "default": "feed"
+          },
+          "actions": [
+            { "type": "setState", "path": "state.currentDetailTab", "value": "{{value}}" }
+          ]
+        },
+
+        {
+          "type": "conditionalRender",
+          "id": "tab_feed",
+          "condition": "{{state.currentDetailTab === 'feed'}}",
+          "components": [
+            {
+              "type": "segmentedControl",
+              "id": "timeline_filter",
+              "props": {
+                "options": [
+                  { "label": "All", "value": "all" },
+                  { "label": "Sessions", "value": "session" },
+                  { "label": "Notes", "value": "note" }
+                ],
+                "default": "all"
+              },
+              "actions": [
+                { "type": "setState", "path": "state.timelineFilter", "value": "{{value}}" }
+              ]
+            },
+
+            {
+              "type": "list",
+              "id": "timeline_feed",
+              "props": { "itemTemplate": "timelineCard", "className": "feed-container" },
+              "dataBinding": "mockData.selectedAthlete.timeline",
+              "filterBinding": { "controlId": "timeline_filter", "map": { "all": "*", "session": "session", "note": "note", "milestone": "milestone" } },
+              "emptyState": { "title": "No activities yet", "message": "Add a session or enable Strava to start the athlete's journey." },
+              "actions": [
+                { "type": "setState", "path": "state.uiState.selectedActivityId", "value": "{{item.id}}" },
+                { "type": "setState", "path": "state.uiState.activeModal", "value": "addNote" }
+              ]
+            },
+
+            {
+              "type": "actionBar",
+              "id": "feed_actions",
+              "props": { "style": "sticky_bottom" },
+              "components": [
+                {
+                  "type": "button",
+                  "id": "btn_add_session",
+                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                  "props": { "label": "Add Session" },
+                  "actions": [{ "type": "setState", "path": "state.uiState.activeModal", "value": "addSession" }]
+                },
+                {
+                  "type": "button",
+                  "id": "btn_import_strava",
+                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                  "props": { "label": "Import Strava" },
+                  "actions": [
+                    { "type": "conditionalNavigate", "if": "state.strava.accessTokenPresent", "to": "strava_import_review", "elseTo": "strava_connect_init", "with": { "athleteId": "{{route.athleteId}}" } }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "type": "conditionalRender",
+          "id": "tab_cues",
+          "condition": "{{state.currentDetailTab === 'cues'}}",
+          "components": [
+            {
+              "type": "card",
+              "id": "card_cues",
+              "props": { "title": "What Works", "collapsible": false },
+              "dataBinding": "mockData.selectedAthlete.cues",
+              "components": [
+                {
+                  "type": "kvList",
+                  "id": "cues_list",
+                  "props": {
+                    "items": [
+                      { "k": "Helps", "v": "{{data.helps || 'Not set'}}" },
+                      { "k": "Avoid", "v": "{{data.avoids || 'Not set'}}" },
+                      { "k": "Best cues", "v": "{{data.bestCues || 'Not set'}}" },
+                      { "k": "Kit", "v": "{{data.kit || 'Not set'}}" }
+                    ]
+                  }
+                }
+              ],
+              "footerActions": [
+                {
+                  "type": "button",
+                  "id": "btn_edit_cues",
+                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                  "props": { "label": "Edit cues" },
+                  "actions": [{ "type": "navigate", "to": "edit_cues", "with": { "athleteId": "{{route.athleteId}}" } }]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "type": "conditionalRender",
+          "id": "tab_settings",
+          "condition": "{{state.currentDetailTab === 'settings'}}",
+          "components": [
+            {
+              "type": "sectionTitle",
+              "id": "sec_privacy",
+              "props": { "text": "Privacy & Consent" }
+            },
+            {
+              "type": "toggle",
+              "id": "consent_photos",
+              "props": { "label": "Allow photos in timeline", "default": false }
+            },
+            {
+              "type": "toggle",
+              "id": "consent_location",
+              "props": { "label": "Show route/maps to coaches", "default": false }
+            },
+            { "type": "divider", "id": "div1" },
+            {
+              "type": "sectionTitle",
+              "id": "sec_strava",
+              "props": { "text": "Strava Settings" }
+            },
+            {
+              "type": "text",
+              "id": "strava_status",
+              "props": { "text": "{{state.strava.accessTokenPresent ? '✓ Connected to Strava' : 'Not connected'}}" }
+            },
+            {
+              "type": "textInput",
+              "id": "strava_hashtag",
+              "props": { "label": "Hashtag for auto-sync", "placeholder": "#sosg", "value": "{{state.strava.hashtag}}" },
+              "actions": [
+                { "type": "setState", "path": "state.strava.hashtag", "value": "{{value}}" }
+              ]
+            },
+            {
+              "type": "button",
+              "id": "btn_connect_strava",
+              "visibility": { "condition": "{{!state.strava.accessTokenPresent}}" },
+              "props": { "label": "Connect Strava" },
+              "actions": [{ "type": "navigate", "to": "strava_connect_init", "with": { "athleteId": "{{route.athleteId}}" } }]
+            }
+          ]
+        },
+
+        {
+          "type": "conditionalRender",
+          "id": "modal_add_note",
+          "condition": "{{state.uiState.activeModal === 'addNote'}}",
+          "components": [
+            {
+              "type": "modalOverlay",
+              "id": "overlay_add_note",
+              "props": { "title": "Add Coach Note" },
+              "onClose": [{ "type": "setState", "path": "state.uiState.activeModal", "value": null }],
+              "components": [
+                { "type": "emojiPicker", "id": "modal_mood_before", "props": { "label": "Mood before" } },
+                { "type": "emojiPicker", "id": "modal_mood_after", "props": { "label": "Mood after" } },
+                { "type": "textArea", "id": "modal_went_well", "props": { "label": "What went well", "maxChars": 120 } },
+                { "type": "textArea", "id": "modal_was_hard", "props": { "label": "What was hard", "maxChars": 120 } },
+                { "type": "textArea", "id": "modal_next_time", "props": { "label": "Next time: do / avoid", "maxChars": 120 } },
+                {
+                  "type": "button",
+                  "id": "btn_modal_save_note",
+                  "props": { "label": "Save Note" },
+                  "actions": [
+                    { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prepend", "valueTemplate": "mockTemplates.newNote" },
+                    { "type": "setState", "path": "state.uiState.activeModal", "value": null }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "type": "conditionalRender",
+          "id": "modal_add_session",
+          "condition": "{{state.uiState.activeModal === 'addSession'}}",
+          "components": [
+            {
+              "type": "modalOverlay",
+              "id": "overlay_add_session",
+              "props": { "title": "Add Session" },
+              "onClose": [{ "type": "setState", "path": "state.uiState.activeModal", "value": null }],
+              "components": [
+                { "type": "dateTimePicker", "id": "modal_session_time", "props": { "label": "Date & time" } },
+                { "type": "numberInput", "id": "modal_distance_km", "props": { "label": "Distance (km)", "step": 0.1 } },
+                { "type": "numberInput", "id": "modal_moving_minutes", "props": { "label": "Moving time (min)", "step": 1 } },
+                {
+                  "type": "select",
+                  "id": "modal_effort",
+                  "props": { "label": "Effort", "options": ["Easy", "OK", "Hard"], "default": "OK" }
+                },
+                {
+                  "type": "button",
+                  "id": "btn_modal_save_session",
+                  "props": { "label": "Save Session" },
+                  "actions": [
+                    { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prepend", "valueTemplate": "mockTemplates.newSessionManual" },
+                    { "type": "setState", "path": "state.uiState.activeModal", "value": null }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -172,7 +460,7 @@
           "props": { "itemTemplate": "timelineCard" },
           "dataBinding": "mockData.selectedAthlete.timeline",
           "filterBinding": { "controlId": "timeline_filter", "map": { "All": "*", "Sessions": "session", "Notes": "note", "Milestones": "milestone", "Photos": "photo" } },
-          "emptyState": { "title": "No entries yet", "message": "Add a coach note or a first session to start the athlete’s journey." }
+          "emptyState": { "title": "No entries yet", "message": "Add a coach note or a first session to start the athlete's journey." }
         },
 
         {
@@ -200,85 +488,9 @@
               "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
               "props": { "label": "Import Strava" },
               "actions": [
-                { "type": "conditionalNavigate", "if": "state.strava.accessTokenPresent", "to": "strava_import_review", "elseTo": "strava_connect", "with": { "athleteId": "{{route.athleteId}}" } }
+                { "type": "conditionalNavigate", "if": "state.strava.accessTokenPresent", "to": "strava_import_review", "elseTo": "strava_connect_init", "with": { "athleteId": "{{route.athleteId}}" } }
               ]
             }
-          ]
-        }
-      ]
-    },
-
-    {
-      "id": "athlete_settings",
-      "title": "Athlete Settings",
-      "route": "athlete_settings/:athleteId",
-      "layout": { "type": "stack" },
-      "components": [
-        { "type": "sectionTitle", "id": "sec_privacy", "props": { "text": "Privacy & Consent" } },
-        { "type": "toggle", "id": "consent_photos", "props": { "label": "Allow photos in timeline", "default": false } },
-        { "type": "toggle", "id": "consent_location", "props": { "label": "Show route/maps to coaches", "default": false } },
-        { "type": "divider", "id": "div1" },
-        { "type": "sectionTitle", "id": "sec_strava", "props": { "text": "Strava" } },
-        {
-          "type": "button",
-          "id": "btn_strava_connect",
-          "props": { "label": "Connect Strava" },
-          "actions": [{ "type": "navigate", "to": "strava_connect", "with": { "athleteId": "{{route.athleteId}}" } }]
-        }
-      ]
-    },
-
-    {
-      "id": "strava_connect",
-      "title": "Connect Strava",
-      "route": "strava_connect/:athleteId",
-      "layout": { "type": "stack" },
-      "components": [
-        { "type": "text", "id": "strava_info", "props": { "text": "Connect a Strava account to import runs. In production, this uses OAuth. In prototype, simulate connect." } },
-        {
-          "type": "button",
-          "id": "btn_simulate_strava_connect",
-          "props": { "label": "Simulate Strava Connect" },
-          "actions": [
-            { "type": "setState", "path": "state.strava.accessTokenPresent", "value": true },
-            { "type": "toast", "message": "Strava connected (prototype)." },
-            { "type": "navigate", "to": "strava_import_review", "with": { "athleteId": "{{route.athleteId}}" } }
-          ]
-        }
-      ]
-    },
-
-    {
-      "id": "strava_import_review",
-      "title": "Import from Strava",
-      "route": "strava_import_review/:athleteId",
-      "layout": { "type": "stack" },
-      "components": [
-        { "type": "text", "id": "rules_title", "props": { "text": "Import rules (prototype)" } },
-        {
-          "type": "select",
-          "id": "import_mode",
-          "props": { "label": "Mode", "options": ["TAG", "TIME_WINDOW"], "default": "TAG" },
-          "actions": [{ "type": "setState", "path": "state.strava.importRules.mode", "value": "{{value}}" }]
-        },
-        { "type": "textInput", "id": "tag", "props": { "label": "Tag (if TAG mode)", "placeholder": "#sosg" } },
-        { "type": "numberInput", "id": "time_window", "props": { "label": "Time window minutes (if TIME_WINDOW)", "step": 15 } },
-        { "type": "divider", "id": "div2" },
-        {
-          "type": "list",
-          "id": "candidate_activities",
-          "props": { "itemTemplate": "stravaCandidateCard" },
-          "dataBinding": "mockData.stravaCandidates"
-        },
-        {
-          "type": "button",
-          "id": "btn_import_selected",
-          "props": { "label": "Import selected" },
-          "actions": [
-            { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prependMany", "valueBinding": "mockData.stravaCandidatesSelectedAsTimelineEvents" },
-            { "type": "setState", "path": "state.strava.lastImportAt", "value": "NOW" },
-            { "type": "toast", "message": "Imported (prototype)." },
-            { "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
         }
       ]
@@ -309,29 +521,6 @@
     },
 
     {
-      "id": "edit_cues",
-      "title": "Edit What Works",
-      "route": "edit_cues/:athleteId",
-      "layout": { "type": "form" },
-      "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
-      "components": [
-        { "type": "chipInput", "id": "helps", "props": { "label": "Helps (add multiple)" } },
-        { "type": "chipInput", "id": "avoids", "props": { "label": "Avoid (add multiple)" } },
-        { "type": "chipInput", "id": "bestCues", "props": { "label": "Best cues (add multiple)" } },
-        { "type": "chipInput", "id": "kit", "props": { "label": "Kit (add multiple)" } },
-        {
-          "type": "button",
-          "id": "btn_save_cues",
-          "props": { "label": "Save" },
-          "actions": [
-            { "type": "toast", "message": "Cues saved (prototype)." },
-            { "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{route.athleteId}}" } }
-          ]
-        }
-      ]
-    },
-
-    {
       "id": "add_session",
       "title": "Add Session",
       "route": "add_session/:athleteId",
@@ -349,6 +538,108 @@
           "actions": [
             { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prepend", "valueTemplate": "mockTemplates.newSessionManual" },
             { "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{route.athleteId}}" } }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "athlete_settings",
+      "title": "Athlete Settings",
+      "route": "athlete_settings/:athleteId",
+      "layout": { "type": "stack" },
+      "onEnter": [
+        { "type": "selectAthleteByRouteParam", "param": "athleteId", "from": "mockData.athletesFull", "target": "mockData.selectedAthlete" }
+      ],
+      "components": [
+        { "type": "sectionTitle", "id": "sec_privacy", "props": { "text": "Privacy & Consent" } },
+        { "type": "toggle", "id": "consent_photos", "props": { "label": "Allow photos in timeline", "default": false } },
+        { "type": "toggle", "id": "consent_location", "props": { "label": "Show route/maps to coaches", "default": false } },
+        { "type": "divider", "id": "div1" },
+        { "type": "sectionTitle", "id": "sec_strava", "props": { "text": "Strava" } },
+        {
+          "type": "button",
+          "id": "btn_strava_connect",
+          "props": { "label": "Connect Strava" },
+          "actions": [{ "type": "navigate", "to": "strava_connect_init", "with": { "athleteId": "{{route.athleteId}}" } }]
+        }
+      ]
+    },
+
+    {
+      "id": "strava_connect_init",
+      "title": "Connect Strava",
+      "route": "strava_connect_init/:athleteId",
+      "layout": { "type": "stack" },
+      "components": [
+        { "type": "text", "id": "strava_info", "props": { "text": "Connect a Strava account to auto-import runs with your coaching hashtag. In production, this uses OAuth. For now, simulate the connection." } },
+        {
+          "type": "button",
+          "id": "btn_simulate_strava_connect",
+          "props": { "label": "Simulate Strava Connect" },
+          "actions": [
+            { "type": "setState", "path": "state.strava.accessTokenPresent", "value": true },
+            { "type": "toast", "message": "Strava connected (prototype)." },
+            { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "strava_import_review",
+      "title": "Import from Strava",
+      "route": "strava_import_review/:athleteId",
+      "layout": { "type": "stack" },
+      "components": [
+        { "type": "text", "id": "rules_title", "props": { "text": "Review & import Strava activities" } },
+        {
+          "type": "select",
+          "id": "import_mode",
+          "props": { "label": "Mode", "options": ["TAG", "TIME_WINDOW"], "default": "TAG" },
+          "actions": [{ "type": "setState", "path": "state.strava.importRules.mode", "value": "{{value}}" }]
+        },
+        { "type": "textInput", "id": "tag", "props": { "label": "Tag (if TAG mode)", "placeholder": "#sosg" } },
+        { "type": "numberInput", "id": "time_window", "props": { "label": "Time window minutes (if TIME_WINDOW)", "step": 15 } },
+        { "type": "divider", "id": "div2" },
+        {
+          "type": "list",
+          "id": "candidate_activities",
+          "props": { "itemTemplate": "stravaCandidateCard" },
+          "dataBinding": "mockData.stravaCandidates"
+        },
+        {
+          "type": "button",
+          "id": "btn_import_selected",
+          "props": { "label": "Import selected" },
+          "actions": [
+            { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prependMany", "valueBinding": "mockData.stravaCandidatesSelectedAsTimelineEvents" },
+            { "type": "setState", "path": "state.strava.lastImportAt", "value": "NOW" },
+            { "type": "toast", "message": "Imported (prototype)." },
+            { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "edit_cues",
+      "title": "Edit What Works",
+      "route": "edit_cues/:athleteId",
+      "layout": { "type": "form" },
+      "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+      "components": [
+        { "type": "chipInput", "id": "helps", "props": { "label": "Helps (add multiple)" } },
+        { "type": "chipInput", "id": "avoids", "props": { "label": "Avoid (add multiple)" } },
+        { "type": "chipInput", "id": "bestCues", "props": { "label": "Best cues (add multiple)" } },
+        { "type": "chipInput", "id": "kit", "props": { "label": "Kit (add multiple)" } },
+        {
+          "type": "button",
+          "id": "btn_save_cues",
+          "props": { "label": "Save" },
+          "actions": [
+            { "type": "toast", "message": "Cues saved (prototype)." },
+            { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
         }
       ]
@@ -411,9 +702,29 @@
     }
   ],
   "templates": {
-    "athleteCard": { "type": "card", "title": "{{item.name}} [{{item.status}}]", "subtitle": "Last active: {{item.lastActivityFormatted}}", "rightMeta": "{{item.sessionCount}} sessions" },
-    "timelineCard": { "type": "card", "title": "{{item.icon}} {{item.title}}", "subtitle": "{{item.subtitle}}", "body": "{{item.body}}", "meta": "{{item.date}}" },
-    "stravaCandidateCard": { "type": "card", "title": "🏃 {{item.name}}", "subtitle": "{{item.distanceKm}} km • {{item.movingMin}} min • {{item.date}}", "body": "Tag: {{item.tag}} • Source: Strava", "meta": "{{item.id}}" }
+    "athleteCard": {
+      "type": "card",
+      "className": "athlete-card",
+      "title": "{{item.name}}",
+      "subtitle": "Last active: {{item.lastActivityFormatted}}",
+      "meta": "{{item.sessionCount}} sessions • {{item.status}}"
+    },
+    "timelineCard": {
+      "type": "card",
+      "className": "card-feed-item {{item.type }}",
+      "title": "{{item.icon}} {{item.title}}",
+      "subtitle": "{{item.subtitle}}",
+      "body": "{{item.body}}",
+      "rightContent": "{{item.date}}",
+      "badge": "{{item.source === 'STRAVA' ? 'Auto-synced' : ''}}"
+    },
+    "stravaCandidateCard": {
+      "type": "card",
+      "title": "🏃 {{item.name}}",
+      "subtitle": "{{item.distanceKm}} km • {{item.movingMin}} min • {{item.date}}",
+      "body": "Tag: {{item.tag}} • Source: Strava",
+      "meta": "{{item.id}}"
+    }
   },
   "mockData": {
     "athletes": [
@@ -455,28 +766,39 @@
       {
         "id": "a1",
         "name": "Daniel",
+        "status": "active",
+        "sessionCount": 5,
+        "lastActivityFormatted": "2 days ago",
+        "lastActivity": "2025-02-15",
         "cues": {
           "helps": "Countdown cues, run/walk 2/1, consistent route",
           "avoids": "Sudden loud noises, mid-run route changes",
-          "bestCues": "“2 more lamp posts”, “steady breathing”",
+          "bestCues": "2 more lamp posts, steady breathing",
           "kit": "Water at 15 min, cap"
         },
         "timeline": [
-          { "type": "session", "source": "STRAVA", "icon": "🏃", "title": "Session", "subtitle": "2.3 km • 24 min • Effort: OK", "body": "Imported from Strava (tag #sosg).", "date": "Sat 10:10" },
-          { "type": "note", "icon": "📝", "title": "Coach note", "subtitle": "Mood 😐 → 😊", "body": "Went well: steady pace. Hard: tired at 20 min. Next: water at 15.", "date": "Sat 10:35" },
-          { "type": "milestone", "icon": "🎉", "title": "Milestone", "subtitle": "5 sessions completed", "body": "Consistency win — keep it going.", "date": "Sat 10:36" }
+          { "type": "session", "source": "STRAVA", "icon": "🏃", "title": "Session", "subtitle": "2.3 km • 24 min • Effort: OK", "body": "Imported from Strava (tag #sosg).", "date": "Sat 10:10", "id": "t1" },
+          { "type": "note", "icon": "📝", "title": "Coach note", "subtitle": "Mood 😐 → 😊", "body": "Went well: steady pace. Hard: tired at 20 min. Next: water at 15.", "date": "Sat 10:35", "id": "t2" },
+          { "type": "milestone", "icon": "🎉", "title": "Milestone", "subtitle": "5 sessions completed", "body": "Consistency win — keep it going.", "date": "Sat 10:36", "id": "t3" }
         ]
       },
       {
         "id": "a2",
         "name": "Ayesha",
-        "cues": { "helps": "Short cues, predictable stops", "avoids": "Crowded paths", "bestCues": "“One more minute”", "kit": "Water, sunglasses" },
+        "status": "active",
+        "sessionCount": 8,
+        "lastActivityFormatted": "3 days ago",
+        "lastActivity": "2025-02-14",
+        "cues": { "helps": "Short cues, predictable stops", "avoids": "Crowded paths", "bestCues": "One more minute", "kit": "Water, sunglasses" },
         "timeline": []
       }
     ],
     "selectedAthlete": {
       "id": "a1",
       "name": "Daniel",
+      "status": "active",
+      "sessionCount": 5,
+      "lastActivityFormatted": "2 days ago",
       "cues": { "helps": "", "avoids": "", "bestCues": "", "kit": "" },
       "timeline": []
     },
@@ -489,7 +811,7 @@
     ]
   },
   "mockTemplates": {
-    "newNote": { "type": "note", "icon": "📝", "title": "Coach note", "subtitle": "Mood 😊 → 😊", "body": "Went well: (from form). Hard: (from form). Next: (from form).", "date": "Just now" },
-    "newSessionManual": { "type": "session", "source": "MANUAL", "icon": "🏃", "title": "Session", "subtitle": "(from form) km • (from form) min • Effort: (from form)", "body": "Added manually.", "date": "Just now" }
+    "newNote": { "type": "note", "icon": "📝", "title": "Coach note", "subtitle": "Mood 😊 → 😊", "body": "Went well: (from form). Hard: (from form). Next: (from form).", "date": "Just now", "id": "new-note-{{timestamp}}" },
+    "newSessionManual": { "type": "session", "source": "MANUAL", "icon": "🏃", "title": "Session", "subtitle": "(from form) km • (from form) min • Effort: (from form)", "body": "Added manually.", "date": "Just now", "id": "new-session-{{timestamp}}" }
   }
 }

@@ -12,7 +12,7 @@
   
   --text-body: 16px;
   --text-body-weight: 400;
-  --text-body-line: 1.5;
+  --text-body-line: 1.6;
   
   --text-meta: 12px;
   --text-meta-weight: 500;
@@ -32,32 +32,52 @@
   --radius-lg: 18px;
 
   /* Borders & Shadows */
-  --border: 1px solid rgba(0, 0, 0, 0.08);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
+  --border: 1px solid var(--border-color);
+  --border-warm: 1px solid rgba(212, 181, 160, 0.2);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
 
-  /* Colors - Calm & Inclusive */
-  --bg: #F7F7F8;
+  /* Colors - Warm & Professional */
+  --bg: #FAFAF8;
+  --bg-warm: #F5F3F0;
   --surface: #FFFFFF;
-  --text: #111827;
+  --surface-secondary: #FEFDFB;
+  --text: #1F2937;
   --text-secondary: #6B7280;
   --muted: #9CA3AF;
-  --border-color: rgba(0, 0, 0, 0.08);
+  --border-color: rgba(0, 0, 0, 0.06);
   
-  /* Brand - Warm Teal (accessible, calming) */
+  /* Brand - Warm Teal (accessible, calming, coaching-focused) */
   --accent: #0D9488;
-  --accent-light: rgba(13, 148, 136, 0.1);
+  --accent-light: rgba(13, 148, 136, 0.08);
+  --accent-lighter: rgba(13, 148, 136, 0.12);
   --accent-contrast: #FFFFFF;
+  
+  /* Warm neutrals for coaching warmth */
+  --warm-neutral: #D4B5A0;
+  --warm-neutral-light: rgba(212, 181, 160, 0.15);
 
   /* Functional colors */
   --success: #059669;
+  --success-light: rgba(5, 150, 105, 0.1);
   --warning: #D97706;
+  --warning-light: rgba(217, 119, 6, 0.1);
   --error: #DC2626;
+  --error-light: rgba(220, 38, 38, 0.1);
   --info: #0EA5E9;
+  --info-light: rgba(14, 165, 233, 0.1);
+
+  /* Data viz - Effort levels */
+  --effort-easy: #10B981;
+  --effort-ok: #F59E0B;
+  --effort-hard: #EF4444;
 
   /* Milestones & celebrations */
   --milestone-bg: rgba(245, 158, 11, 0.12);
   --milestone-border: rgba(245, 158, 11, 0.3);
+  --milestone-gold: #F59E0B;
 
   /* Component heights (44px+ for accessibility) */
   --button-height: 48px;
@@ -123,14 +143,44 @@ h2 {
   background-color: var(--surface);
   border: var(--border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-soft);
   padding: var(--space-4);
   margin-bottom: var(--space-4);
-  transition: box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .card:hover {
   box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.card-feed-item {
+  background-color: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.card-feed-item:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent);
+}
+
+.card-feed-item.strava {
+  border-left: 4px solid var(--info);
+}
+
+.card-feed-item.note {
+  border-left: 4px solid var(--success);
+}
+
+.card-feed-item.milestone {
+  border-left: 4px solid var(--milestone-gold);
+  background-color: var(--milestone-bg);
 }
 
 .card-title {
@@ -376,6 +426,133 @@ label {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Modal & Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: flex-end;
+  z-index: 999;
+}
+
+.modal-content {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  max-height: 80vh;
+  overflow-y: auto;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: var(--border);
+  gap: var(--space-3);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Timeline Feed */
+.feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.feed-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.feed-item-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.feed-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.feed-item-meta {
+  font-size: var(--text-meta);
+  color: var(--text-secondary);
+  font-weight: var(--text-meta-weight);
+}
+
+.feed-item-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: var(--accent-lighter);
+  color: var(--accent);
+}
+
+.feed-item-badge.strava-sync {
+  background-color: var(--info-light);
+  color: var(--info);
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: var(--surface-secondary);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.sidebar-header {
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  margin-bottom: var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 20px;
 }
 
 /* Responsive */

@@ -54,6 +54,30 @@ export function runAction(action: any, ctx: any) {
         store.mutateMock(action.target, action.operation, tpl);
       }
     }
+
+    if (action.type === 'autoSyncStrava') {
+      // Simulate Strava auto-sync: find candidates with matching hashtag and auto-import them
+      const hashtag = store.getByPath('state.strava.hashtag') || '#sosg';
+      const candidates = store.getByPath('mockData.stravaCandidates') || [];
+      const matching = candidates.filter((c: any) => c.tag === hashtag);
+      
+      if (matching.length > 0 && store.getByPath('state.strava.accessTokenPresent')) {
+        // Convert matching candidates to timeline events and prepend
+        const timelineEvents = matching.map((m: any) => ({
+          type: 'session',
+          source: 'STRAVA',
+          icon: '🏃',
+          title: 'Session',
+          subtitle: `${m.distanceKm} km • ${m.movingMin} min • Effort: OK`,
+          body: `Auto-imported from Strava (${m.name}).`,
+          date: m.date,
+          id: `strava-${m.id}`
+        }));
+        
+        store.mutateMock('mockData.selectedAthlete.timeline', 'prependMany', timelineEvents);
+        store.setByPath('state.strava.lastImportAt', new Date().toISOString());
+      }
+    }
   } catch (e) {
     console.error('[runAction-error]', e, action);
   }
@@ -75,6 +99,10 @@ export default function ScreenRenderer({ screenId, routeParams }: { screenId: st
   }, [store.state.authed, screenId, router]);
 
   useEffect(() => {
+    // Initialize detail tab when entering athlete detail screen
+    if (screenId === 'athlete_detail' && !store.state.currentDetailTab) {
+      store.setByPath('state.currentDetailTab', 'feed');
+    }
     screen?.onEnter?.forEach((action) => runAction(action, { store, routeParams, route: routeParams, router }));
   }, [screen, routeParams, router]);
 
@@ -120,6 +148,37 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
   };
   const id = component.id;
 
+  // Conditional render - show/hide based on condition
+  if (component.type === 'conditionalRender') {
+    const condition = interpolate(component.condition, { ...ctx, item });
+    if (!condition) return null;
+    return <>
+      {component.components?.map((child: any) => (
+        <ComponentRenderer key={child.id} component={child} ctx={ctx} item={item} />
+      ))}
+    </>;
+  }
+
+  // Modal overlay
+  if (component.type === 'modalOverlay') {
+    const closeActions = component.onClose || [];
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content" style={{ maxHeight: '80vh', overflow: 'auto' }}>
+          <div className="modal-header">
+            <h3 style={{ margin: 0, flex: 1 }}>{component.props?.title}</h3>
+            <button className="modal-close" onClick={() => run(closeActions)}>✕</button>
+          </div>
+          <div style={{ padding: 'var(--space-4)' }}>
+            {component.components?.map((child: any) => (
+              <ComponentRenderer key={child.id} component={child} ctx={ctx} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (component.type === 'text') return <p>{interpolate(component.props?.text, { ...ctx, item })}</p>;
   if (component.type === 'divider') return <hr />;
   if (component.type === 'image' || component.type === 'avatar') return <div className="card">{component.props?.alt || 'Avatar'}</div>;
@@ -127,7 +186,7 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
   if (component.type === 'searchBar') {
     return <input data-testid={`search-${id}`} placeholder={component.props?.placeholder} value={store.state.athleteListSearch || ''} onChange={(e) => {
       store.setByPath('state.athleteListSearch', e.target.value);
-      store.setByPath('state.athleteListPage', 1);
+      store.setByPath('state.athleteListPage', 0);
     }} />;
   }
   if (component.type === 'header') return <div className="card"><button onClick={() => run([component.props.leftAction])}>Back</button><strong>{store.getByPath(component.props.titleBinding)}</strong><button onClick={() => run(component.actions)}>{component.props.rightIcon}</button></div>;
@@ -144,19 +203,91 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
   }
 
   if (component.type === 'select') {
-    return <label>{component.props?.label}<select data-testid={`select-${id}`} defaultValue={component.props?.default} onChange={(e) => { store.setFormValue(id, e.target.value); run(component.actions, { value: e.target.value }); }}>{component.props.options.map((o: string) => <option key={o} value={o}>{o}</option>)}</select></label>;
+    // Handle both string array and object array options
+    const options = component.props?.options || [];
+    const isObjectOptions = options.length > 0 && typeof options[0] === 'object';
+    
+    return <label>
+      {component.props?.label}
+      <select 
+        data-testid={`select-${id}`} 
+        defaultValue={component.props?.default}
+        onChange={(e) => {
+          const value = e.target.value;
+          store.setFormValue(id, value);
+          run(component.actions, { value });
+        }}
+      >
+        {isObjectOptions ? (
+          options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)
+        ) : (
+          options.map((o: string) => <option key={o} value={o}>{o}</option>)
+        )}
+      </select>
+    </label>;
   }
 
   if (component.type === 'segmentedControl') {
-    const value = store.controls[id] || component.props.default;
-    return <div>{component.props.options.map((o: string) => <button key={o} type="button" onClick={() => {
-      store.setControl(id, o);
-      // If this is the athlete sort control, also update state
-      if (id === 'athlete_sort') {
-        store.setByPath('state.athleteListSort', o);
-        store.setByPath('state.athleteListPage', 1);
-      }
-    }}>{o === value ? `• ${o}` : o}</button>)}</div>;
+    // Handle both string array and object array options
+    const options = component.props?.options || [];
+    const isObjectOptions = options.length > 0 && typeof options[0] === 'object';
+    
+    // For segmented control, we use state instead of controls
+    const currentValue = component.props?.stateBinding 
+      ? store.getByPath(component.props.stateBinding) 
+      : store.controls[id];
+    const defaultValue = component.props?.default;
+    const value = currentValue || defaultValue;
+
+    return (
+      <div style={{ display: 'flex', gap: '4px', marginBottom: 'var(--space-3)' }}>
+        {isObjectOptions ? (
+          options.map((o: any) => (
+            <button 
+              key={o.value} 
+              type="button"
+              style={{
+                flex: 1,
+                padding: 'var(--space-2) var(--space-3)',
+                border: value === o.value ? `2px solid var(--accent)` : 'var(--border)',
+                background: value === o.value ? 'var(--accent-light)' : 'var(--surface)',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                fontSize: 'var(--text-meta)'
+              }}
+              onClick={() => {
+                store.setControl(id, o.value);
+                store.setByPath(component.props.stateBinding || '', o.value);
+                run(component.actions, { value: o.value });
+              }}
+            >
+              {o.label}
+            </button>
+          ))
+        ) : (
+          options.map((o: string) => (
+            <button 
+              key={o} 
+              type="button"
+              style={{
+                flex: 1,
+                padding: 'var(--space-2) var(--space-3)',
+                border: value === o ? `2px solid var(--accent)` : 'var(--border)',
+                background: value === o ? 'var(--accent-light)' : 'var(--surface)',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer'
+              }}
+              onClick={() => {
+                store.setControl(id, o);
+                run(component.actions, { value: o });
+              }}
+            >
+              {o === value ? `• ${o}` : o}
+            </button>
+          ))
+        )}
+      </div>
+    );
   }
 
   if (component.type === 'card') {
@@ -169,14 +300,28 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
   if (component.type === 'list') {
     let items = store.getByPath(component.dataBinding) || [];
     if (component.filterBinding) {
-      const selected = store.controls[component.filterBinding.controlId] || 'All';
+      // Handle both direct control value and state-based filter
+      const controlId = component.filterBinding.controlId;
+      const selected = store.controls[controlId] || store.getByPath(`state.${controlId}`) || component.filterBinding.default || 'all';
       const mapped = component.filterBinding.map[selected];
       if (mapped && mapped !== '*') items = items.filter((x: any) => x.type === mapped);
     }
     if (!items.length && component.emptyState) return <div data-testid={`list-${id}`}><strong>{component.emptyState.title}</strong><p>{component.emptyState.message}</p></div>;
-    return <div data-testid={`list-${id}`}>{items.map((it: any, idx: number) => {
-      if (component.props?.itemTemplate === 'athleteCard') return <button className="card" key={it.id} data-testid={`athlete-card-${it.id}`} onClick={() => run(component.actions, { item: it })}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}><strong>{interpolate(appSpec.templates.athleteCard.title, { ...ctx, item: it })}</strong>{it.status && <span className={`badge-${it.status}`}>{it.status}</span>}</div><span>{interpolate(appSpec.templates.athleteCard.subtitle, { ...ctx, item: it })}</span><span style={{ fontSize: 'var(--text-meta)', color: 'var(--text-secondary)' }}>{interpolate(appSpec.templates.athleteCard.rightMeta, { ...ctx, item: it })}</span></button>;
-      if (component.props?.itemTemplate === 'timelineCard') return <article className="card" key={idx} data-testid={`timeline-item-${idx}`}><strong>{interpolate(appSpec.templates.timelineCard.title, { ...ctx, item: it })}</strong><p>{interpolate(appSpec.templates.timelineCard.subtitle, { ...ctx, item: it })}</p>{it.source ? <span className={`chip ${it.source === 'STRAVA' ? 'chip-accent' : ''}`}>{it.source}</span> : null}</article>;
+    return <div data-testid={`list-${id}`} className={component.props?.className || ''}>{items.map((it: any, idx: number) => {
+      if (component.props?.itemTemplate === 'athleteCard') return <button className="card" key={it.id} data-testid={`athlete-card-${it.id}`} onClick={() => run(component.actions, { item: it })}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}><strong>{interpolate(appSpec.templates.athleteCard.title, { ...ctx, item: it })}</strong>{it.status && <span className={`badge-${it.status}`}>{it.status}</span>}</div><span>{interpolate(appSpec.templates.athleteCard.subtitle, { ...ctx, item: it })}</span><span style={{ fontSize: 'var(--text-meta)', color: 'var(--text-secondary)' }}>{interpolate(appSpec.templates.athleteCard.meta, { ...ctx, item: it })}</span></button>;
+      if (component.props?.itemTemplate === 'timelineCard') {
+        const template = appSpec.templates.timelineCard;
+        const badge = interpolate(template.badge, { ...ctx, item: it });
+        return (
+          <article className={`card ${template.className}`} key={it.id || idx} data-testid={`timeline-item-${idx}`} onClick={() => run(component.actions, { item: it })} style={{ cursor: 'pointer' }}>
+            <strong>{interpolate(template.title, { ...ctx, item: it })}</strong>
+            <p>{interpolate(template.subtitle, { ...ctx, item: it })}</p>
+            <p>{interpolate(template.body, { ...ctx, item: it })}</p>
+            {badge && <span className="feed-item-badge feed-item-badge-strava-sync">{badge}</span>}
+            <span style={{ fontSize: 'var(--text-meta)', color: 'var(--text-secondary)' }}>{interpolate(template.rightContent, { ...ctx, item: it })}</span>
+          </article>
+        );
+      }
       return <article className="card" key={it.id}><strong>{interpolate(appSpec.templates.stravaCandidateCard.title, { ...ctx, item: it })}</strong></article>;
     })}</div>;
   }
