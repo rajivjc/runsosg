@@ -281,12 +281,36 @@
                   "actions": [{ "type": "setState", "path": "state.uiState.activeModal", "value": "addSession" }]
                 },
                 {
-                  "type": "button",
-                  "id": "btn_import_strava",
-                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
-                  "props": { "label": "Import Strava" },
-                  "actions": [
-                    { "type": "conditionalNavigate", "if": "state.strava.accessTokenPresent", "to": "strava_import_review", "elseTo": "strava_connect_init", "with": { "athleteId": "{{route.athleteId}}" } }
+                  "type": "conditionalRender",
+                  "id": "strava_connect_section",
+                  "condition": "{{!state.strava.accessTokenPresent}}",
+                  "components": [
+                    {
+                      "type": "button",
+                      "id": "btn_connect_strava",
+                      "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                      "props": { "label": "Connect Strava" },
+                      "actions": [
+                        { "type": "navigate", "to": "strava_connect_init", "with": { "athleteId": "{{route.athleteId}}" } }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "conditionalRender",
+                  "id": "strava_sync_section",
+                  "condition": "{{state.strava.accessTokenPresent}}",
+                  "components": [
+                    {
+                      "type": "button",
+                      "id": "btn_sync_strava",
+                      "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                      "props": { "label": "Sync now" },
+                      "actions": [
+                        { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prependMany", "valueBinding": "mockData.stravaCandidatesSelectedAsTimelineEvents" },
+                        { "type": "setState", "path": "state.strava.lastImportAt", "value": "NOW" }
+                      ]
+                    }
                   ]
                 }
               ]
@@ -536,12 +560,36 @@
               "actions": [{ "type": "navigate", "to": "add_session", "with": { "athleteId": "{{route.athleteId}}" } }]
             },
             {
-              "type": "button",
-              "id": "btn_import_strava",
-              "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
-              "props": { "label": "Import Strava" },
-              "actions": [
-                { "type": "conditionalNavigate", "if": "state.strava.accessTokenPresent", "to": "strava_import_review", "elseTo": "strava_connect_init", "with": { "athleteId": "{{route.athleteId}}" } }
+              "type": "conditionalRender",
+              "id": "strava_connect_section",
+              "condition": "{{!state.strava.accessTokenPresent}}",
+              "components": [
+                {
+                  "type": "button",
+                  "id": "btn_connect_strava",
+                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                  "props": { "label": "Connect Strava" },
+                  "actions": [
+                    { "type": "navigate", "to": "strava_connect_init", "with": { "athleteId": "{{route.athleteId}}" } }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "conditionalRender",
+              "id": "strava_sync_section",
+              "condition": "{{state.strava.accessTokenPresent}}",
+              "components": [
+                {
+                  "type": "button",
+                  "id": "btn_sync_strava",
+                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                  "props": { "label": "Sync now" },
+                  "actions": [
+                    { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prependMany", "valueBinding": "mockData.stravaCandidatesSelectedAsTimelineEvents" },
+                    { "type": "setState", "path": "state.strava.lastImportAt", "value": "NOW" }
+                  ]
+                }
               ]
             }
           ]

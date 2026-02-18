@@ -161,9 +161,20 @@ describe('Spec Configuration Tests', () => {
     test('Unit-34 Import Strava button visibility has CAREGIVER role', () => {
       const timelineScreen = appSpec.screens.find((s: any) => s.id === 'athlete_timeline');
       const actionBar = timelineScreen?.components.find((c: any) => c.id === 'timeline_actions');
-      const importButton = actionBar?.components?.find((c: any) => c.id === 'btn_import_strava');
-      expect(importButton?.visibility?.roles).toContain('CAREGIVER');
-      expect(importButton?.visibility?.roles).not.toContain('VOLUNTEER');
+      
+      // Find conditional render sections for Strava buttons
+      const connectSection = actionBar?.components?.find((c: any) => c.id === 'strava_connect_section');
+      const syncSection = actionBar?.components?.find((c: any) => c.id === 'strava_sync_section');
+      
+      // Check Connect Strava button
+      const connectButton = connectSection?.components?.find((c: any) => c.id === 'btn_connect_strava');
+      expect(connectButton?.visibility?.roles).toContain('CAREGIVER');
+      expect(connectButton?.visibility?.roles).not.toContain('VOLUNTEER');
+      
+      // Check Sync now button
+      const syncButton = syncSection?.components?.find((c: any) => c.id === 'btn_sync_strava');
+      expect(syncButton?.visibility?.roles).toContain('CAREGIVER');
+      expect(syncButton?.visibility?.roles).not.toContain('VOLUNTEER');
     });
   });
 
