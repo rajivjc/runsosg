@@ -15,6 +15,7 @@
     "authed": false,
     "athleteListSearch": "",
     "athleteListSort": "Active",
+    "athleteListStatusFilter": "all",
     "athleteListPage": 1,
     "athleteListPages": 2,
     "athleteListTotal": 32,
@@ -92,7 +93,44 @@
       "route": "athlete_list",
       "layout": { "type": "list" },
       "components": [
-        { "type": "searchBar", "id": "athlete_search", "props": { "placeholder": "Search athletes...", "autoFocus": true } },
+        {
+          "type": "div",
+          "id": "list_header",
+          "props": { "className": "list-header" },
+          "components": [
+            { "type": "text", "props": { "text": "Athletes", "className": "page-title" } },
+            {
+              "type": "button",
+              "id": "btn_add_athlete",
+              "visibility": { "roles": ["COACH", "ADMIN"] },
+              "props": { "label": "Add Athlete" },
+              "actions": [{ "type": "setState", "path": "state.uiState.activeModal", "value": "addAthleteModal" }]
+            }
+          ]
+        },
+        { "type": "searchBar", "id": "athlete_search", "props": { "placeholder": "Search athletes...", "autoFocus": false } },
+        {
+          "type": "div",
+          "id": "status_filter_section",
+          "props": { "className": "filter-section" },
+          "components": [
+            { "type": "text", "id": "status_label", "props": { "text": "Status", "className": "filter-label" } },
+            {
+              "type": "segmentedControl",
+              "id": "athlete_status_filter",
+              "props": { 
+                "options": ["All", "Active", "Inactive"],
+                "default": "All",
+                "stateBinding": "state.athleteListStatusFilter"
+              },
+              "actions": [
+                { "type": "setState", "path": "state.athleteListStatusFilter", "value": "{{value}}" },
+                { "type": "setState", "path": "state.athleteListPage", "value": 1 },
+                { "type": "computeFilteredAthletes" }
+              ]
+            }
+          ]
+        },
         {
           "type": "div",
           "id": "sort_container",
@@ -108,7 +146,9 @@
                 "stateBinding": "state.athleteListSort"
               },
               "actions": [
-                { "type": "setState", "path": "state.athleteListSort", "value": "{{value}}" }
+                { "type": "setState", "path": "state.athleteListSort", "value": "{{value}}" },
+                { "type": "setState", "path": "state.athleteListPage", "value": 1 },
+                { "type": "computeFilteredAthletes" }
               ]
             }
           ]
@@ -160,14 +200,16 @@
               {
                 "type": "button",
                 "id": "btn_prev_page",
+                "visibility": { "condition": "{{state.athleteListPage > 1}}" },
                 "props": { "label": "← Previous" },
-                "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage - 1}}" }]
+                "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{Math.max(1, state.athleteListPage - 1)}}" }]
               },
               {
                 "type": "button",
                 "id": "btn_next_page",
+                "visibility": { "condition": "{{state.athleteListPage < state.athleteListPages}}" },
                 "props": { "label": "Next →" },
-                "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{state.athleteListPage + 1}}" }]
+                "actions": [{ "type": "setState", "path": "state.athleteListPage", "value": "{{Math.min(state.athleteListPages, state.athleteListPage + 1)}}" }]
               }
             ]}
           ]
