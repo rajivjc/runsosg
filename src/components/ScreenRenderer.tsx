@@ -192,16 +192,13 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
   if (component.type === 'header') return <div className="card"><button onClick={() => run([component.props.leftAction])}>Back</button><strong>{store.getByPath(component.props.titleBinding)}</strong><button onClick={() => run(component.actions)}>{component.props.rightIcon}</button></div>;
   if (component.type === 'kvList') {
     return (
-      <dl style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', margin: 0 }}>
+      <dl>
         {component.props.items.map((kv: any) => {
           const displayValue = interpolate(kv.v, { ...ctx, data: ctx.data, item });
           return (
-            <div key={kv.k} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }} className={kv.className}>
-              {kv.icon && <span style={{ fontSize: '20px' }}>{kv.icon}</span>}
-              <div style={{ flex: 1 }}>
-                <dt style={{ fontSize: 'var(--text-meta)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-secondary)', margin: 0 }}>{kv.k}</dt>
-                <dd style={{ fontSize: 'var(--text-body)', fontWeight: 500, color: 'var(--text)', margin: '2px 0 0 0' }}>{displayValue}</dd>
-              </div>
+            <div key={kv.k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <dt>{kv.k}</dt>
+              <dd>{displayValue}</dd>
             </div>
           );
         })}
@@ -245,66 +242,90 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
   }
 
   if (component.type === 'segmentedControl') {
-    // Handle both string array and object array options
     const options = component.props?.options || [];
     const isObjectOptions = options.length > 0 && typeof options[0] === 'object';
-    
-    // For segmented control, we use state instead of controls
     const currentValue = component.props?.stateBinding 
       ? store.getByPath(component.props.stateBinding) 
       : store.controls[id];
     const defaultValue = component.props?.default;
     const value = currentValue || defaultValue;
 
-    return (
-      <div style={{ display: 'flex', gap: '4px', marginBottom: 'var(--space-3)' }}>
-        {isObjectOptions ? (
-          options.map((o: any) => (
-            <button 
-              key={o.value} 
-              type="button"
-              style={{
-                flex: 1,
-                padding: 'var(--space-2) var(--space-3)',
-                border: value === o.value ? `2px solid var(--accent)` : 'var(--border)',
-                background: value === o.value ? 'var(--accent-light)' : 'var(--surface)',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                fontSize: 'var(--text-meta)'
-              }}
-              onClick={() => {
-                store.setControl(id, o.value);
-                store.setByPath(component.props.stateBinding || '', o.value);
-                run(component.actions, { value: o.value });
-              }}
-            >
-              {o.label}
-            </button>
-          ))
-        ) : (
-          options.map((o: string) => (
-            <button 
-              key={o} 
-              type="button"
-              style={{
-                flex: 1,
-                padding: 'var(--space-2) var(--space-3)',
-                border: value === o ? `2px solid var(--accent)` : 'var(--border)',
-                background: value === o ? 'var(--accent-light)' : 'var(--surface)',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer'
-              }}
-              onClick={() => {
-                store.setControl(id, o);
-                run(component.actions, { value: o });
-              }}
-            >
-              {o === value ? `• ${o}` : o}
-            </button>
-          ))
-        )}
-      </div>
-    );
+    // Determine if this is a tab group (larger, main navigation) or a small filter group
+    const isTabs = component.props?.isTabs || component.id?.includes('tabs') || component.id?.includes('detail_tabs');
+
+    if (isTabs) {
+      // Tab style - underline beneath each tab
+      return (
+        <div className="tab-container">
+          {isObjectOptions ? (
+            options.map((o: any) => (
+              <button 
+                key={o.value}
+                type="button"
+                className={`tab-button ${value === o.value ? 'active' : ''}`}
+                onClick={() => {
+                  store.setByPath(component.props.stateBinding || '', o.value);
+                  run(component.actions, { value: o.value });
+                }}
+              >
+                {o.label}
+              </button>
+            ))
+          ) : (
+            options.map((o: string) => (
+              <button
+                key={o}
+                type="button"
+                className={`tab-button ${value === o ? 'active' : ''}`}
+                onClick={() => {
+                  store.setByPath(component.props.stateBinding || '', o);
+                  run(component.actions, { value: o });
+                }}
+              >
+                {o}
+              </button>
+            ))
+          )}
+        </div>
+      );
+    } else {
+      // Segmented control style for filters
+      return (
+        <div className="segmented-group">
+          {isObjectOptions ? (
+            options.map((o: any) => (
+              <button 
+                key={o.value} 
+                type="button"
+                className={`segmented-button ${value === o.value ? 'active' : ''}`}
+                onClick={() => {
+                  store.setControl(id, o.value);
+                  store.setByPath(component.props.stateBinding || '', o.value);
+                  run(component.actions, { value: o.value });
+                }}
+              >
+                {o.label}
+              </button>
+            ))
+          ) : (
+            options.map((o: string) => (
+              <button 
+                key={o} 
+                type="button"
+                className={`segmented-button ${value === o ? 'active' : ''}`}
+                onClick={() => {
+                  store.setControl(id, o);
+                  store.setByPath(component.props.stateBinding || '', o);
+                  run(component.actions, { value: o });
+                }}
+              >
+                {o}
+              </button>
+            ))
+          )}
+        </div>
+      );
+    }
   }
 
   if (component.type === 'card') {

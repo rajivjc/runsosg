@@ -192,7 +192,8 @@
               { "label": "Settings", "value": "settings" }
             ],
             "default": "feed",
-            "stateBinding": "state.currentDetailTab"
+            "stateBinding": "state.currentDetailTab",
+            "isTabs": true
           },
           "actions": [
             { "type": "setState", "path": "state.currentDetailTab", "value": "{{value}}" }
@@ -214,7 +215,8 @@
                   { "label": "Notes", "value": "note" }
                 ],
                 "default": "all",
-                "stateBinding": "state.timelineFilter"
+                "stateBinding": "state.timelineFilter",
+                "isTabs": true
               },
               "actions": [
                 { "type": "setState", "path": "state.timelineFilter", "value": "{{value}}" }
