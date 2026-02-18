@@ -4,13 +4,13 @@ async function login(page: any, role: string) {
   await page.goto('/login');
   await page.waitForLoadState('networkidle');
   const roleSelect = page.getByTestId('select-role_selector');
-  await roleSelect.waitFor({ state: 'visible' });
+  await roleSelect.waitFor({ state: 'visible', timeout: 10000 });
   await roleSelect.selectOption(role);
-  await page.waitForTimeout(500);
+  // Wait for form to update with role selection
   const loginBtn = page.getByTestId('btn-btn_login');
-  await loginBtn.waitFor({ state: 'visible' });
+  await loginBtn.waitFor({ state: 'visible', timeout: 10000 });
   await loginBtn.click();
-  await page.waitForURL(/\/athlete_list$/,{ timeout: 30000 });
+  await page.waitForURL(/\/athlete_list$/, { timeout: 30000 });
 }
 
 test('E2E-1 Login page renders without logo', async ({ page }) => {
@@ -144,10 +144,9 @@ test('E2E-13 Athlete list displays athletes with status badges', async ({ page }
   await login(page, 'CAREGIVER');
   // Should be on athlete_list after login
   await expect(page).toHaveURL(/\/athlete_list$/);
-  // Wait for athlete cards to render
-  await page.waitForTimeout(1000);
-  // Verify athlete cards are displayed
+  // Wait for athlete cards to be visible (not arbitrary timeout)
   const firstAthleteCard = page.locator('[data-testid^="athlete-card-"]').first();
+  await firstAthleteCard.waitFor({ state: 'visible', timeout: 10000 });
   await expect(firstAthleteCard).toBeVisible();
 });
 
@@ -155,55 +154,63 @@ test('E2E-14 Search filters athletes by name', async ({ page }) => {
   await login(page, 'CAREGIVER');
   // Search for a specific athlete
   const searchInput = page.getByTestId('search-athlete_search');
-  await expect(searchInput).toBeVisible();
+  await searchInput.waitFor({ state: 'visible', timeout: 10000 });
   await searchInput.fill('Daniel');
-  await page.waitForTimeout(500);
-  // Daniel card should be visible
-  await expect(page.getByTestId('athlete-card-a1')).toBeVisible();
+  // Wait for list to update after searching
+  const danielCard = page.getByTestId('athlete-card-a1');
+  await danielCard.waitFor({ state: 'visible', timeout: 10000 });
+  await expect(danielCard).toBeVisible();
 });
 
 test('E2E-15 Search shows no results for non-existent athlete', async ({ page }) => {
   await login(page, 'CAREGIVER');
   // Search for non-existent athlete
   const searchInput = page.getByTestId('search-athlete_search');
-  await expect(searchInput).toBeVisible();
+  await searchInput.waitFor({ state: 'visible', timeout: 10000 });
   await searchInput.fill('NonExistentAthlete123');
-  await page.waitForTimeout(500);
-  // Empty state should show
-  await expect(page.getByText('No athletes found')).toBeVisible();
+  // Wait for empty state to appear
+  const emptyText = page.getByText('No athletes found');
+  await emptyText.waitFor({ state: 'visible', timeout: 10000 });
+  await expect(emptyText).toBeVisible();
 });
 
 test('E2E-16 Sort by Name is available', async ({ page }) => {
   await login(page, 'CAREGIVER');
-  // Wait for page to load
-  await page.waitForTimeout(500);
+  // Wait for page to load - use waitForLoadState instead of arbitrary timeout
+  await page.waitForLoadState('networkidle');
   // Look for sort buttons
   const sortButtons = page.locator('button:has-text("Name"), button:has-text("Active")');
+  await sortButtons.first().waitFor({ state: 'visible', timeout: 10000 });
   expect(await sortButtons.count()).toBeGreaterThan(0);
 });
 
 test('E2E-17 Pagination info displays', async ({ page }) => {
   await login(page, 'CAREGIVER');
-  // Check pagination info is displayed - now just looking for page number display
-  await page.waitForTimeout(500);
-  await expect(page.getByText(/Page.*of/)).toBeVisible();
+  // Check pagination info is displayed - using locator wait for better reliability
+  const paginationInfo = page.getByText(/Page.*of/);
+  await paginationInfo.waitFor({ state: 'visible', timeout: 10000 });
+  await expect(paginationInfo).toBeVisible();
 });
 
 test('E2E-18 Next page button navigates to next page', async ({ page }) => {
   await login(page, 'CAREGIVER');
-  // Get first page athlete name
+  // Wait for athletes to load
+  await page.waitForLoadState('networkidle');
   let firstCard = page.locator('[data-testid^="athlete-card-"]').first();
-  await expect(firstCard).toBeVisible();
+  await firstCard.waitFor({ state: 'visible', timeout: 10000 });
   const firstPageName = await firstCard.textContent();
   
-  // Click Next button if it exists
+  // Check if Next button exists and click it
   const nextButton = page.getByTestId('btn-btn_next_page');
-  if (await nextButton.count() > 0) {
+  const buttonExists = await nextButton.count() > 0;
+  if (buttonExists) {
     await nextButton.click();
-    await page.waitForTimeout(500);
+    // Wait for page transition - use networkidle
+    await page.waitForLoadState('networkidle');
     
-    // Verify we're on a different page
+    // Verify we're on a different page by checking cards are reloaded
     firstCard = page.locator('[data-testid^="athlete-card-"]').first();
+    await firstCard.waitFor({ state: 'visible', timeout: 10000 });
     const secondPageName = await firstCard.textContent();
     expect(secondPageName).toBeDefined();
   }
@@ -211,21 +218,23 @@ test('E2E-18 Next page button navigates to next page', async ({ page }) => {
 
 test('E2E-19 Previous page button navigates back', async ({ page }) => {
   await login(page, 'CAREGIVER');
+  await page.waitForLoadState('networkidle');
   
-  // Navigate to next page
+  // Navigate to next page if available
   const nextButton = page.getByTestId('btn-btn_next_page');
   if (await nextButton.count() > 0) {
     await nextButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle');
     
     // Now click previous
     const prevButton = page.getByTestId('btn-btn_prev_page');
     if (await prevButton.count() > 0) {
       await prevButton.click();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
       
       // Verify we're back on page 1
       const firstCard = page.locator('[data-testid^="athlete-card-"]').first();
+      await firstCard.waitFor({ state: 'visible', timeout: 10000 });
       await expect(firstCard).toBeVisible();
     }
   }
@@ -233,14 +242,16 @@ test('E2E-19 Previous page button navigates back', async ({ page }) => {
 
 test('E2E-20 Pagination shows correct total athletes count', async ({ page }) => {
   await login(page, 'CAREGIVER');
+  await page.waitForLoadState('networkidle');
   
   // Check pagination info shows page display
-  await page.waitForTimeout(500);
   const paginationInfo = page.getByText(/Page.*of/);
+  await paginationInfo.waitFor({ state: 'visible', timeout: 10000 });
   await expect(paginationInfo).toBeVisible();
   
-  // Verify athlete list displays
+  // Verify athlete list displays with locator wait
   const athleteCards = page.locator('[data-testid^="athlete-card-"]');
+  await athleteCards.first().waitFor({ state: 'visible', timeout: 10000 });
   const cardCount = await athleteCards.count();
   expect(cardCount).toBeGreaterThan(0);
 });

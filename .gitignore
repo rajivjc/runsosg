@@ -1,1 +1,18 @@
 node_modules
+# Build artifacts
+.next/
+
+# Testing artifacts
+test-results/
+playwright-report/
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
