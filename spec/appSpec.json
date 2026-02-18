@@ -628,17 +628,23 @@
       "layout": { "type": "form" },
       "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
       "components": [
-        { "type": "dateTimePicker", "id": "session_time", "props": { "label": "Date & time" } },
-        { "type": "numberInput", "id": "distance_km", "props": { "label": "Distance (km)", "step": 0.1 } },
-        { "type": "numberInput", "id": "moving_minutes", "props": { "label": "Moving time (min)", "step": 1 } },
-        { "type": "select", "id": "effort", "props": { "label": "Effort", "options": ["Easy", "OK", "Hard"], "default": "OK" } },
+        { "type": "dateTimePicker", "id": "session_time", "props": { "label": "Date & time *", "placeholder": "Required" } },
+        { "type": "numberInput", "id": "distance_km", "props": { "label": "Distance (km) *", "step": 0.1, "placeholder": "Required" } },
+        { "type": "numberInput", "id": "moving_minutes", "props": { "label": "Moving time (min) *", "step": 1, "placeholder": "Required" } },
+        { "type": "numberInput", "id": "pace_min_per_km", "props": { "label": "Pace (min/km)", "step": 0.1, "placeholder": "Optional - auto-calculated if blank" } },
+        { "type": "numberInput", "id": "avg_heart_rate", "props": { "label": "Average heart rate (bpm)", "step": 1, "placeholder": "Optional" } },
+        { "type": "select", "id": "athlete_feel", "props": { "label": "Athlete feel *", "options": ["Great 😊", "Good 🙂", "OK 😐", "Tired 😓", "Struggled 😰"], "default": "OK 😐" } },
+        { "type": "textArea", "id": "athlete_feel_notes", "props": { "label": "Athlete feel notes", "placeholder": "Optional - any additional context about how they felt" } },
+        { "type": "textArea", "id": "cues_used", "props": { "label": "Cues used", "placeholder": "What cues or strategies were used during this run?" } },
+        { "type": "textArea", "id": "coach_notes", "props": { "label": "Coach notes *", "placeholder": "Required - observations, what went well, what to work on" } },
+        { "type": "select", "id": "effort", "props": { "label": "Effort level", "options": ["Easy", "Moderate", "Hard", "Very Hard"], "default": "Moderate" } },
         {
           "type": "button",
           "id": "btn_save_session",
           "props": { "label": "Save Session" },
           "actions": [
             { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prepend", "valueTemplate": "mockTemplates.newSessionManual" },
-            { "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{route.athleteId}}" } }
+            { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
         }
       ]

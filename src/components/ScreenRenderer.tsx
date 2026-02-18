@@ -50,7 +50,23 @@ export function runAction(action: any, ctx: any) {
       if (action.valueBinding) store.mutateMock(action.target, action.operation, store.getByPath(action.valueBinding));
       if (action.valueTemplate) {
         const tpl = structuredClone(store.getByPath(action.valueTemplate));
-        if (tpl.type === 'note') tpl.body = `Went well: ${store.getByPath('form.went_well') || '(from form)'}. Hard: ${store.getByPath('form.was_hard') || '(from form)'}. Next: ${store.getByPath('form.next_time') || '(from form)'}.`;
+        if (tpl.type === 'note') {
+          tpl.body = `Went well: ${store.getByPath('form.went_well') || '(from form)'}. Hard: ${store.getByPath('form.was_hard') || '(from form)'}. Next: ${store.getByPath('form.next_time') || '(from form)'}.`;
+        }
+        if (tpl.type === 'session' && tpl.source === 'MANUAL') {
+          const distance = store.getByPath('form.distance_km') || '0';
+          const time = store.getByPath('form.moving_minutes') || '0';
+          const pace = store.getByPath('form.pace_min_per_km') || (parseFloat(time) / parseFloat(distance)).toFixed(1);
+          const hr = store.getByPath('form.avg_heart_rate');
+          const feel = store.getByPath('form.athlete_feel') || 'OK 😐';
+          const feelNotes = store.getByPath('form.athlete_feel_notes');
+          const cues = store.getByPath('form.cues_used');
+          const coachNotes = store.getByPath('form.coach_notes') || '';
+          const effort = store.getByPath('form.effort') || 'Moderate';
+          
+          tpl.subtitle = `${distance} km • ${time} min • Pace: ${pace} min/km${hr ? ` • HR: ${hr} bpm` : ''}`;
+          tpl.body = `**Feel:** ${feel}${feelNotes ? ` - ${feelNotes}` : ''}\n**Effort:** ${effort}${cues ? `\n**Cues used:** ${cues}` : ''}\n**Coach notes:** ${coachNotes}`;
+        }
         store.mutateMock(action.target, action.operation, tpl);
       }
     }
