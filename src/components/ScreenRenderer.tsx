@@ -17,6 +17,17 @@ function evaluateBooleanCondition(condition: string, ctx: any, item?: any) {
   const expressionContext = { ...ctx, item };
   const tokens = expression.split(/(\&\&|\|\|)/).map((part) => part.trim()).filter(Boolean);
 
+  const resolveLiteral = (raw: string) => {
+    const trimmed = raw.trim();
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      return trimmed.slice(1, -1);
+    }
+    if (trimmed === 'true') return true;
+    if (trimmed === 'false') return false;
+    if (!Number.isNaN(Number(trimmed)) && trimmed !== '') return Number(trimmed);
+    return getValueByPath(expressionContext, trimmed) ?? ctx.store?.getByPath?.(trimmed);
+  };
+
   const resolveTerm = (term: string) => {
     if (term === 'true') return true;
     if (term === 'false') return false;
@@ -27,8 +38,19 @@ function evaluateBooleanCondition(condition: string, ctx: any, item?: any) {
       term = term.slice(1).trim();
     }
 
-    const value = getValueByPath(expressionContext, term) ?? ctx.store?.getByPath?.(term);
-    let boolValue = !!value;
+    let boolValue = false;
+    const comparisonMatch = term.match(/^(.*?)(===|!==)(.*)$/);
+    if (comparisonMatch) {
+      const left = comparisonMatch[1].trim();
+      const operator = comparisonMatch[2];
+      const right = comparisonMatch[3].trim();
+      const leftValue = resolveLiteral(left);
+      const rightValue = resolveLiteral(right);
+      boolValue = operator === '===' ? leftValue === rightValue : leftValue !== rightValue;
+    } else {
+      const value = getValueByPath(expressionContext, term) ?? ctx.store?.getByPath?.(term);
+      boolValue = !!value;
+    }
     if (notCount % 2 === 1) boolValue = !boolValue;
     return boolValue;
   };
@@ -442,8 +464,15 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
 
   // Conditional render - show/hide based on condition
   if (component.type === 'conditionalRender') {
-    const condition = interpolate(component.condition, { ...ctx, item });
-    if (!condition) return null;
+    if (typeof component.condition === 'boolean') {
+      if (!component.condition) return null;
+    } else if (typeof component.condition === 'string') {
+      const rawCondition = component.condition.trim();
+      const expression = rawCondition.startsWith('{{') && rawCondition.endsWith('}}')
+        ? rawCondition.slice(2, -2).trim()
+        : rawCondition;
+      if (!evaluateBooleanCondition(expression, ctx, item)) return null;
+    }
     return <>
       {component.components?.map((child: any) => (
         <ComponentRenderer key={child.id} component={child} ctx={ctx} item={item} />

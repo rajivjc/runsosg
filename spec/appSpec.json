@@ -306,8 +306,7 @@
               "filterBinding": { "controlId": "timeline_filter", "map": { "all": "*", "session": "session", "note": "note", "milestone": "milestone" } },
               "emptyState": { "title": "No activities yet", "message": "Add a session or enable Strava to start the athlete's journey." },
               "actions": [
-                { "type": "setState", "path": "state.uiState.selectedActivityId", "value": "{{item.id}}" },
-                { "type": "setState", "path": "state.uiState.activeModal", "value": "addNote" }
+                { "type": "setState", "path": "state.uiState.selectedActivityId", "value": "{{item.id}}" }
               ]
             },
 
