@@ -452,7 +452,11 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
   }
   if (component.type === 'toggle') return <label><input data-testid={`toggle-${id}`} type="checkbox" defaultChecked={component.props?.default} />{component.props?.label}</label>;
 
-  if (component.type === 'button') return <button data-testid={`btn-${id}`} onClick={() => run(component.actions)}>{component.props?.label}</button>;
+  if (component.type === 'button') {
+    const variant = component.props?.variant ?? 'primary';
+    const variantClass = variant === 'secondary' ? 'btn-secondary' : variant === 'ghost' ? 'btn-ghost' : variant === 'icon' ? 'btn-icon' : 'btn-primary';
+    return <button data-testid={`btn-${id}`} className={variantClass} onClick={() => run(component.actions)}>{component.props?.label}</button>;
+  }
 
   if (component.type === 'link') return <a data-testid={`link-${id}`} onClick={() => run(component.actions)} style={{ cursor: 'pointer', color: 'var(--accent)', textDecoration: 'underline' }}>{component.props?.text}</a>;
 
