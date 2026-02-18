@@ -274,7 +274,34 @@ function ComponentRenderer({ component, ctx, item, index }: any) {
       store.setByPath('state.athleteListPage', 0);
     }} />;
   }
-  if (component.type === 'header') return <div className="card"><button onClick={() => run([component.props.leftAction])}>Back</button><strong>{store.getByPath(component.props.titleBinding)}</strong><button onClick={() => run(component.actions)}>{component.props.rightIcon}</button></div>;
+  if (component.type === 'header') {
+    const title = store.getByPath(component.props.titleBinding) || 'Athlete Hub';
+    return (
+      <header className="page-header">
+        <div className="page-header-left">
+          <button
+            className="icon-button"
+            onClick={() => run([component.props.leftAction])}
+            aria-label="Go back"
+          >
+            ←
+          </button>
+        </div>
+        <div className="page-header-center">
+          <h2 className="page-header-title">{title}</h2>
+        </div>
+        <div className="page-header-right">
+          <button
+            className="icon-button"
+            onClick={() => run(component.actions)}
+            aria-label="Settings"
+          >
+            {component.props.rightIcon}
+          </button>
+        </div>
+      </header>
+    );
+  }
   if (component.type === 'kvList') {
     return (
       <dl>
