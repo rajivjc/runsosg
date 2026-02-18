@@ -298,6 +298,13 @@
               "components": [
                 {
                   "type": "button",
+                  "id": "btn_add_note",
+                  "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
+                  "props": { "label": "Add Note", "variant": "secondary" },
+                  "actions": [{ "type": "setState", "path": "state.uiState.activeModal", "value": "addNote" }]
+                },
+                {
+                  "type": "button",
                   "id": "btn_add_session",
                   "visibility": { "roles": ["CAREGIVER", "COACH", "ADMIN"] },
                   "props": { "label": "Add Session" },
@@ -337,6 +344,12 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "button",
+              "id": "btn_view_timeline",
+              "props": { "label": "View full timeline →", "variant": "ghost" },
+              "actions": [{ "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{route.athleteId}}" } }]
             }
           ]
         },
@@ -521,7 +534,7 @@
           "type": "header",
           "id": "hdr_athlete",
           "props": {
-            "leftAction": { "type": "navigate", "to": "athlete_list" },
+            "leftAction": { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } },
             "titleBinding": "mockData.selectedAthlete.name",
             "rightIcon": "⚙️"
           },
@@ -651,7 +664,7 @@
           "props": { "label": "Save Note" },
           "actions": [
             { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prepend", "valueTemplate": "mockTemplates.newNote" },
-            { "type": "navigate", "to": "athlete_timeline", "with": { "athleteId": "{{route.athleteId}}" } }
+            { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
         }
       ]
