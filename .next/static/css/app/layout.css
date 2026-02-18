@@ -708,19 +708,239 @@ dd {
 }
 
 /* ============================================
+   APP SHELL LAYOUT
+   ============================================ */
+
+/* Main shell container */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+/* Top Bar - branding/actions */
+.app-topbar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  height: 64px;
+  display: flex;
+  align-items: center;
+}
+
+.app-topbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 var(--space-4);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.app-logo {
+  font-size: var(--type-h2-size);
+  font-weight: var(--type-h2-weight);
+  color: var(--color-brand);
+}
+
+.app-topbar-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: var(--space-2);
+  color: var(--color-text-primary);
+  transition: color var(--transition-fast);
+  width: auto;
+  min-height: auto;
+}
+
+.icon-button:hover {
+  color: var(--color-accent);
+}
+
+/* Navigation Tabs - sticky below topbar */
+.app-nav-tabs {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 64px;
+  z-index: 90;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+.app-nav-tabs-content {
+  display: flex;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.app-nav-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  height: 100%;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  width: auto;
+  min-height: auto;
+}
+
+.app-nav-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.app-nav-tab.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.app-nav-icon {
+  font-size: 20px;
+}
+
+.app-nav-label {
+  font-size: 14px;
+}
+
+/* Content wrapper - main scrollable area */
+.app-content-wrapper {
+  flex: 1 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background-color: var(--color-bg);
+}
+
+/* Page header - title + actions row */
+.app-page-header {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-6) var(--space-4);
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.app-page-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1280px;
+  margin: 0 auto;
+  gap: var(--space-4);
+}
+
+.app-page-title {
+  margin: 0;
+  font-size: var(--type-h2-size);
+  font-weight: var(--type-h2-weight);
+  color: var(--color-text-primary);
+}
+
+.app-page-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Filter row - optional filters/controls */
+.app-filter-row {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4);
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.app-filter-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Main content area */
+.app-content {
+  flex: 1 1;
+  padding: var(--space-6) var(--space-4);
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Spacer for sticky nav (prevents content overlap) */
+.app-nav-spacer {
+  height: 80px;
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
+
+/* Tablet and above */
 @media (min-width: 768px) {
+  .app-topbar-content,
+  .app-nav-tabs-content,
+  .app-content {
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+
+  .app-content {
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
+  }
+
   .page {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: var(--space-8) var(--space-8);
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   button,
   [role="button"],
   .button {
     width: auto;
+  }
+}
+
+/* Desktop - max width enforcement */
+@media (min-width: 1280px) {
+  .app-topbar-content,
+  .app-nav-tabs-content,
+  .app-page-header-content,
+  .app-filter-content,
+  .app-content {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
   }
 }
 

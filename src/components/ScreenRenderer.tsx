@@ -128,13 +128,13 @@ export default function ScreenRenderer({ screenId, routeParams }: { screenId: st
   const ctxBase = { store, routeParams, route: routeParams, state: store.state, data: null, router };
 
   return (
-    <main className="page" data-testid={`screen-${screen.id}`}>
-      <h1>{screen.title}</h1>
+    <div data-testid={`screen-${screen.id}`}>
+      {(screen as any).layout?.type !== 'centered' && <h1>{screen.title}</h1>}
       {screen.components.map((c) => {
         if (!isVisible(c.visibility, store.state.role)) return null;
         return <ComponentRenderer key={c.id} component={c} ctx={ctxBase} />;
       })}
-    </main>
+    </div>
   );
 }
 
