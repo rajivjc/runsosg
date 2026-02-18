@@ -186,6 +186,35 @@
         },
 
         {
+          "type": "card",
+          "id": "card_cues_overview",
+          "props": { "title": "Current Cues", "className": "card-cues-overview" },
+          "dataBinding": "mockData.selectedAthlete.cues",
+          "components": [
+            {
+              "type": "kvList",
+              "id": "cues_overview_list",
+              "props": {
+                "items": [
+                  { "k": "Helps", "v": "{{data.helps || 'Not set'}}" },
+                  { "k": "Avoid", "v": "{{data.avoids || 'Not set'}}" },
+                  { "k": "Best cues", "v": "{{data.bestCues || 'Not set'}}" },
+                  { "k": "Kit", "v": "{{data.kit || 'Not set'}}" }
+                ]
+              }
+            }
+          ],
+          "footerActions": [
+            {
+              "type": "button",
+              "id": "btn_view_cues",
+              "props": { "label": "View & Edit" },
+              "actions": [{ "type": "setState", "path": "state.currentDetailTab", "value": "cues" }]
+            }
+          ]
+        },
+
+        {
           "type": "segmentedControl",
           "id": "detail_tabs",
           "props": {
