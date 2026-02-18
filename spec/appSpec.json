@@ -105,6 +105,18 @@
           ]
         },
         {
+          "type": "loadingSkeleton",
+          "id": "list_loading",
+          "props": { "count": 5 },
+          "visibility": { "condition": "state.athleteListLoading" }
+        },
+        {
+          "type": "errorBanner",
+          "id": "list_error",
+          "props": { "title": "Could not load athletes", "message": "Check your connection and try again.", "retryLabel": "Retry" },
+          "visibility": { "condition": "state.athleteListError" }
+        },
+        {
           "type": "list",
           "id": "athlete_cards",
           "props": { "itemTemplate": "athleteCard", "className": "athlete-list" },
@@ -167,8 +179,19 @@
         },
 
         {
-          "type": "card",
-          "id": "card_athlete_stats",
+          "type": "loadingSkeleton",
+          "id": "detail_loading",
+          "props": { "count": 3 },
+          "visibility": { "condition": "state.athleteDetailLoading" }
+        },
+        {
+          "type": "errorBanner",
+          "id": "detail_error",
+          "props": { "title": "Could not load athlete data", "message": "Try again or go back to the athlete list.", "retryLabel": "Retry" },
+          "visibility": { "condition": "state.athleteDetailError" }
+        },
+
+        {
           "props": { "title": "Overview", "className": "card-stats" },
           "components": [
             {
@@ -506,6 +529,19 @@
         },
 
         {
+          "type": "loadingSkeleton",
+          "id": "timeline_loading",
+          "props": { "count": 5 },
+          "visibility": { "condition": "state.timelineLoading" }
+        },
+        {
+          "type": "errorBanner",
+          "id": "timeline_error",
+          "props": { "title": "Could not load timeline", "message": "Check your connection and try again.", "retryLabel": "Retry" },
+          "visibility": { "condition": "state.timelineError" }
+        },
+
+        {
           "type": "card",
           "id": "card_cues_pinned",
           "props": { "title": "What works (pinned)", "collapsible": true, "defaultCollapsed": false },
@@ -646,6 +682,12 @@
             { "type": "mutateMock", "target": "mockData.selectedAthlete.timeline", "operation": "prepend", "valueTemplate": "mockTemplates.newSessionManual" },
             { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
+        },
+        {
+          "type": "successMessage",
+          "id": "session_saved",
+          "props": { "message": "Session saved!" },
+          "visibility": { "condition": "state.sessionSaved" }
         }
       ]
     },
@@ -713,6 +755,18 @@
         { "type": "numberInput", "id": "time_window", "props": { "label": "Time window (minutes)", "step": 15 } },
         { "type": "divider", "id": "div2" },
         {
+          "type": "loadingSkeleton",
+          "id": "strava_loading",
+          "props": { "count": 4 },
+          "visibility": { "condition": "state.stravaLoading" }
+        },
+        {
+          "type": "errorBanner",
+          "id": "strava_error",
+          "props": { "title": "Could not fetch Strava activities", "message": "Make sure your Strava account is connected and try again.", "retryLabel": "Retry" },
+          "visibility": { "condition": "state.stravaError" }
+        },
+        {
           "type": "list",
           "id": "candidate_activities",
           "props": { "itemTemplate": "stravaCandidateCard", "className": "strava-candidates" },
@@ -727,6 +781,12 @@
             { "type": "setState", "path": "state.strava.lastImportAt", "value": "NOW" },
             { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
+        },
+        {
+          "type": "successMessage",
+          "id": "import_success",
+          "props": { "message": "Activities imported successfully!" },
+          "visibility": { "condition": "state.stravaImportDone" }
         }
       ]
     },
@@ -750,6 +810,12 @@
             { "type": "toast", "message": "Cues saved (prototype)." },
             { "type": "navigate", "to": "athlete_detail", "with": { "athleteId": "{{route.athleteId}}" } }
           ]
+        },
+        {
+          "type": "successMessage",
+          "id": "cues_saved",
+          "props": { "message": "Cues saved!" },
+          "visibility": { "condition": "state.cuesSaved" }
         }
       ]
     },
