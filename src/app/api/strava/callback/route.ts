@@ -43,6 +43,6 @@ export async function GET(request: NextRequest): Promise<Response> {
   )
 
   return NextResponse.redirect(
-    new URL('/dashboard?connected=strava', request.nextUrl.origin)
+    new URL('/athletes?connected=strava', request.nextUrl.origin)
   )
 }
