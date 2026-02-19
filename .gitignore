@@ -18,4 +18,5 @@ Thumbs.db
 *.swo
 
 # Environment variables
-.env.localsupabase/.temp
+.env.local
+supabase/.temp

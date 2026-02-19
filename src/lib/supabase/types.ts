@@ -10,79 +10,144 @@ export interface Database {
   public: {
     Tables: {
       club_settings: {
-        Row: ClubSettings
+        Row: ClubSettings & Record<string, unknown>
         Insert: Omit<ClubSettings, 'id'> & { id?: string }
         Update: Partial<ClubSettings>
+        Relationships: []
       }
       users: {
-        Row: User
+        Row: User & Record<string, unknown>
         Insert: Omit<User, 'created_at'> & { created_at?: string }
         Update: Partial<User>
+        Relationships: []
       }
       athletes: {
-        Row: Athlete
+        Row: Athlete & Record<string, unknown>
         Insert: Omit<Athlete, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<Athlete>
+        Relationships: []
       }
       sessions: {
-        Row: Session
-        Insert: Omit<Session, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<Session>
+        Row: Session & Record<string, unknown>
+        Insert: {
+          id?: string
+          athlete_id: string
+          coach_user_id?: string | null
+          planned_coach_user_id?: string | null
+          strava_activity_id?: number | null
+          status: 'planned' | 'completed' | 'cancelled'
+          date: string
+          distance_km?: number | null
+          duration_seconds?: number | null
+          feel?: 1 | 2 | 3 | 4 | 5 | null
+          note?: string | null
+          route_name?: string | null
+          map_polyline?: string | null
+          weather?: string | null
+          sync_source?: 'strava_webhook' | 'manual' | 'backfill' | null
+          match_method?: 'hashtag' | 'schedule' | 'manual_review' | null
+          match_confidence?: 'high' | 'medium' | 'manual' | null
+          strava_deleted_at?: string | null
+          created_at?: string
+        } & Record<string, unknown>
+        Update: Partial<Session> & Record<string, unknown>
+        Relationships: []
       }
       cues: {
-        Row: Cue
+        Row: Cue & Record<string, unknown>
         Insert: Omit<Cue, 'id'> & { id?: string }
         Update: Partial<Cue>
+        Relationships: []
       }
       coach_notes: {
-        Row: CoachNote
+        Row: CoachNote & Record<string, unknown>
         Insert: Omit<CoachNote, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<CoachNote>
+        Relationships: []
       }
       milestone_definitions: {
-        Row: MilestoneDefinition
+        Row: MilestoneDefinition & Record<string, unknown>
         Insert: Omit<MilestoneDefinition, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<MilestoneDefinition>
+        Relationships: []
       }
       milestones: {
-        Row: Milestone
+        Row: Milestone & Record<string, unknown>
         Insert: Omit<Milestone, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<Milestone>
+        Relationships: []
       }
       media: {
-        Row: Media
+        Row: Media & Record<string, unknown>
         Insert: Omit<Media, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<Media>
+        Relationships: []
       }
       strava_connections: {
-        Row: StravaConnection
-        Insert: StravaConnection
+        Row: StravaConnection & Record<string, unknown>
+        Insert: Omit<StravaConnection, 'created_at'> & { created_at?: string }
         Update: Partial<StravaConnection>
+        Relationships: []
       }
       strava_sync_log: {
-        Row: StravaSyncLog
-        Insert: Omit<StravaSyncLog, 'id' | 'received_at'> & { id?: string; received_at?: string }
-        Update: Partial<StravaSyncLog>
+        Row: StravaSyncLog & Record<string, unknown>
+        Insert: {
+          id?: string
+          strava_activity_id: number
+          coach_user_id?: string | null
+          event_type: 'create' | 'update' | 'delete'
+          event_time?: string | null
+          received_at?: string
+          processed_at?: string | null
+          status: 'pending' | 'matched' | 'unmatched' | 'skipped' | 'error'
+          result_session_id?: string | null
+          error_message?: string | null
+          raw_payload: Json
+        } & Record<string, unknown>
+        Update: Partial<StravaSyncLog> & Record<string, unknown>
+        Relationships: []
       }
       strava_unmatched: {
-        Row: StravaUnmatched
-        Insert: Omit<StravaUnmatched, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<StravaUnmatched>
+        Row: StravaUnmatched & Record<string, unknown>
+        Insert: {
+          id?: string
+          coach_user_id?: string | null
+          strava_activity_id: number
+          activity_data: Json
+          created_at?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_session_id?: string | null
+        } & Record<string, unknown>
+        Update: Partial<StravaUnmatched> & Record<string, unknown>
+        Relationships: []
       }
       session_rsvp: {
-        Row: SessionRsvp
+        Row: SessionRsvp & Record<string, unknown>
         Insert: Omit<SessionRsvp, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<SessionRsvp>
+        Relationships: []
       }
       notifications: {
-        Row: Notification
-        Insert: Omit<Notification, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<Notification>
+        Row: Notification & Record<string, unknown>
+        Insert: {
+          id?: string
+          user_id: string
+          type: 'milestone' | 'feel_prompt' | 'unmatched_run' | 'strava_disconnected' | 'general'
+          payload: Json
+          read?: boolean
+          channel: 'in_app' | 'email' | 'push'
+          delivered_at?: string | null
+          created_at?: string
+        } & Record<string, unknown>
+        Update: Partial<Notification> & Record<string, unknown>
+        Relationships: []
       }
       invitations: {
-        Row: Invitation
+        Row: Invitation & Record<string, unknown>
         Insert: Omit<Invitation, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<Invitation>
+        Relationships: []
       }
     }
     Views: Record<string, never>
