@@ -55,15 +55,16 @@ export async function POST(request: NextRequest): Promise<Response> {
     return NextResponse.json({ ok: true })
   }
 
-  // Fire and forget — never await
-  processStravaActivity(
-    object_id,
-    connection.user_id,
-    aspect_type as 'create' | 'update' | 'delete',
-    body as object
-  ).catch((err: unknown) =>
+  try {
+    await processStravaActivity(
+      object_id,
+      connection.user_id,
+      aspect_type as 'create' | 'update' | 'delete',
+      body as object
+    )
+  } catch (err: unknown) {
     console.error('Sync error:', err instanceof Error ? err.message : err)
-  )
+  }
 
   return NextResponse.json({ ok: true })
 }
