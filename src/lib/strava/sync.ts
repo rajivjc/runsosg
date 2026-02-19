@@ -32,6 +32,7 @@ export async function processStravaActivity(
 
   const logId = logRow.id
 
+  try {
   // ── Step 2: Handle delete ──────────────────────────────────────────────────
   if (eventType === 'delete') {
     await adminClient
@@ -226,4 +227,16 @@ export async function processStravaActivity(
     },
     read: false,
   })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('processStravaActivity fatal error:', message)
+    await adminClient
+      .from('strava_sync_log')
+      .update({
+        status: 'error' as const,
+        error_message: message,
+        processed_at: new Date().toISOString(),
+      })
+      .eq('id', logId)
+  }
 }
