@@ -1,15 +1,12 @@
 import './globals.css';
-import AppShell from '@/components/AppShell';
 
 export const metadata = { title: 'SOSG Running Club Hub' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <AppShell>
-          {children}
-        </AppShell>
+    <html lang="en" className="h-full">
+      <body className="h-full">
+        {children}
       </body>
     </html>
   );

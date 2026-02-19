@@ -10,6 +10,7 @@ const PROTECTED_PATHS = [
 
 const PUBLIC_PATHS = [
   '/login',
+  '/auth/callback',
   '/api/strava/webhook',
   '/api/health',
   '/',
@@ -59,7 +60,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
 
   // If the route is protected and there's no user, redirect to /login
-  if (isProtected(pathname) && !isPublic(pathname) && !user) {
+  if (isProtected(pathname) && !user) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     return NextResponse.redirect(loginUrl)
