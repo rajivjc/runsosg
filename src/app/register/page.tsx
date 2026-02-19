@@ -1,5 +1,1 @@
-import SpecGate from '@/components/SpecGate';
-
-export default function RegisterPage() {
-  return <SpecGate screenId="register" />;
-}
+export default function Page() { return null; }

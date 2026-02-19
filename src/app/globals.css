@@ -1,7 +1,1 @@
-/**
- * Global Styles
- * Imports unified tokens from src/styles/tokens.css
- * No duplicate token definitions here
- */
-
-@import '../styles/tokens.css';
+@import "tailwindcss";

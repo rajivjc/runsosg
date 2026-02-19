@@ -1,2 +1,1 @@
-import SpecGate from '@/components/SpecGate';
-export default function Page({ params }: { params: { athleteId: string } }) { return <SpecGate screenId='add_session' routeParams={params} />; }
+export default function Page() { return null; }
