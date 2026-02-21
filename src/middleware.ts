@@ -5,6 +5,7 @@ const PROTECTED_PATHS = [
   '/dashboard',
   '/athletes',
   '/admin',
+  '/account',
   '/api/strava/connect',
   '/api/strava/callback',
 ]

@@ -11,6 +11,7 @@ export default function BottomNavClient({ isAdmin }: Props) {
   const tabs = [
     { href: '/athletes', label: 'Athletes', emoji: '🏃' },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin', emoji: '⚙️' }] : []),
+    { href: '/account', label: 'Account', emoji: '👤' },
   ]
 
   return (
