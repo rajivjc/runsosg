@@ -45,7 +45,7 @@ export default async function AdminPage() {
     .order('name', { ascending: true })
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-8 space-y-10">
+    <main className="max-w-3xl mx-auto px-4 py-8 pb-24 space-y-10">
       <h1 className="text-2xl font-bold text-gray-900">Admin</h1>
 
       {/* Invite form */}

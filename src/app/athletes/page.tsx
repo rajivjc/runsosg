@@ -53,7 +53,7 @@ export default async function AthletesPage() {
   })
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6">
+    <main className="max-w-2xl mx-auto px-4 py-6 pb-24">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Athletes</h1>
 
       {showStravaBanner && <StravaConnectBanner />}
