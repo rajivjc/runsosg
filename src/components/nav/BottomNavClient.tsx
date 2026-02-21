@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-type Props = { isAdmin: boolean }
+type Props = { isAdmin: boolean; isCaregiver?: boolean }
 
-export default function BottomNavClient({ isAdmin }: Props) {
+export default function BottomNavClient({ isAdmin, isCaregiver = false }: Props) {
   const pathname = usePathname()
 
   const tabs = [
-    { href: '/athletes', label: 'Athletes', emoji: '🏃' },
+    { href: '/athletes', label: isCaregiver ? 'My Child' : 'Athletes', emoji: '🏃' },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin', emoji: '⚙️' }] : []),
     { href: '/account', label: 'Account', emoji: '👤' },
   ]

@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
         const role = userRow?.role
 
         if (role === 'caregiver') {
-          // Find the athlete linked to this caregiver via invitations
           const { data: invitation } = await adminClient
             .from('invitations')
             .select('athlete_id')
@@ -36,11 +35,17 @@ export async function GET(request: NextRequest) {
             .single()
 
           if (invitation?.athlete_id) {
+            // Set caregiver_user_id on the athlete row if not already set
+            await adminClient
+              .from('athletes')
+              .update({ caregiver_user_id: user.id })
+              .eq('id', invitation.athlete_id)
+              .is('caregiver_user_id', null)
+
             return NextResponse.redirect(`${baseUrl}/athletes/${invitation.athlete_id}`)
           }
         }
 
-        // coaches and admins go to /athletes
         return NextResponse.redirect(`${baseUrl}/athletes`)
       }
     }

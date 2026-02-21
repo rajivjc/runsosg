@@ -14,6 +14,7 @@ export default async function BottomNav() {
     .single()
 
   const isAdmin = userRow?.role === 'admin'
+  const isCaregiver = userRow?.role === 'caregiver'
 
-  return <BottomNavClient isAdmin={isAdmin} />
+  return <BottomNavClient isAdmin={isAdmin} isCaregiver={isCaregiver} />
 }

@@ -61,13 +61,8 @@ type AthleteTabsProps = {
   notes: NoteData[]
   milestones: MilestoneData[]
   addCoachNote: (athleteId: string, content: string) => Promise<void>
+  isReadOnly?: boolean
 }
-
-const tabs: { key: Tab; label: string }[] = [
-  { key: 'feed', label: 'Runs' },
-  { key: 'cues', label: 'Cues' },
-  { key: 'notes', label: 'Notes' },
-]
 
 export default function AthleteTabs({
   athlete,
@@ -76,6 +71,7 @@ export default function AthleteTabs({
   notes,
   milestones,
   addCoachNote,
+  isReadOnly = false,
 }: AthleteTabsProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('feed')
@@ -86,6 +82,12 @@ export default function AthleteTabs({
 
   // Find the most recent completed session for quick log
   const latestSession = sessions[0] ?? null
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'feed', label: 'Runs' },
+    ...(!isReadOnly ? [{ key: 'cues' as Tab, label: 'Cues' }] : []),
+    { key: 'notes', label: 'Notes' },
+  ]
 
   async function handleSaveNote() {
     const trimmed = noteText.trim()
@@ -126,66 +128,70 @@ export default function AthleteTabs({
       )}
       {activeTab === 'notes' && <NotesTab notes={notes} />}
 
-      {/* Quick action buttons */}
-      <div className="mt-6 pb-4">
-        <div className="max-w-2xl mx-auto">
-          {showNoteInput && (
-            <div className="mb-3 flex gap-2">
-              <textarea
-                autoFocus
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                placeholder="Write a coach note…"
-                className="flex-1 border border-gray-300 rounded-lg p-2 text-sm resize-none h-16 focus:ring-2 focus:ring-teal-500 focus:outline-none"
-              />
-              <div className="flex flex-col gap-1">
-                <button
-                  onClick={handleSaveNote}
-                  disabled={savingNote || !noteText.trim()}
-                  className="bg-teal-600 text-white rounded-lg px-3 py-1 text-sm font-medium disabled:opacity-50"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => {
-                    setShowNoteInput(false)
-                    setNoteText('')
-                  }}
-                  className="text-gray-500 text-sm px-3 py-1"
-                >
-                  Cancel
-                </button>
+      {/* Quick action buttons — coaches only */}
+      {!isReadOnly && (
+        <div className="mt-6 pb-4">
+          <div className="max-w-2xl mx-auto">
+            {showNoteInput && (
+              <div className="mb-3 flex gap-2">
+                <textarea
+                  autoFocus
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="Write a coach note…"
+                  className="flex-1 border border-gray-300 rounded-lg p-2 text-sm resize-none h-16 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                />
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={handleSaveNote}
+                    disabled={savingNote || !noteText.trim()}
+                    className="bg-teal-600 text-white rounded-lg px-3 py-1 text-sm font-medium disabled:opacity-50"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowNoteInput(false)
+                      setNoteText('')
+                    }}
+                    className="text-gray-500 text-sm px-3 py-1"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setLogSheetOpen(true)}
+                className="flex-1 bg-teal-600 text-white rounded-lg py-2 text-sm font-medium"
+              >
+                Log Feel
+              </button>
+              <button
+                onClick={() => setShowNoteInput((v) => !v)}
+                className="flex-1 bg-white border border-gray-300 text-gray-700 rounded-lg py-2 text-sm font-medium"
+              >
+                Add Note
+              </button>
             </div>
-          )}
-          <div className="flex gap-3">
-            <button
-              onClick={() => setLogSheetOpen(true)}
-              className="flex-1 bg-teal-600 text-white rounded-lg py-2 text-sm font-medium"
-            >
-              Log Feel
-            </button>
-            <button
-              onClick={() => setShowNoteInput((v) => !v)}
-              className="flex-1 bg-white border border-gray-300 text-gray-700 rounded-lg py-2 text-sm font-medium"
-            >
-              Add Note
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Quick Log Sheet */}
-      <QuickLogSheet
-        sessionId={latestSession?.id ?? null}
-        athleteId={athlete.id}
-        isOpen={logSheetOpen}
-        onClose={() => setLogSheetOpen(false)}
-        onSaved={() => {
-          setLogSheetOpen(false)
-          router.refresh()
-        }}
-      />
+      {!isReadOnly && (
+        <QuickLogSheet
+          sessionId={latestSession?.id ?? null}
+          athleteId={athlete.id}
+          isOpen={logSheetOpen}
+          onClose={() => setLogSheetOpen(false)}
+          onSaved={() => {
+            setLogSheetOpen(false)
+            router.refresh()
+          }}
+        />
+      )}
     </>
   )
 }
