@@ -52,3 +52,39 @@ export async function updateAthlete(
   revalidatePath(`/athletes/${athleteId}`)
   return {}
 }
+
+export async function createManualSession(
+  athleteId: string,
+  formData: FormData
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const date = (formData.get('date') as string ?? '').trim()
+  if (!date) return { error: 'Date is required' }
+
+  const distanceKm = parseFloat(formData.get('distance_km') as string ?? '')
+  const durationMinutes = parseInt(formData.get('duration_minutes') as string ?? '')
+  const feel = parseInt(formData.get('feel') as string ?? '') || null
+  const note = (formData.get('note') as string ?? '').trim() || null
+
+  const { error } = await supabase
+    .from('sessions')
+    .insert({
+      athlete_id: athleteId,
+      coach_user_id: user.id,
+      date,
+      distance_km: isNaN(distanceKm) ? null : distanceKm,
+      duration_seconds: isNaN(durationMinutes) ? null : durationMinutes * 60,
+      feel: (feel !== null && feel >= 1 && feel <= 5) ? (feel as 1 | 2 | 3 | 4 | 5) : null,
+      note,
+      sync_source: 'manual',
+      status: 'completed',
+    })
+
+  if (error) return { error: `Failed to log session: ${error.message}` }
+
+  revalidatePath(`/athletes/${athleteId}`)
+  return {}
+}

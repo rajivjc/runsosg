@@ -6,7 +6,8 @@ import type { Json } from '@/lib/supabase/types'
 import RunsTab from './RunsTab'
 import CuesTab from './CuesTab'
 import NotesTab from './NotesTab'
-import QuickLogSheet from './QuickLogSheet'
+import LogRunSheet from './LogRunSheet'
+import { createManualSession } from '@/app/athletes/[id]/actions'
 
 export type AthleteData = {
   id: string
@@ -75,13 +76,10 @@ export default function AthleteTabs({
 }: AthleteTabsProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('feed')
-  const [logSheetOpen, setLogSheetOpen] = useState(false)
   const [showNoteInput, setShowNoteInput] = useState(false)
   const [noteText, setNoteText] = useState('')
   const [savingNote, setSavingNote] = useState(false)
-
-  // Find the most recent completed session for quick log
-  const latestSession = sessions[0] ?? null
+  const [logRunOpen, setLogRunOpen] = useState(false)
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'feed', label: 'Runs' },
@@ -121,7 +119,12 @@ export default function AthleteTabs({
 
       {/* Tab content */}
       {activeTab === 'feed' && (
-        <RunsTab sessions={sessions} milestones={milestones} />
+        <RunsTab
+          sessions={sessions}
+          milestones={milestones}
+          isReadOnly={isReadOnly}
+          onSessionUpdated={() => router.refresh()}
+        />
       )}
       {activeTab === 'cues' && (
         <CuesTab athleteId={athlete.id} initialCues={cues} />
@@ -163,33 +166,27 @@ export default function AthleteTabs({
             )}
             <div className="flex gap-3">
               <button
-                onClick={() => setLogSheetOpen(true)}
-                className="flex-1 bg-teal-600 text-white rounded-lg py-2 text-sm font-medium"
-              >
-                Log Feel
+                onClick={() => setShowNoteInput((v) => !v)}
+                className="flex-1 bg-white border border-gray-300 text-gray-700 rounded-lg py-2 text-sm font-medium">
+                Add Note
               </button>
               <button
-                onClick={() => setShowNoteInput((v) => !v)}
-                className="flex-1 bg-white border border-gray-300 text-gray-700 rounded-lg py-2 text-sm font-medium"
-              >
-                Add Note
+                onClick={() => setLogRunOpen(true)}
+                className="flex-1 bg-teal-600 text-white rounded-lg py-2 text-sm font-medium">
+                + Log run
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Quick Log Sheet */}
       {!isReadOnly && (
-        <QuickLogSheet
-          sessionId={latestSession?.id ?? null}
+        <LogRunSheet
           athleteId={athlete.id}
-          isOpen={logSheetOpen}
-          onClose={() => setLogSheetOpen(false)}
-          onSaved={() => {
-            setLogSheetOpen(false)
-            router.refresh()
-          }}
+          isOpen={logRunOpen}
+          onClose={() => setLogRunOpen(false)}
+          onSaved={() => { setLogRunOpen(false); router.refresh() }}
+          createSession={createManualSession}
         />
       )}
     </>
