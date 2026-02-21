@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import AthleteSearch from '@/components/athletes/AthleteSearch'
 import { adminClient } from '@/lib/supabase/admin'
 import StravaConnectBanner from '@/components/athletes/StravaConnectBanner'
+import Link from 'next/link'
 
 export type AthleteListItem = {
   id: string
@@ -25,6 +26,11 @@ export default async function AthletesPage() {
     : { data: null }
 
   const showStravaBanner = !!user && !stravaConnection
+
+  const { data: userRow } = user
+    ? await adminClient.from('users').select('role').eq('id', user.id).single()
+    : { data: null }
+  const isAdmin = userRow?.role === 'admin'
 
   const [{ data: athletes }, { data: sessions }] = await Promise.all([
     supabase
@@ -54,7 +60,17 @@ export default async function AthletesPage() {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-24">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Athletes</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Athletes</h1>
+        {isAdmin && (
+          <Link
+            href="/admin/athletes/new"
+            className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg px-3 py-1.5 transition-colors"
+          >
+            + Add athlete
+          </Link>
+        )}
+      </div>
 
       {showStravaBanner && <StravaConnectBanner />}
 

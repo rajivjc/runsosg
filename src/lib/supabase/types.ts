@@ -23,7 +23,7 @@ export interface Database {
       }
       athletes: {
         Row: Athlete & Record<string, unknown>
-        Insert: Omit<Athlete, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Insert: Omit<Athlete, 'id' | 'created_at' | 'updated_at' | 'updated_by'> & { id?: string; created_at?: string | null; updated_at?: string | null; updated_by?: string | null }
         Update: Partial<Athlete>
         Relationships: []
       }
@@ -187,7 +187,6 @@ export interface User {
 export interface Athlete {
   id: string
   name: string
-  caregiver_user_id: string | null
   photo_url: string | null
   active: boolean
   date_of_birth: string | null
@@ -196,9 +195,10 @@ export interface Athlete {
   communication_notes: string | null
   medical_notes: string | null
   emergency_contact: string | null
+  caregiver_user_id: string | null
   updated_by: string | null
   updated_at: string | null
-  created_at: string
+  created_at: string | null
 }
 
 export interface Session {

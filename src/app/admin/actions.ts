@@ -89,3 +89,57 @@ export async function toggleUserActive(
   revalidatePath('/admin')
   return { success: active ? 'User reactivated' : 'User deactivated' }
 }
+
+export type CreateAthleteState = {
+  error?: string
+  success?: string
+  athleteId?: string
+}
+
+export async function createAthlete(
+  _prev: CreateAthleteState,
+  formData: FormData
+): Promise<CreateAthleteState> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+
+  const name = (formData.get('name') as string ?? '').trim()
+  if (!name) return { error: 'Name is required' }
+
+  const date_of_birth = (formData.get('date_of_birth') as string ?? '').trim() || null
+  const running_goal = (formData.get('running_goal') as string ?? '').trim() || null
+  const communication_notes = (formData.get('communication_notes') as string ?? '').trim() || null
+  const medical_notes = (formData.get('medical_notes') as string ?? '').trim() || null
+  const emergency_contact = (formData.get('emergency_contact') as string ?? '').trim() || null
+
+  const { data, error } = await adminClient
+    .from('athletes')
+    .insert({
+      name,
+      active: true,
+      date_of_birth,
+      running_goal,
+      communication_notes,
+      medical_notes,
+      emergency_contact,
+      caregiver_user_id: null,
+      photo_url: null,
+      joined_at: new Date().toISOString(),
+    })
+    .select('id')
+    .single()
+
+  if (error) return { error: `Failed to create athlete: ${error.message}` }
+
+  revalidatePath('/athletes')
+  revalidatePath('/admin')
+  return { success: 'Athlete created', athleteId: data.id }
+}
