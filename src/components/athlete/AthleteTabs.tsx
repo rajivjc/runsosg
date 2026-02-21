@@ -25,6 +25,8 @@ export type SessionData = {
   note: string | null
   sync_source: 'strava_webhook' | 'manual' | 'backfill' | null
   coach_user_id: string | null
+  strava_activity_id: number | null
+  coach_name: string | null
 }
 
 export type CuesData = {

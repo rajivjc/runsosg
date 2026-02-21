@@ -102,6 +102,22 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
             {note && (
               <p className="text-sm text-gray-600 mt-1 line-clamp-2">{note}</p>
             )}
+            <div className="flex items-center gap-2 mt-1">
+              {s.coach_name && (
+                <span className="text-xs text-gray-400">💟 {s.coach_name}</span>
+              )}
+              {s.strava_activity_id && (
+                <a
+                  href={`https://www.strava.com/activities/${s.strava_activity_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-orange-500 hover:text-orange-600"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  View on Strava ↗
+                </a>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-xs text-gray-400 whitespace-nowrap">

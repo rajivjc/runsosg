@@ -1,7 +1,9 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { adminClient } from '@/lib/supabase/admin'
 import EditAthleteForm from '@/components/athlete/EditAthleteForm'
+import DeleteAthleteButton from '@/components/admin/DeleteAthleteButton'
 import { updateAthlete } from '../actions'
 
 interface PageProps {
@@ -14,6 +16,13 @@ export default async function EditAthletePage({ params }: PageProps) {
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin') redirect('/athletes')
 
   const { data: athlete } = await supabase
     .from('athletes')
@@ -41,6 +50,11 @@ export default async function EditAthletePage({ params }: PageProps) {
       </Link>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit profile</h1>
       <EditAthleteForm athlete={athlete} onUpdate={handleUpdate} />
+
+      <div className="mt-10 pt-6 border-t border-gray-200">
+        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">Danger zone</p>
+        <DeleteAthleteButton athleteId={id} athleteName={athlete.name} />
+      </div>
     </main>
   )
 }

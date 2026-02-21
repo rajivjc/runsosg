@@ -49,7 +49,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
     supabase
       .from('sessions')
-      .select('id, date, distance_km, duration_seconds, feel, note, sync_source, coach_user_id')
+      .select('id, date, distance_km, duration_seconds, feel, note, sync_source, coach_user_id, strava_activity_id, users(name, email)')
       .eq('athlete_id', id)
       .order('date', { ascending: false })
       .limit(50),
@@ -77,6 +77,11 @@ export default async function AthleteHubPage({ params }: PageProps) {
     ...n,
     coach_email: n.users?.email ?? null,
     coach_name: n.users?.name ?? null,
+  }))
+
+  const flatSessions = (sessions ?? []).map((s: any) => ({
+    ...s,
+    coach_name: s.users?.name ?? (s.users?.email ? s.users.email.split('@')[0] : null),
   }))
 
   if (!athlete) {
@@ -124,22 +129,22 @@ export default async function AthleteHubPage({ params }: PageProps) {
       {/* Profile strip */}
       <div className="mb-6 space-y-1.5">
         {athlete.running_goal && (
-          <p className="text-sm text-teal-700 font-medium">🎯 {athlete.running_goal}</p>
+          <p className="text-sm text-teal-700 font-medium line-clamp-1">🎯 {athlete.running_goal}</p>
         )}
         {athlete.medical_notes && (
-          <p className="text-sm text-orange-700">🏥 {athlete.medical_notes}</p>
+          <p className="text-sm text-orange-700 line-clamp-2">🏥 {athlete.medical_notes}</p>
         )}
         {athlete.emergency_contact && (
-          <p className="text-sm text-gray-600">📞 {athlete.emergency_contact}</p>
+          <p className="text-sm text-gray-600 line-clamp-1">📞 {athlete.emergency_contact}</p>
         )}
         {athlete.communication_notes && (
-          <p className="text-sm text-gray-500">💬 {athlete.communication_notes}</p>
+          <p className="text-sm text-gray-500 line-clamp-2">💬 {athlete.communication_notes}</p>
         )}
       </div>
 
       <AthleteTabs
         athlete={athlete}
-        sessions={sessions ?? []}
+        sessions={flatSessions}
         cues={cues ?? null}
         notes={flatNotes}
         milestones={milestones ?? []}

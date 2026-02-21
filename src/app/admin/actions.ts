@@ -201,3 +201,27 @@ export async function cancelInvitation(invitationId: string): Promise<{ error?: 
   revalidatePath('/admin')
   return {}
 }
+
+export async function deleteAthlete(athleteId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+
+  const { error } = await adminClient
+    .from('athletes')
+    .delete()
+    .eq('id', athleteId)
+
+  if (error) return { error: `Failed to delete athlete: ${error.message}` }
+
+  revalidatePath('/athletes')
+  revalidatePath('/admin')
+  return {}
+}
