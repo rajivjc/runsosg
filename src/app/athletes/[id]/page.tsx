@@ -144,8 +144,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
         notes={flatNotes}
         milestones={milestones ?? []}
         addCoachNote={addCoachNote}
-        isReadOnly={isReadOnly}
-      />
+        isReadOnly={isReadOnly}        currentUserId={user?.id}      />
     </main>
   )
 }

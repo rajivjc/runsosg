@@ -127,3 +127,73 @@ export async function saveCues(
   if (error) return { error: error.message }
   return { data }
 }
+
+export async function updateCoachNote(
+  noteId: string,
+  content: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await adminClient
+    .from('coach_notes')
+    .update({ content })
+    .eq('id', noteId)
+    .eq('coach_user_id', user.id)
+
+  if (error) return { error: error.message }
+  revalidatePath('/athletes')
+  return {}
+}
+
+export async function deleteCoachNote(
+  noteId: string,
+  athleteId: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await adminClient
+    .from('coach_notes')
+    .delete()
+    .eq('id', noteId)
+    .eq('coach_user_id', user.id)
+
+  if (error) return { error: error.message }
+  revalidatePath(`/athletes/${athleteId}`)
+  return {}
+}
+
+export async function updateManualSession(
+  sessionId: string,
+  data: {
+    date: string
+    distance_km: number | null
+    duration_seconds: number | null
+    feel: number | null
+    note: string | null
+  }
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await adminClient
+    .from('sessions')
+    .update({
+      date: data.date,
+      distance_km: data.distance_km,
+      duration_seconds: data.duration_seconds,
+      feel: data.feel as 1 | 2 | 3 | 4 | 5 | null,
+      note: data.note,
+    })
+    .eq('id', sessionId)
+    .eq('sync_source', 'manual')
+    .eq('coach_user_id', user.id)
+
+  if (error) return { error: error.message }
+  revalidatePath('/athletes')
+  return {}
+}

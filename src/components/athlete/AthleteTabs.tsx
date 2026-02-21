@@ -67,6 +67,7 @@ type AthleteTabsProps = {
   milestones: MilestoneData[]
   addCoachNote: (athleteId: string, content: string) => Promise<void>
   isReadOnly?: boolean
+  currentUserId?: string
 }
 
 export default function AthleteTabs({
@@ -77,6 +78,7 @@ export default function AthleteTabs({
   milestones,
   addCoachNote,
   isReadOnly = false,
+  currentUserId,
 }: AthleteTabsProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('feed')
@@ -138,6 +140,8 @@ export default function AthleteTabs({
         <NotesTab
           notes={notes}
           isReadOnly={isReadOnly}
+          currentUserId={currentUserId}
+          athleteId={athlete.id}
           showNoteInput={showNoteInput}
           noteText={noteText}
           savingNote={savingNote}
@@ -145,6 +149,7 @@ export default function AthleteTabs({
           onNoteTextChange={(text) => setNoteText(text)}
           onSaveNote={handleSaveNote}
           onCancelNote={() => { setShowNoteInput(false); setNoteText('') }}
+          onNotesChanged={() => router.refresh()}
         />
       )}
 
