@@ -58,14 +58,17 @@ export default function StravaStatus({ connection }: { connection: Connection })
         >
           Reconnect
         </a>
-        <form action={disconnectStrava} className="inline">
-          <button
-            type="submit"
-            className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-100 rounded-lg px-3 py-1.5 transition-colors"
-          >
-            Disconnect
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm('Disconnect Strava? Your runs will no longer sync automatically.')) {
+              disconnectStrava()
+            }
+          }}
+          className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-100 rounded-lg px-3 py-1.5 transition-colors"
+        >
+          Disconnect
+        </button>
       </div>
     </div>
   )

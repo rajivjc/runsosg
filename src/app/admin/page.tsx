@@ -3,6 +3,7 @@ import { adminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AdminInviteForm from '@/components/admin/AdminInviteForm'
 import UserRow from '@/components/admin/UserRow'
+import CancelInviteButton from '@/components/admin/CancelInviteButton'
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -67,9 +68,12 @@ export default async function AdminPage() {
                   <p className="text-sm font-medium text-gray-900">{inv.email}</p>
                   <p className="text-xs text-gray-500 capitalize">{inv.role}</p>
                 </div>
-                <p className="text-xs text-gray-400">
-                  {new Date(inv.created_at).toLocaleDateString('en-SG')}
-                </p>
+                <div className="flex items-center gap-3">
+                  <p className="text-xs text-gray-400">
+                    {new Date(inv.created_at).toLocaleDateString('en-SG')}
+                  </p>
+                  <CancelInviteButton invitationId={inv.id} email={inv.email} />
+                </div>
               </div>
             ))}
           </div>

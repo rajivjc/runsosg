@@ -12,7 +12,11 @@ export type AthleteListItem = {
   lastSessionDate: string | null
 }
 
-export default async function AthletesPage() {
+export default async function AthletesPage({
+  searchParams,
+}: {
+  searchParams: { connected?: string }
+}) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -72,6 +76,12 @@ export default async function AthletesPage() {
         )}
       </div>
 
+      {searchParams.connected === 'strava' && (
+        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800 flex items-center gap-2">
+          <span>✓</span>
+          <span>Strava connected! Your runs will now sync automatically.</span>
+        </div>
+      )}
       {showStravaBanner && <StravaConnectBanner />}
 
       {athleteList.length === 0 ? (

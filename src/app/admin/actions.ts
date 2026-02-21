@@ -178,3 +178,26 @@ export async function changeUserRole(
   revalidatePath('/admin')
   return { success: 'Role updated' }
 }
+
+export async function cancelInvitation(invitationId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+
+  const { error } = await adminClient
+    .from('invitations')
+    .delete()
+    .eq('id', invitationId)
+
+  if (error) return { error: `Failed to cancel invitation: ${error.message}` }
+
+  revalidatePath('/admin')
+  return {}
+}

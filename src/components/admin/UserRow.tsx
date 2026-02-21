@@ -18,10 +18,19 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
   const [roleChanging, setRoleChanging] = useState(false)
 
   async function handleToggle() {
+    if (!active) {
+      // Reactivating — no confirmation needed
+      setBusy(true)
+      setError(null)
+      await toggleUserActive(userId, true)
+      setBusy(false)
+      return
+    }
+    // Deactivating — confirm first
+    if (!window.confirm(`Deactivate ${email}? They will be signed out and lose access immediately.`)) return
     setBusy(true)
     setError(null)
-    const result = await toggleUserActive(userId, !active)
-    if (result.error) setError(result.error)
+    await toggleUserActive(userId, false)
     setBusy(false)
   }
 
