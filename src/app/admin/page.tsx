@@ -38,9 +38,13 @@ export default async function AdminPage() {
     .is('accepted_at', null)
     .order('created_at', { ascending: false })
 
-  // Exclude users whose email is still in the pending invitations list
-  const pendingEmails = new Set((invitations ?? []).map((inv) => inv.email))
-  const activeUsers = (users ?? []).filter((u) => !pendingEmails.has(emailMap[u.id]))
+  // Only show users who have actually signed in (last_sign_in_at is not null)
+  const signedInIds = new Set(
+    (authUsers ?? [])
+      .filter((u) => u.last_sign_in_at != null)
+      .map((u) => u.id)
+  )
+  const activeUsers = (users ?? []).filter((u) => signedInIds.has(u.id))
 
   // Fetch athletes for the invite form caregiver dropdown
   const { data: athletes } = await adminClient

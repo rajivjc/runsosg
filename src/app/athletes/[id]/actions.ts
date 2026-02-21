@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { adminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function addCoachNote(athleteId: string, content: string): Promise<void> {
@@ -87,4 +88,42 @@ export async function createManualSession(
 
   revalidatePath(`/athletes/${athleteId}`)
   return {}
+}
+
+export async function saveCues(
+  athleteId: string,
+  cuesData: {
+    id?: string
+    helps: string[]
+    avoid: string[]
+    best_cues: string[]
+    kit: string[]
+    version: number
+  }
+): Promise<{ error?: string; data?: any }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const payload = {
+    athlete_id: athleteId,
+    helps: cuesData.helps,
+    avoid: cuesData.avoid,
+    best_cues: cuesData.best_cues,
+    kit: cuesData.kit,
+    version: cuesData.version + 1,
+    previous_cues: null,
+    updated_by: user.id,
+    updated_at: new Date().toISOString(),
+    ...(cuesData.id ? { id: cuesData.id } : {}),
+  }
+
+  const { data, error } = await adminClient
+    .from('cues')
+    .upsert(payload, { onConflict: 'athlete_id' })
+    .select()
+    .single()
+
+  if (error) return { error: error.message }
+  return { data }
 }
