@@ -60,7 +60,7 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
         updated_at: new Date().toISOString(),
         ...(updated.id ? { id: updated.id } : {}),
       }
-      const { data } = await supabase.from('cues').upsert(payload).select().single()
+      const { data } = await supabase.from('cues').upsert(payload, { onConflict: 'athlete_id' }).select().single()
       if (data) {
         setCues(data as unknown as CuesData)
       }

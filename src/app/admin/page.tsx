@@ -38,6 +38,10 @@ export default async function AdminPage() {
     .is('accepted_at', null)
     .order('created_at', { ascending: false })
 
+  // Exclude users whose email is still in the pending invitations list
+  const pendingEmails = new Set((invitations ?? []).map((inv) => inv.email))
+  const activeUsers = (users ?? []).filter((u) => !pendingEmails.has(emailMap[u.id]))
+
   // Fetch athletes for the invite form caregiver dropdown
   const { data: athletes } = await adminClient
     .from('athletes')
@@ -83,11 +87,11 @@ export default async function AdminPage() {
       {/* Current users */}
       <section>
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Current users</h2>
-        {(users ?? []).length === 0 ? (
+        {activeUsers.length === 0 ? (
           <p className="text-sm text-gray-500">No users yet.</p>
         ) : (
           <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
-            {(users ?? []).map((u) => (
+            {activeUsers.map((u) => (
               <UserRow
                 key={u.id}
                 userId={u.id}

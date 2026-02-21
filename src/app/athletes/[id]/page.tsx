@@ -49,7 +49,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
     supabase
       .from('sessions')
-      .select('id, date, distance_km, duration_seconds, feel, note, sync_source, coach_user_id, strava_activity_id, users(name, email)')
+      .select('id, date, distance_km, duration_seconds, feel, note, sync_source, coach_user_id, strava_activity_id')
       .eq('athlete_id', id)
       .order('date', { ascending: false })
       .limit(50),
@@ -79,9 +79,17 @@ export default async function AthleteHubPage({ params }: PageProps) {
     coach_name: n.users?.name ?? null,
   }))
 
+  // Build a map of coach user_id -> display name from the users we already fetched
+  const coachIds = [...new Set((sessions ?? []).map((s: any) => s.coach_user_id).filter(Boolean))]
+  const { data: coachUsers } = coachIds.length > 0
+    ? await adminClient.from('users').select('id, name, email').in('id', coachIds)
+    : { data: [] }
+  const coachMap = Object.fromEntries(
+    (coachUsers ?? []).map((u: any) => [u.id, u.name ?? u.email?.split('@')[0] ?? null])
+  )
   const flatSessions = (sessions ?? []).map((s: any) => ({
     ...s,
-    coach_name: s.users?.name ?? (s.users?.email ? s.users.email.split('@')[0] : null),
+    coach_name: coachMap[s.coach_user_id] ?? null,
   }))
 
   if (!athlete) {

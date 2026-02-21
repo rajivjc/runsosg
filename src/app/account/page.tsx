@@ -8,7 +8,7 @@ import DisplayNameForm from '@/components/account/DisplayNameForm'
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams: { setup?: string }
+  searchParams: { setup?: string; connected?: string }
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -35,6 +35,13 @@ export default async function AccountPage({
         <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-1">Signed in as</p>
         <p className="text-sm font-medium text-gray-800">{user.email}</p>
       </section>
+
+      {searchParams?.connected === 'strava' && (
+        <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800 flex items-center gap-2">
+          <span>✓</span>
+          <span>Strava connected! Your runs will now sync automatically.</span>
+        </div>
+      )}
 
       {/* Display name */}
       <section>
