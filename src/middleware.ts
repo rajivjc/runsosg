@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 const PROTECTED_PATHS = [
   '/dashboard',
   '/athletes',
+  '/admin',
   '/api/strava/connect',
   '/api/strava/callback',
 ]

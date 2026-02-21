@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import AthleteSearch from '@/components/athletes/AthleteSearch'
+import { adminClient } from '@/lib/supabase/admin'
+import StravaConnectBanner from '@/components/athletes/StravaConnectBanner'
 
 export type AthleteListItem = {
   id: string
@@ -11,6 +13,18 @@ export type AthleteListItem = {
 
 export default async function AthletesPage() {
   const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const { data: stravaConnection } = user
+    ? await adminClient
+        .from('strava_connections')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .single()
+    : { data: null }
+
+  const showStravaBanner = !!user && !stravaConnection
 
   const [{ data: athletes }, { data: sessions }] = await Promise.all([
     supabase
@@ -41,6 +55,8 @@ export default async function AthletesPage() {
   return (
     <main className="max-w-2xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Athletes</h1>
+
+      {showStravaBanner && <StravaConnectBanner />}
 
       {athleteList.length === 0 ? (
         <p className="text-center text-gray-500 py-12">No athletes found</p>
