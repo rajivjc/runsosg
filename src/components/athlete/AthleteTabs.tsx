@@ -88,7 +88,7 @@ export default function AthleteTabs({
   const tabs: { key: Tab; label: string }[] = [
     { key: 'feed', label: 'Runs' },
     ...(!isReadOnly ? [{ key: 'cues' as Tab, label: 'Cues' }] : []),
-    { key: 'notes', label: 'Notes' },
+    ...(!isReadOnly ? [{ key: 'notes' as Tab, label: 'Notes' }] : []),
   ]
 
   async function handleSaveNote() {
