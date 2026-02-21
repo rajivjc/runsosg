@@ -37,13 +37,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
+        getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
@@ -53,25 +49,36 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
   )
 
-  // Refresh the session on every request
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  // If the route is protected and there's no user, redirect to /login
   if (isProtected(pathname) && !user) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     return NextResponse.redirect(loginUrl)
   }
 
+  // If user is logged in, check active flag
+  if (user && isProtected(pathname)) {
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('active')
+      .eq('id', user.id)
+      .single()
+
+    if (userRow && userRow.active === false) {
+      // Sign out and redirect to login with revoked message
+      await supabase.auth.signOut()
+      const loginUrl = request.nextUrl.clone()
+      loginUrl.pathname = '/login'
+      loginUrl.search = '?error=revoked'
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+
   return response
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico).*)'],
 }

@@ -17,7 +17,7 @@ export interface Database {
       }
       users: {
         Row: User & Record<string, unknown>
-        Insert: Omit<User, 'created_at'> & { created_at?: string }
+        Insert: Omit<User, 'created_at' | 'active'> & { created_at?: string; active?: boolean }
         Update: Partial<User>
         Relationships: []
       }
@@ -180,6 +180,7 @@ export interface User {
   email: string
   name: string | null
   role: 'admin' | 'coach' | 'caregiver'
+  active: boolean
   created_at: string
 }
 

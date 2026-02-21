@@ -54,3 +54,38 @@ export async function inviteUser(
   revalidatePath('/admin')
   return { success: `Invitation sent to ${email}` }
 }
+
+export type ToggleActiveState = {
+  error?: string
+  success?: string
+}
+
+export async function toggleUserActive(
+  userId: string,
+  active: boolean
+): Promise<ToggleActiveState> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  // Prevent self-deactivation
+  if (userId === user.id) return { error: 'You cannot deactivate your own account' }
+
+  // Verify caller is admin
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+
+  const { error } = await adminClient
+    .from('users')
+    .update({ active })
+    .eq('id', userId)
+
+  if (error) return { error: `Failed to update user: ${error.message}` }
+
+  revalidatePath('/admin')
+  return { success: active ? 'User reactivated' : 'User deactivated' }
+}

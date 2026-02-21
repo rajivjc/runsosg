@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { sendMagicLink } from './actions'
 
 type PageState = 'idle' | 'loading' | 'success' | 'error'
@@ -10,6 +11,8 @@ export default function LoginPage() {
   const [pageState, setPageState] = useState<PageState>('idle')
   const [sentEmail, setSentEmail] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const searchParams = useSearchParams()
+  const isRevoked = searchParams.get('error') === 'revoked'
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -30,6 +33,11 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
+        {isRevoked && (
+          <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-center">
+            Your access has been revoked. Please contact your administrator.
+          </div>
+        )}
         <div className="text-4xl text-center mb-2">🏃</div>
         <h1 className="text-2xl font-bold text-center text-gray-900 mb-1">
           SOSG Running Club

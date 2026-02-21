@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AdminInviteForm from '@/components/admin/AdminInviteForm'
+import UserRow from '@/components/admin/UserRow'
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -19,11 +20,12 @@ export default async function AdminPage() {
   // Fetch users list
   const { data: users } = await adminClient
     .from('users')
-    .select('id, role, created_at')
+    .select('id, role, active, created_at')
     .order('created_at', { ascending: false })
 
   // Fetch auth emails to display alongside user rows
   const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
+  const currentUserId = user.id
   const emailMap = Object.fromEntries(
     (authUsers ?? []).map((u) => [u.id, u.email ?? '—'])
   )
@@ -82,15 +84,15 @@ export default async function AdminPage() {
         ) : (
           <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
             {(users ?? []).map((u) => (
-              <div key={u.id} className="flex items-center justify-between px-4 py-3 bg-white">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{emailMap[u.id] ?? '—'}</p>
-                  <p className="text-xs text-gray-500 capitalize">{u.role}</p>
-                </div>
-                <p className="text-xs text-gray-400">
-                  {new Date(u.created_at).toLocaleDateString('en-SG')}
-                </p>
-              </div>
+              <UserRow
+                key={u.id}
+                userId={u.id}
+                email={emailMap[u.id] ?? '—'}
+                role={u.role}
+                active={u.active}
+                createdAt={u.created_at}
+                isSelf={u.id === currentUserId}
+              />
             ))}
           </div>
         )}
