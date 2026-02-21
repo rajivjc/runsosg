@@ -28,32 +28,32 @@ export default async function AthleteHubPage({ params }: PageProps) {
     { data: notes },
     { data: milestones },
   ] = await Promise.all([
-    supabase
+    adminClient
       .from('athletes')
       .select('id, name, photo_url, active, date_of_birth, running_goal, communication_notes, medical_notes, emergency_contact')
       .eq('id', id)
       .single(),
 
-    supabase
+    adminClient
       .from('sessions')
       .select('id, date, distance_km, duration_seconds, feel, note, sync_source, coach_user_id, strava_activity_id')
       .eq('athlete_id', id)
       .order('date', { ascending: false })
       .limit(50),
 
-    supabase
+    adminClient
       .from('cues')
       .select('*')
       .eq('athlete_id', id)
       .single(),
 
-    supabase
+    adminClient
       .from('coach_notes')
       .select('id, content, created_at, coach_user_id, users(email, name)')
       .eq('athlete_id', id)
       .order('created_at', { ascending: false }),
 
-    supabase
+    adminClient
       .from('milestones')
       .select('id, label, achieved_at')
       .eq('athlete_id', id)
