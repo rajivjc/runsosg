@@ -112,6 +112,7 @@ export default async function AdminPage() {
                 active={u.active}
                 createdAt={u.created_at}
                 isSelf={u.id === currentUserId}
+                athletes={athletes ?? []}
               />
             ))}
           </div>

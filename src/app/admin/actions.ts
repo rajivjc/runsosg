@@ -151,7 +151,8 @@ export type ChangeRoleState = {
 
 export async function changeUserRole(
   userId: string,
-  newRole: 'coach' | 'caregiver' | 'admin'
+  newRole: 'coach' | 'caregiver' | 'admin',
+  athleteId?: string
 ): Promise<ChangeRoleState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -174,6 +175,14 @@ export async function changeUserRole(
     .eq('id', userId)
 
   if (error) return { error: `Failed to update role: ${error.message}` }
+
+  // If changing to caregiver and athleteId provided, link them to the athlete
+  if (newRole === 'caregiver' && athleteId) {
+    await adminClient
+      .from('athletes')
+      .update({ caregiver_user_id: userId })
+      .eq('id', athleteId)
+  }
 
   revalidatePath('/admin')
   return { success: 'Role updated' }
