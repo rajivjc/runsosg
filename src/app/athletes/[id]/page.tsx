@@ -21,19 +21,6 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
   const isReadOnly = currentUserRow?.role === 'caregiver'
 
-  if (isReadOnly && user) {
-    const { data: athleteLink } = await adminClient
-      .from('athletes')
-      .select('id')
-      .eq('id', id)
-      .eq('caregiver_user_id', user.id)
-      .single()
-
-    if (!athleteLink) {
-      redirect('/athletes')
-    }
-  }
-
   const [
     { data: athlete },
     { data: sessions },
