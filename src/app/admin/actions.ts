@@ -143,3 +143,38 @@ export async function createAthlete(
   revalidatePath('/admin')
   return { success: 'Athlete created', athleteId: data.id }
 }
+
+export type ChangeRoleState = {
+  error?: string
+  success?: string
+}
+
+export async function changeUserRole(
+  userId: string,
+  newRole: 'coach' | 'caregiver' | 'admin'
+): Promise<ChangeRoleState> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  // Prevent changing your own role
+  if (userId === user.id) return { error: 'You cannot change your own role' }
+
+  // Verify caller is admin
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+
+  const { error } = await adminClient
+    .from('users')
+    .update({ role: newRole })
+    .eq('id', userId)
+
+  if (error) return { error: `Failed to update role: ${error.message}` }
+
+  revalidatePath('/admin')
+  return { success: 'Role updated' }
+}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { toggleUserActive } from '@/app/admin/actions'
+import { toggleUserActive, changeUserRole } from '@/app/admin/actions'
 
 type Props = {
   userId: string
@@ -15,6 +15,7 @@ type Props = {
 export default function UserRow({ userId, email, role, active, createdAt, isSelf }: Props) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [roleChanging, setRoleChanging] = useState(false)
 
   async function handleToggle() {
     setBusy(true)
@@ -24,12 +25,34 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
     setBusy(false)
   }
 
+  async function handleRoleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newRole = e.target.value as 'coach' | 'caregiver' | 'admin'
+    setRoleChanging(true)
+    setError(null)
+    const result = await changeUserRole(userId, newRole)
+    if (result.error) setError(result.error)
+    setRoleChanging(false)
+  }
+
   return (
     <div className={`flex items-center justify-between px-4 py-3 bg-white ${!active ? 'opacity-50' : ''}`}>
       <div>
         <p className="text-sm font-medium text-gray-900">{email}</p>
         <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-xs text-gray-500 capitalize">{role}</p>
+          {isSelf ? (
+            <p className="text-xs text-gray-500 capitalize">{role}</p>
+          ) : (
+            <select
+              value={role}
+              onChange={handleRoleChange}
+              disabled={roleChanging}
+              className="text-xs text-gray-600 border border-gray-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 disabled:opacity-50"
+            >
+              <option value="coach">Coach</option>
+              <option value="caregiver">Caregiver</option>
+              <option value="admin">Admin</option>
+            </select>
+          )}
           {!active && (
             <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
               Inactive
