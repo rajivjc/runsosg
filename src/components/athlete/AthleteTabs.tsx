@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Json } from '@/lib/supabase/types'
-import FeedTab from './FeedTab'
+import RunsTab from './RunsTab'
 import CuesTab from './CuesTab'
 import NotesTab from './NotesTab'
 import QuickLogSheet from './QuickLogSheet'
@@ -64,7 +64,7 @@ type AthleteTabsProps = {
 }
 
 const tabs: { key: Tab; label: string }[] = [
-  { key: 'feed', label: 'Feed' },
+  { key: 'feed', label: 'Runs' },
   { key: 'cues', label: 'Cues' },
   { key: 'notes', label: 'Notes' },
 ]
@@ -119,15 +119,15 @@ export default function AthleteTabs({
 
       {/* Tab content */}
       {activeTab === 'feed' && (
-        <FeedTab sessions={sessions} notes={notes} milestones={milestones} />
+        <RunsTab sessions={sessions} milestones={milestones} />
       )}
       {activeTab === 'cues' && (
         <CuesTab athleteId={athlete.id} initialCues={cues} />
       )}
       {activeTab === 'notes' && <NotesTab notes={notes} />}
 
-      {/* Quick action buttons fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-30">
+      {/* Quick action buttons */}
+      <div className="mt-6 pb-4">
         <div className="max-w-2xl mx-auto">
           {showNoteInput && (
             <div className="mb-3 flex gap-2">
