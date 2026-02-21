@@ -45,6 +45,8 @@ export type NoteData = {
   content: string
   created_at: string
   coach_user_id: string | null
+  coach_email: string | null
+  coach_name: string | null
 }
 
 export type MilestoneData = {

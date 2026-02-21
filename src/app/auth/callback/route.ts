@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       if (user) {
         const { data: userRow } = await adminClient
           .from('users')
-          .select('role')
+          .select('role, name')
           .eq('id', user.id)
           .single()
 

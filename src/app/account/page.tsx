@@ -3,11 +3,22 @@ import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import SignOutButton from '@/components/account/SignOutButton'
 import StravaStatus from '@/components/account/StravaStatus'
+import DisplayNameForm from '@/components/account/DisplayNameForm'
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: { setup?: string }
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const { data: userRow } = await adminClient
+    .from('users')
+    .select('name, role')
+    .eq('id', user.id)
+    .single()
 
   const { data: connection } = await adminClient
     .from('strava_connections')
@@ -23,6 +34,17 @@ export default async function AccountPage() {
       <section>
         <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-1">Signed in as</p>
         <p className="text-sm font-medium text-gray-800">{user.email}</p>
+      </section>
+
+      {/* Display name */}
+      <section>
+        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">Display name</p>
+        {searchParams.setup === 'name' && (
+          <div className="mb-3 rounded-lg bg-teal-50 border border-teal-200 px-4 py-3 text-sm text-teal-800">
+            👋 Welcome! Please set your display name before getting started.
+          </div>
+        )}
+        <DisplayNameForm currentName={userRow?.name ?? null} />
       </section>
 
       {/* Strava */}

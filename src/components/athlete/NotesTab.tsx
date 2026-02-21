@@ -24,7 +24,14 @@ export default function NotesTab({ notes }: NotesTabProps) {
           className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm border-l-4 border-l-blue-400"
         >
           <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.content}</p>
-          <p className="text-xs text-gray-400 mt-2">{formatDateTime(note.created_at)}</p>
+          <div className="flex items-center gap-2 mt-2">
+            {(note.coach_name || note.coach_email) && (
+              <span className="text-xs font-medium text-gray-500">
+                {note.coach_name ?? note.coach_email!.split('@')[0]}
+              </span>
+            )}
+            <span className="text-xs text-gray-400">{formatDateTime(note.created_at)}</span>
+          </div>
         </div>
       ))}
     </div>

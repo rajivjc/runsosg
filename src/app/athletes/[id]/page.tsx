@@ -62,7 +62,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
     supabase
       .from('coach_notes')
-      .select('id, content, created_at, coach_user_id')
+      .select('id, content, created_at, coach_user_id, users(email, name)')
       .eq('athlete_id', id)
       .order('created_at', { ascending: false }),
 
@@ -72,6 +72,12 @@ export default async function AthleteHubPage({ params }: PageProps) {
       .eq('athlete_id', id)
       .order('achieved_at', { ascending: false }),
   ])
+
+  const flatNotes = (notes ?? []).map((n: any) => ({
+    ...n,
+    coach_email: n.users?.email ?? null,
+    coach_name: n.users?.name ?? null,
+  }))
 
   if (!athlete) {
     notFound()
@@ -135,7 +141,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
         athlete={athlete}
         sessions={sessions ?? []}
         cues={cues ?? null}
-        notes={notes ?? []}
+        notes={flatNotes}
         milestones={milestones ?? []}
         addCoachNote={addCoachNote}
         isReadOnly={isReadOnly}
