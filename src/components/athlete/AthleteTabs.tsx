@@ -128,60 +128,24 @@ export default function AthleteTabs({
           milestones={milestones}
           isReadOnly={isReadOnly}
           onSessionUpdated={() => router.refresh()}
+          onLogRun={() => setLogRunOpen(true)}
         />
       )}
       {activeTab === 'cues' && (
         <CuesTab athleteId={athlete.id} initialCues={cues} />
       )}
-      {activeTab === 'notes' && <NotesTab notes={notes} />}
-
-      {/* Quick action buttons — coaches only */}
-      {!isReadOnly && (
-        <div className="mt-6 pb-4">
-          <div className="max-w-2xl mx-auto">
-            {showNoteInput && (
-              <div className="mb-3 flex gap-2">
-                <textarea
-                  autoFocus
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="Write a coach note…"
-                  className="flex-1 border border-gray-300 rounded-lg p-2 text-sm resize-none h-16 focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                />
-                <div className="flex flex-col gap-1">
-                  <button
-                    onClick={handleSaveNote}
-                    disabled={savingNote || !noteText.trim()}
-                    className="bg-teal-600 text-white rounded-lg px-3 py-1 text-sm font-medium disabled:opacity-50"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowNoteInput(false)
-                      setNoteText('')
-                    }}
-                    className="text-gray-500 text-sm px-3 py-1"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowNoteInput((v) => !v)}
-                className="flex-1 bg-white border border-gray-300 text-gray-700 rounded-lg py-2 text-sm font-medium">
-                Add Note
-              </button>
-              <button
-                onClick={() => setLogRunOpen(true)}
-                className="flex-1 bg-teal-600 text-white rounded-lg py-2 text-sm font-medium">
-                + Log run
-              </button>
-            </div>
-          </div>
-        </div>
+      {activeTab === 'notes' && (
+        <NotesTab
+          notes={notes}
+          isReadOnly={isReadOnly}
+          showNoteInput={showNoteInput}
+          noteText={noteText}
+          savingNote={savingNote}
+          onToggleNoteInput={() => setShowNoteInput((v) => !v)}
+          onNoteTextChange={(text) => setNoteText(text)}
+          onSaveNote={handleSaveNote}
+          onCancelNote={() => { setShowNoteInput(false); setNoteText('') }}
+        />
       )}
 
       {!isReadOnly && (

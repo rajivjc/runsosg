@@ -10,6 +10,7 @@ type RunsTabProps = {
   milestones: MilestoneData[]
   isReadOnly?: boolean
   onSessionUpdated?: () => void
+  onLogRun?: () => void
 }
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -48,6 +49,30 @@ type SessionCardProps = {
   onUpdated?: () => void
 }
 
+const FEEL_COLORS: Record<number, string> = {
+  1: 'border-l-red-400',
+  2: 'border-l-orange-400',
+  3: 'border-l-yellow-400',
+  4: 'border-l-green-400',
+  5: 'border-l-teal-500',
+}
+
+const FEEL_BG: Record<number, string> = {
+  1: 'bg-red-50',
+  2: 'bg-orange-50',
+  3: 'bg-yellow-50',
+  4: 'bg-green-50',
+  5: 'bg-teal-50',
+}
+
+function formatPace(distanceKm: number, durationSeconds: number): string {
+  if (distanceKm <= 0 || durationSeconds <= 0) return ''
+  const paceSecondsPerKm = durationSeconds / distanceKm
+  const paceMinutes = Math.floor(paceSecondsPerKm / 60)
+  const paceSeconds = Math.round(paceSecondsPerKm % 60)
+  return `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} /km`
+}
+
 function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [feel, setFeel] = useState<Feel | null>(s.feel as Feel | null)
@@ -64,71 +89,95 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
       .update({ feel, note: note.trim() || null })
       .eq('id', s.id)
     setSaving(false)
-    if (error) {
-      setError('Could not save. Please try again.')
-      return
-    }
+    if (error) { setError('Could not save. Please try again.'); return }
     setExpanded(false)
     onUpdated?.()
   }
 
+  const borderColor = feel ? FEEL_COLORS[feel] : 'border-l-gray-200'
+  const pace = s.distance_km && s.duration_seconds
+    ? formatPace(s.distance_km, s.duration_seconds)
+    : null
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-      {/* Summary row — always visible */}
+    <div className={`bg-white rounded-xl border border-gray-100 border-l-4 ${borderColor} shadow-sm overflow-hidden`}>
       <button
-        className="w-full text-left p-4"
+        className="w-full text-left"
         onClick={() => !isReadOnly && setExpanded((v) => !v)}
         aria-expanded={expanded}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-medium text-gray-900 text-sm">
+        <div className="px-4 pt-4 pb-3">
+          {/* Top row — distance hero + feel + date */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-gray-900 leading-none">
                 {s.distance_km != null ? formatDistance(s.distance_km * 1000) : '—'}
-                {s.duration_seconds != null && (
-                  <span className="text-gray-500"> · {formatDuration(s.duration_seconds)}</span>
-                )}
               </span>
+              {s.duration_seconds != null && (
+                <span className="text-sm text-gray-500 font-medium">
+                  {formatDuration(s.duration_seconds)}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
               {feel != null && (
-                <span className="text-lg" aria-label={`Feel: ${FEEL_LABELS[feel]}`}>
-                  {FEEL_EMOJI[feel]}
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${FEEL_BG[feel]} ${
+                  feel === 1 ? 'text-red-700' :
+                  feel === 2 ? 'text-orange-700' :
+                  feel === 3 ? 'text-yellow-700' :
+                  feel === 4 ? 'text-green-700' : 'text-teal-700'
+                }`}>
+                  {FEEL_EMOJI[feel]} {FEEL_LABELS[feel]}
                 </span>
               )}
               {feel == null && !isReadOnly && (
-                <span className="text-xs text-gray-400 italic">Tap to rate</span>
+                <span className="text-xs text-gray-400 italic">Rate run</span>
               )}
-              {s.sync_source === 'strava_webhook' && <StravaLogo />}
             </div>
-            {note && (
-              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{note}</p>
+          </div>
+
+          {/* Stats row — pace + date + strava */}
+          <div className="flex items-center gap-3 mb-1">
+            {pace && (
+              <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                {pace}
+              </span>
             )}
-            <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs text-gray-400">{formatDate(s.date)}</span>
+            {s.sync_source === 'strava_webhook' && (
+              <span className="flex items-center gap-1 text-xs text-orange-500 font-medium">
+                <StravaLogo /> Strava
+              </span>
+            )}
+            {s.sync_source === 'manual' && (
+              <span className="text-xs text-gray-400 font-medium">Manual</span>
+            )}
+          </div>
+
+          {/* Note */}
+          {note && (
+            <p className="text-sm text-gray-600 mt-2 line-clamp-2 italic">&ldquo;{note}&rdquo;</p>
+          )}
+
+          {/* Footer — coach + strava link + chevron */}
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-3">
               {s.coach_name && (
-                <span className="text-xs text-gray-400">💟 {s.coach_name}</span>
+                <span className="text-xs text-gray-400">👟 {s.coach_name}</span>
               )}
               {s.strava_activity_id && (
-                <a
-                  href={`https://www.strava.com/activities/${s.strava_activity_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-orange-500 hover:text-orange-600"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <a href={`https://www.strava.com/activities/${s.strava_activity_id}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-orange-500 hover:text-orange-600 font-medium"
+                  onClick={(e) => e.stopPropagation()}>
                   View on Strava ↗
                 </a>
               )}
             </div>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-xs text-gray-400 whitespace-nowrap">
-              {formatDate(s.date)}
-            </span>
             {!isReadOnly && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
+              <svg xmlns="http://www.w3.org/2000/svg"
                 className={`w-4 h-4 text-gray-300 transition-transform ${expanded ? 'rotate-90' : ''}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-              >
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             )}
@@ -139,59 +188,35 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
       {/* Expanded panel — coaches only */}
       {expanded && !isReadOnly && (
         <div className="border-t border-gray-100 px-4 py-4 bg-gray-50 space-y-4">
-          {/* Feel picker */}
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-              How did this run feel?
-            </p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">How did this run feel?</p>
             <div className="flex gap-2">
               {([1, 2, 3, 4, 5] as Feel[]).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setFeel(v)}
+                <button key={v} onClick={() => setFeel(v)}
                   className={`flex-1 flex flex-col items-center py-2 rounded-xl text-2xl transition-all ${
-                    feel === v
-                      ? 'bg-teal-50 ring-2 ring-teal-400'
-                      : 'bg-white border border-gray-200 hover:bg-gray-50'
+                    feel === v ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-white border border-gray-200 hover:bg-gray-50'
                   }`}
-                  aria-label={FEEL_LABELS[v]}
-                  aria-pressed={feel === v}
-                >
+                  aria-label={FEEL_LABELS[v]} aria-pressed={feel === v}>
                   {FEEL_EMOJI[v]}
                 </button>
               ))}
             </div>
           </div>
-
-          {/* Note */}
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
               Session note <span className="font-normal normal-case">(optional)</span>
             </p>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
+            <textarea value={note} onChange={(e) => setNote(e.target.value)}
               placeholder="How did it go? Any observations about this run…"
               rows={2}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-teal-500 focus:outline-none"
-            />
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-teal-500 focus:outline-none" />
           </div>
-
           {error && <p className="text-sm text-red-600">{error}</p>}
-
-          {/* Actions */}
           <div className="flex justify-end gap-3">
-            <button
-              onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? '') }}
-              className="text-sm text-gray-500 px-3 py-1.5"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-colors"
-            >
+            <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? '') }}
+              className="text-sm text-gray-500 px-3 py-1.5">Cancel</button>
+            <button onClick={handleSave} disabled={saving}
+              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-colors">
               {saving ? 'Saving…' : 'Save'}
             </button>
           </div>
@@ -201,22 +226,29 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
   )
 }
 
-export default function RunsTab({ sessions, milestones, isReadOnly = false, onSessionUpdated }: RunsTabProps) {
+export default function RunsTab({ sessions, milestones, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
   const feedItems: FeedItem[] = [
     ...sessions.map((s) => ({ type: 'session' as const, sortKey: s.date, data: s })),
     ...milestones.map((m) => ({ type: 'milestone' as const, sortKey: m.achieved_at, data: m })),
   ].sort((a, b) => b.sortKey.localeCompare(a.sortKey))
 
-  if (feedItems.length === 0) {
-    return (
-      <p className="text-center text-gray-500 py-12 text-sm">
-        No runs yet. Sessions will appear here after runs are synced from Strava.
-      </p>
-    )
-  }
-
   return (
     <div className="space-y-3">
+      {/* Log run button — coaches only */}
+      {!isReadOnly && (
+        <button
+          onClick={onLogRun}
+          className="w-full border-2 border-dashed border-gray-200 hover:border-teal-400 hover:bg-teal-50 text-gray-400 hover:text-teal-600 rounded-xl py-3 text-sm font-medium transition-colors"
+        >
+          + Log a run manually
+        </button>
+      )}
+
+      {feedItems.length === 0 && (
+        <p className="text-center text-gray-500 py-8 text-sm">
+          No runs yet. Sessions will appear here after runs are synced from Strava.
+        </p>
+      )}
       {feedItems.map((item) => {
         if (item.type === 'session') {
           return (

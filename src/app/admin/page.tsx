@@ -31,12 +31,20 @@ export default async function AdminPage() {
     (authUsers ?? []).map((u) => [u.id, u.email ?? '—'])
   )
 
-  // Fetch pending invitations (not yet accepted)
-  const { data: invitations } = await adminClient
+  // Fetch all invitations
+  const { data: allInvitations } = await adminClient
     .from('invitations')
     .select('id, email, role, athlete_id, created_at, accepted_at')
-    .is('accepted_at', null)
     .order('created_at', { ascending: false })
+
+  // Pending = invited but never signed in (last_sign_in_at is null in auth.users)
+  const neverSignedInEmails = new Set(
+    (authUsers ?? [])
+      .filter((u) => u.last_sign_in_at == null)
+      .map((u) => u.email ?? '')
+      .filter(Boolean)
+  )
+  const invitations = (allInvitations ?? []).filter((inv) => neverSignedInEmails.has(inv.email))
 
   // Only show users who have actually signed in (last_sign_in_at is not null)
   const signedInIds = new Set(
@@ -66,11 +74,11 @@ export default async function AdminPage() {
       {/* Pending invitations */}
       <section>
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Pending invitations</h2>
-        {(invitations ?? []).length === 0 ? (
+        {invitations.length === 0 ? (
           <p className="text-sm text-gray-500">No pending invitations.</p>
         ) : (
           <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
-            {(invitations ?? []).map((inv) => (
+            {invitations.map((inv) => (
               <div key={inv.id} className="flex items-center justify-between px-4 py-3 bg-white">
                 <div>
                   <p className="text-sm font-medium text-gray-900">{inv.email}</p>
