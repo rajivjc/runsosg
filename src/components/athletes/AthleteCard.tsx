@@ -6,6 +6,14 @@ import { formatDate } from '@/lib/utils/dates'
 
 export type AthleteCardProps = AthleteListItem
 
+const FEEL_DOT: Record<number, string> = {
+  1: 'bg-red-500',
+  2: 'bg-orange-400',
+  3: 'bg-yellow-400',
+  4: 'bg-green-400',
+  5: 'bg-green-500',
+}
+
 function getInitials(name: string): string {
   const words = name.trim().split(/\s+/)
   if (words.length === 1) return words[0].charAt(0).toUpperCase()
@@ -21,6 +29,7 @@ export default function AthleteCard({
   photoUrl,
   totalSessions,
   lastSessionDate,
+  recentFeels,
 }: AthleteCardProps) {
   return (
     <Link
@@ -49,6 +58,13 @@ export default function AthleteCard({
             ? `Last run: ${formatDate(lastSessionDate)}`
             : 'No runs yet'}
         </p>
+        {recentFeels.length > 0 && (
+          <div className="flex items-center gap-1 mt-1">
+            {[...recentFeels].reverse().map((feel, i) => (
+              <span key={i} className={`w-2 h-2 rounded-full ${FEEL_DOT[feel]}`} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Chevron */}

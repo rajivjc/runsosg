@@ -10,6 +10,7 @@ export type AthleteListItem = {
   photoUrl: string | null
   totalSessions: number
   lastSessionDate: string | null
+  recentFeels: number[]
 }
 
 export default async function AthletesPage({
@@ -36,7 +37,7 @@ export default async function AthletesPage({
   const isCaregiver = userRow?.role === 'caregiver'
   const showStravaBanner = !!user && !stravaConnection && !isCaregiver
 
-  const [{ data: athletes }, { data: sessions }] = await Promise.all([
+  const [{ data: athletes }, { data: sessions }, { data: recentFeels }] = await Promise.all([
     adminClient
       .from('athletes')
       .select('id, name, photo_url, active')
@@ -46,7 +47,21 @@ export default async function AthletesPage({
       .from('sessions')
       .select('athlete_id, date')
       .order('date', { ascending: false }),
+    adminClient
+      .from('sessions')
+      .select('athlete_id, feel, date')
+      .eq('status', 'completed')
+      .not('feel', 'is', null)
+      .order('date', { ascending: false }),
   ])
+
+  const feelsByAthlete: Record<string, number[]> = {}
+  for (const s of recentFeels ?? []) {
+    if (!feelsByAthlete[s.athlete_id]) feelsByAthlete[s.athlete_id] = []
+    if (feelsByAthlete[s.athlete_id].length < 5 && s.feel !== null) {
+      feelsByAthlete[s.athlete_id].push(s.feel)
+    }
+  }
 
   const athleteList: AthleteListItem[] = (athletes ?? []).map((athlete) => {
     const athleteSessions = (sessions ?? []).filter(
@@ -59,6 +74,7 @@ export default async function AthletesPage({
       photoUrl: athlete.photo_url,
       totalSessions: athleteSessions.length,
       lastSessionDate: lastSession ? (lastSession.date as string) : null,
+      recentFeels: feelsByAthlete[athlete.id] ?? [],
     }
   })
 
