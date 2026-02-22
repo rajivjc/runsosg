@@ -71,14 +71,15 @@ export default async function FeedPage() {
 
   const isCaregiver = userRow?.role === 'caregiver'
 
-  const { data: rawSessions } = await adminClient
+  const { data: rawSessions, error: feedError } = await adminClient
     .from('sessions')
     .select('*, athletes!inner(name), users(name)')
     .eq('status', 'completed')
     .order('date', { ascending: false })
     .limit(30)
 
-  console.log('feed raw:', JSON.stringify(rawSessions?.slice(0, 2), null, 2))
+  console.log('feed error:', feedError)
+  console.log('feed data:', JSON.stringify(rawSessions?.slice(0, 2), null, 2))
 
   const sessions: FeedSession[] = (rawSessions ?? []).map((s: any) => ({
     id: s.id,
