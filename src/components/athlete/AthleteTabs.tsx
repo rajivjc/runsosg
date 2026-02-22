@@ -56,6 +56,7 @@ export type MilestoneData = {
   label: string
   achieved_at: string
   icon?: string
+  session_id?: string | null
 }
 
 type Tab = 'feed' | 'cues' | 'notes'

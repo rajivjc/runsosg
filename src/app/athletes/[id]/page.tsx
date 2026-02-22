@@ -36,9 +36,10 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
     adminClient
       .from('sessions')
-      .select('id, date, distance_km, duration_seconds, feel, note, sync_source, coach_user_id, strava_activity_id')
+      .select('id, date, created_at, distance_km, duration_seconds, feel, note, sync_source, coach_user_id, strava_activity_id')
       .eq('athlete_id', id)
       .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(50),
 
     adminClient
@@ -55,7 +56,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
     adminClient
       .from('milestones')
-      .select('id, label, achieved_at, milestone_definitions(icon)')
+      .select('id, label, achieved_at, session_id, milestone_definitions(icon)')
       .eq('athlete_id', id)
       .order('achieved_at', { ascending: false }),
   ])
@@ -83,6 +84,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
     id: m.id,
     label: m.label,
     achieved_at: m.achieved_at,
+    session_id: m.session_id ?? null,
     icon: (m.milestone_definitions as any)?.icon ?? undefined,
   }))
 

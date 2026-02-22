@@ -34,7 +34,6 @@ type Feel = 1 | 2 | 3 | 4 | 5
 
 type FeedItem =
   | { type: 'session'; sortKey: string; data: SessionData }
-  | { type: 'milestone'; sortKey: string; data: MilestoneData }
 
 function StravaLogo() {
   return (
@@ -48,6 +47,7 @@ type SessionCardProps = {
   session: SessionData
   isReadOnly: boolean
   onUpdated?: () => void
+  badges?: MilestoneData[]
 }
 
 const FEEL_COLORS: Record<number, string> = {
@@ -74,7 +74,7 @@ function formatPace(distanceKm: number, durationSeconds: number): string {
   return `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} /km`
 }
 
-function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
+function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [feel, setFeel] = useState<Feel | null>(s.feel as Feel | null)
   const [note, setNote] = useState(s.note ?? '')
@@ -177,6 +177,17 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
             <p className="text-sm text-gray-600 mt-2 line-clamp-2 italic">&ldquo;{note}&rdquo;</p>
           )}
 
+          {/* Milestone badges */}
+          {badges.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {badges.map((m, i) => (
+                <span key={i} className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                  {m.icon ?? '🏆'} {m.label}
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* Footer — coach + strava link + chevron */}
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-3">
@@ -264,10 +275,16 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
 }
 
 export default function RunsTab({ sessions, milestones, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
-  const feedItems: FeedItem[] = [
-    ...sessions.map((s) => ({ type: 'session' as const, sortKey: s.date, data: s })),
-    ...milestones.map((m) => ({ type: 'milestone' as const, sortKey: m.achieved_at, data: m })),
-  ].sort((a, b) => b.sortKey.localeCompare(a.sortKey))
+  const milestonesBySession: Record<string, MilestoneData[]> = {}
+  for (const m of milestones) {
+    if (!m.session_id) continue
+    if (!milestonesBySession[m.session_id]) milestonesBySession[m.session_id] = []
+    milestonesBySession[m.session_id].push(m)
+  }
+
+  const feedItems: FeedItem[] = sessions
+    .map((s) => ({ type: 'session' as const, sortKey: s.date, data: s }))
+    .sort((a, b) => b.sortKey.localeCompare(a.sortKey))
 
   return (
     <div className="space-y-3">
@@ -286,28 +303,15 @@ export default function RunsTab({ sessions, milestones, isReadOnly = false, onSe
           No runs yet. Sessions will appear here after runs are synced from Strava.
         </p>
       )}
-      {feedItems.map((item) => {
-        if (item.type === 'session') {
-          return (
-            <SessionCard
-              key={`session-${item.data.id}`}
-              session={item.data}
-              isReadOnly={isReadOnly}
-              onUpdated={onSessionUpdated}
-            />
-          )
-        }
-        const m = item.data
-        return (
-          <div key={`milestone-${m.id}`} className="flex items-center gap-2 px-3 py-2 bg-teal-50 border border-teal-100 rounded-lg">
-            <span className="text-lg">{m.icon ?? '🏆'}</span>
-            <div>
-              <p className="text-xs font-semibold text-teal-700">{m.label}</p>
-              <p className="text-xs text-teal-500">{formatDate(m.achieved_at)}</p>
-            </div>
-          </div>
-        )
-      })}
+      {feedItems.map((item) => (
+        <SessionCard
+          key={`session-${item.data.id}`}
+          session={item.data}
+          isReadOnly={isReadOnly}
+          onUpdated={onSessionUpdated}
+          badges={milestonesBySession[item.data.id] ?? []}
+        />
+      ))}
     </div>
   )
 }
