@@ -14,6 +14,10 @@ const FEEL_DOT: Record<number, string> = {
   5: 'bg-green-500',
 }
 
+const FEEL_LABELS: Record<number, string> = {
+  1: 'Very hard', 2: 'Hard', 3: 'OK', 4: 'Good', 5: 'Great',
+}
+
 function getInitials(name: string): string {
   const words = name.trim().split(/\s+/)
   if (words.length === 1) return words[0].charAt(0).toUpperCase()
@@ -59,9 +63,14 @@ export default function AthleteCard({
             : 'No runs yet'}
         </p>
         {recentFeels.length > 0 && (
-          <div className="flex items-center gap-1 mt-1">
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-xs text-gray-400">Recent feel:</span>
             {[...recentFeels].reverse().map((feel, i) => (
-              <span key={i} className={`w-2 h-2 rounded-full ${FEEL_DOT[feel]}`} />
+              <span
+                key={i}
+                className={`w-2.5 h-2.5 rounded-full ${FEEL_DOT[feel]}`}
+                title={FEEL_LABELS[feel]}
+              />
             ))}
           </div>
         )}

@@ -238,15 +238,16 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
             </div>
           )}
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">How did this run feel?</p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Rate this run <span className="font-normal normal-case">(1 = Very hard, 5 = Great)</span></p>
             <div className="flex gap-2">
               {([1, 2, 3, 4, 5] as Feel[]).map((v) => (
                 <button key={v} onClick={() => setFeel(v)}
-                  className={`flex-1 flex flex-col items-center py-2 rounded-xl text-2xl transition-all ${
+                  className={`flex-1 flex flex-col items-center py-2 rounded-xl transition-all ${
                     feel === v ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-white border border-gray-200 hover:bg-gray-50'
                   }`}
                   aria-label={FEEL_LABELS[v]} aria-pressed={feel === v}>
-                  {FEEL_EMOJI[v]}
+                  <span className="text-2xl">{FEEL_EMOJI[v]}</span>
+                  <span className="text-xs text-gray-400 mt-1">{FEEL_LABELS[v]}</span>
                 </button>
               ))}
             </div>
