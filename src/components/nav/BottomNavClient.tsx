@@ -9,6 +9,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false }: Props)
   const pathname = usePathname()
 
   const tabs = [
+    { href: '/feed', label: 'Feed', emoji: '🏠' },
     { href: '/athletes', label: 'Athletes', emoji: '🏃' },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin', emoji: '⚙️' }] : []),
     { href: '/account', label: 'Account', emoji: '👤' },

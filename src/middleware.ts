@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 const PROTECTED_PATHS = [
   '/dashboard',
+  '/feed',
   '/athletes',
   '/admin',
   '/account',
