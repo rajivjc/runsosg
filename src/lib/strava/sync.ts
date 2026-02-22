@@ -3,6 +3,7 @@ import type { Json } from '@/lib/supabase/types'
 import { getActivity } from './client'
 import { getValidAccessToken } from './tokens'
 import { matchActivityToAthlete } from './matching'
+import { checkAndAwardMilestones } from '@/lib/milestones'
 
 const RUN_SPORT_TYPES = ['Run', 'TrailRun', 'VirtualRun'] as const
 
@@ -201,6 +202,9 @@ export async function processStravaActivity(
       },
       read: false,
     })
+
+    const awarded = await checkAndAwardMilestones(matchResult.athleteId, sessionId)
+    console.log(`Milestones awarded: ${awarded}`)
 
     return
   }

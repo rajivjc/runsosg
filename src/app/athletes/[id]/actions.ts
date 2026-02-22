@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { checkAndAwardMilestones } from '@/lib/milestones'
 
 export async function addCoachNote(athleteId: string, content: string): Promise<void> {
   const supabase = await createClient()
@@ -94,6 +95,19 @@ export async function createManualSession(
     })
 
   if (error) return { error: `Failed to log session: ${error.message}` }
+
+  const { data: newSession } = await adminClient
+    .from('sessions')
+    .select('id')
+    .eq('athlete_id', athleteId)
+    .eq('coach_user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (newSession?.id) {
+    await checkAndAwardMilestones(athleteId, newSession.id)
+  }
 
   revalidatePath(`/athletes/${athleteId}`)
   return {}

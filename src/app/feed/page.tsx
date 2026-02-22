@@ -75,6 +75,27 @@ export default async function FeedPage() {
 
   const groups = groupByDate(feed)
 
+  const { data: milestones } = await adminClient
+    .from('milestones')
+    .select('id, athlete_id, label, achieved_at, athletes(name), milestone_definitions(icon)')
+    .order('achieved_at', { ascending: false })
+    .limit(20)
+
+  const milestoneFeed = (milestones ?? []).map((m: any) => ({
+    ...m,
+    athlete_name: m.athletes?.name ?? 'Unknown athlete',
+    icon: m.milestone_definitions?.icon ?? '',
+    _type: 'milestone',
+    date: m.achieved_at,
+  }))
+
+  const sessionFeed = feed.map(s => ({ ...s, _type: 'session' }))
+
+  const combined = [...sessionFeed, ...milestoneFeed]
+    .sort((a, b) => b.date.localeCompare(a.date))
+
+  const combinedGroups = groupByDate(combined)
+
   const thisWeek = feed.filter(s => {
     const d = new Date(s.date)
     const weekAgo = new Date()
@@ -98,13 +119,25 @@ export default async function FeedPage() {
         <p className="text-center text-gray-400 py-12 text-sm">No sessions yet.</p>
       )}
 
-      {Object.entries(groups).map(([label, items]) => {
+      {Object.entries(combinedGroups).map(([label, items]) => {
         if (items.length === 0) return null
         return (
           <div key={label} className="mb-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
             <div className="space-y-3">
-              {items.map((s) => {
+              {items.map((item: any) => {
+                if (item._type === 'milestone') {
+                  return (
+                    <div key={item.id} className="bg-teal-50 border-2 border-teal-300 rounded-xl px-4 py-3">
+                      <p className="text-lg font-bold text-teal-800">
+                        {item.icon} {item.athlete_name}
+                      </p>
+                      <p className="text-sm text-teal-700 font-medium">{item.label}</p>
+                      <p className="text-xs text-teal-500 mt-1">{item.achieved_at?.split('T')[0]}</p>
+                    </div>
+                  )
+                }
+                const s = item
                 const borderClass = s.feel === 1 ? 'border-l-4 border-l-red-400'
                   : s.feel === 2 ? 'border-l-4 border-l-orange-400'
                   : 'border-l-4 border-l-transparent'
