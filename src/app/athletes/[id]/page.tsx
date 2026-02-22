@@ -109,11 +109,12 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
   const weeklyData = Object.entries(weeklyMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([week, km], i) => ({
-      label: `W${i + 1}`,
-      km: Math.round(km * 10) / 10,
-      weekStart: week,
-    }))
+    .map(([week]) => {
+      const d = new Date(week)
+      const label = d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })
+      const km = Math.round(weeklyMap[week] * 10) / 10
+      return { label, km, weekStart: week }
+    })
 
   if (!athlete) {
     notFound()
