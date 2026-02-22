@@ -58,12 +58,14 @@ export default async function FeedPage() {
       ? adminClient.from('athletes').select('id, name').in('id', athleteIds)
       : Promise.resolve({ data: [] }),
     coachIds.length > 0
-      ? adminClient.from('users').select('id, name').in('id', coachIds)
+      ? adminClient.from('users').select('id, name, email').in('id', coachIds)
       : Promise.resolve({ data: [] }),
   ])
 
   const athleteMap = Object.fromEntries((athletes ?? []).map((a: any) => [a.id, a.name]))
-  const coachMap = Object.fromEntries((coaches ?? []).map((u: any) => [u.id, u.name]))
+  const coachMap = Object.fromEntries(
+    (coaches ?? []).map((u: any) => [u.id, u.name ?? u.email?.split('@')[0] ?? 'Coach'])
+  )
 
   const feed = (sessions ?? []).map((s: any) => ({
     ...s,
@@ -88,8 +90,11 @@ export default async function FeedPage() {
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
             <div className="space-y-3">
               {items.map((s) => {
+                const borderClass = s.feel === 1 ? 'border-l-4 border-l-red-400'
+                  : s.feel === 2 ? 'border-l-4 border-l-orange-400'
+                  : 'border-l-4 border-l-transparent'
                 const card = (
-                  <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3">
+                  <div className={`bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 ${borderClass}`}>
                     <p className="text-sm font-medium text-gray-800 mb-1">
                       🏃 {s.coach_name} ran with {s.athlete_name}
                     </p>
