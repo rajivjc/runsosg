@@ -184,6 +184,18 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
               {badges.map((m, i) => (
                 <span key={i} className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium px-2 py-0.5 rounded-full">
                   {m.icon ?? '🏆'} {m.label}
+                  {m.id && (
+                    <a
+                      href={`/milestone/${m.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1 text-teal-400 hover:text-teal-600"
+                      onClick={e => e.stopPropagation()}
+                      title="Share this milestone"
+                    >
+                      ↗
+                    </a>
+                  )}
                 </span>
               ))}
             </div>
