@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import type { SessionData, MilestoneData } from './AthleteTabs'
+import { updateManualSession } from '@/app/athletes/[id]/actions'
 
 type RunsTabProps = {
   sessions: SessionData[]
@@ -77,6 +78,9 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [feel, setFeel] = useState<Feel | null>(s.feel as Feel | null)
   const [note, setNote] = useState(s.note ?? '')
+  const [date, setDate] = useState(s.date)
+  const [distanceKm, setDistanceKm] = useState(s.distance_km != null ? String(s.distance_km) : '')
+  const [durationMins, setDurationMins] = useState(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
@@ -84,12 +88,26 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
   async function handleSave() {
     setSaving(true)
     setError(null)
-    const { error } = await supabase
-      .from('sessions')
-      .update({ feel, note: note.trim() || null })
-      .eq('id', s.id)
-    setSaving(false)
-    if (error) { setError('Could not save. Please try again.'); return }
+    if (s.sync_source === 'manual') {
+      const parsedDistance = parseFloat(distanceKm)
+      const parsedDuration = parseInt(durationMins)
+      const { error } = await updateManualSession(s.id, {
+        date,
+        distance_km: isNaN(parsedDistance) ? null : parsedDistance,
+        duration_seconds: isNaN(parsedDuration) ? null : parsedDuration * 60,
+        feel,
+        note: note.trim() || null,
+      })
+      setSaving(false)
+      if (error) { setError('Could not save. Please try again.'); return }
+    } else {
+      const { error } = await supabase
+        .from('sessions')
+        .update({ feel, note: note.trim() || null })
+        .eq('id', s.id)
+      setSaving(false)
+      if (error) { setError('Could not save. Please try again.'); return }
+    }
     setExpanded(false)
     onUpdated?.()
   }
@@ -188,6 +206,25 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
       {/* Expanded panel — coaches only */}
       {expanded && !isReadOnly && (
         <div className="border-t border-gray-100 px-4 py-4 bg-gray-50 space-y-4">
+          {s.sync_source === 'manual' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Date</p>
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none w-full" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Distance (km)</p>
+                <input type="number" step="0.01" value={distanceKm} onChange={(e) => setDistanceKm(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none w-full" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Duration (mins)</p>
+                <input type="number" step="1" value={durationMins} onChange={(e) => setDurationMins(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none w-full" />
+              </div>
+            </div>
+          )}
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">How did this run feel?</p>
             <div className="flex gap-2">
@@ -213,7 +250,7 @@ function SessionCard({ session: s, isReadOnly, onUpdated }: SessionCardProps) {
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex justify-end gap-3">
-            <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? '') }}
+            <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? ''); setDate(s.date); setDistanceKm(s.distance_km != null ? String(s.distance_km) : ''); setDurationMins(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '') }}
               className="text-sm text-gray-500 px-3 py-1.5">Cancel</button>
             <button onClick={handleSave} disabled={saving}
               className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-colors">
