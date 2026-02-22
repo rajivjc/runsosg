@@ -25,6 +25,15 @@ export async function updateAthlete(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin' && callerUser?.role !== 'coach') {
+    return { error: 'Not authorised' }
+  }
+
   const name = (formData.get('name') as string ?? '').trim()
   if (!name) return { error: 'Name is required' }
 
@@ -34,7 +43,7 @@ export async function updateAthlete(
   const medical_notes = (formData.get('medical_notes') as string ?? '').trim() || null
   const emergency_contact = (formData.get('emergency_contact') as string ?? '').trim() || null
 
-  const { error } = await supabase
+  const { error } = await adminClient
     .from('athletes')
     .update({
       name,

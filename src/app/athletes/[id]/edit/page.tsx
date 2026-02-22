@@ -22,7 +22,7 @@ export default async function EditAthletePage({ params }: PageProps) {
     .select('role')
     .eq('id', user.id)
     .single()
-  if (callerUser?.role !== 'admin') redirect('/athletes')
+  if (callerUser?.role !== 'admin' && callerUser?.role !== 'coach') redirect('/athletes')
 
   const { data: athlete } = await supabase
     .from('athletes')
