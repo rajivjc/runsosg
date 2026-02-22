@@ -35,7 +35,7 @@ export default async function FeedPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: userRow } = user
-    ? await adminClient.from('users').select('role').eq('id', user.id).single()
+    ? await adminClient.from('users').select('role, name').eq('id', user.id).single()
     : { data: null }
 
   const isReadOnly = userRow?.role === 'caregiver'
@@ -103,9 +103,65 @@ export default async function FeedPage() {
   const weeklyKm = thisWeek.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
   const weeklyAthletes = new Set(thisWeek.map(s => s.athlete_id)).size
 
+  // Coach card data
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+
+  const { data: myMonthSessions } = user ? await adminClient
+    .from('sessions')
+    .select('id, athlete_id, feel, date')
+    .eq('coach_user_id', user.id)
+    .gte('date', monthStart)
+    .eq('status', 'completed')
+    : { data: [] }
+
+  const myAthleteIds = [...new Set((myMonthSessions ?? []).map((s: any) => s.athlete_id))]
+  const { data: myAthletes } = myAthleteIds.length > 0
+    ? await adminClient.from('athletes').select('id, name').in('id', myAthleteIds)
+    : { data: [] }
+
+  const hour = now.getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const coachFirstName = (userRow as any)?.name?.split(' ')[0] ?? 'Coach'
+
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
       <h1 className="text-xl font-bold text-gray-900 mb-6">Club Activity Feed</h1>
+
+      {!isReadOnly && (
+        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-4 py-4 mb-4">
+          <p className="text-base font-bold text-gray-900 mb-3">
+            {greeting}, {coachFirstName} 👋
+          </p>
+          {myMonthSessions?.length === 0 ? (
+            <p className="text-sm text-teal-700">No sessions logged yet this month. Time to get running 🏃</p>
+          ) : (
+            <>
+              <div className="space-y-2 mb-3">
+                {myAthletes?.map((a: any) => {
+                  const athleteSessions = (myMonthSessions ?? [])
+                    .filter((s: any) => s.athlete_id === a.id)
+                    .sort((x: any, y: any) => y.date.localeCompare(x.date))
+                  const sessionCount = athleteSessions.length
+                  const lastFeels = athleteSessions.slice(0, 3).map((s: any) => s.feel ? FEEL_EMOJI[s.feel] : '—')
+                  return (
+                    <div key={a.id} className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-800">{a.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-teal-600">{sessionCount} run{sessionCount !== 1 ? 's' : ''}</span>
+                        <span className="text-sm tracking-wide">{lastFeels.join(' ')}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="text-xs text-teal-600 font-medium border-t border-teal-100 pt-2">
+                You&apos;ve coached {myMonthSessions?.length} session{myMonthSessions?.length !== 1 ? 's' : ''} this month 💪
+              </p>
+            </>
+          )}
+        </div>
+      )}
 
       {thisWeek.length > 0 && (
         <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-6 text-sm text-teal-800 font-medium">
