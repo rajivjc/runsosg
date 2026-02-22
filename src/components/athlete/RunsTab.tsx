@@ -303,16 +303,16 @@ export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly =
       {!isReadOnly && weeklyData.length >= 2 && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 mb-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Weekly distance</p>
-          <div className="flex items-end gap-1.5 h-16">
+          <div className="flex items-end gap-2 h-24">
             {(() => {
               const maxKm = Math.max(...weeklyData.map(w => w.km), 0.1)
               return weeklyData.map((w, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                  <div className="relative w-full flex items-end justify-center">
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <span className="text-xs text-gray-500 font-medium">{w.km > 0 ? `${w.km}` : ''}</span>
+                  <div className="w-full flex items-end" style={{ height: '64px' }}>
                     <div
-                      className="w-full bg-teal-400 rounded-t-sm group-hover:bg-teal-500 transition-colors"
-                      style={{ height: `${Math.max((w.km / maxKm) * 56, 4)}px` }}
-                      title={`${w.km} km`}
+                      className="w-full bg-teal-400 rounded-t-sm hover:bg-teal-500 transition-colors"
+                      style={{ height: `${Math.max((w.km / maxKm) * 64, 3)}px` }}
                     />
                   </div>
                   <span className="text-xs text-gray-400">{w.label}</span>
