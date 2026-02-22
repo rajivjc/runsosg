@@ -1,7 +1,7 @@
 import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { formatDistance, formatDuration } from '@/lib/utils/dates'
+import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 
 const FEEL_EMOJI: Record<number, string> = {
   1: '😰', 2: '😐', 3: '🙂', 4: '😊', 5: '🔥',
@@ -133,7 +133,7 @@ export default async function FeedPage() {
                         {item.icon} {item.athlete_name}
                       </p>
                       <p className="text-sm text-teal-700 font-medium">{item.label}</p>
-                      <p className="text-xs text-teal-500 mt-1">{item.achieved_at?.split('T')[0]}</p>
+                      <p className="text-xs text-teal-500 mt-1">{formatDate(item.achieved_at)}</p>
                     </div>
                   )
                 }
