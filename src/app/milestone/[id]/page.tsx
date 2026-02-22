@@ -8,14 +8,19 @@ interface PageProps {
 export default async function MilestoneSharePage({ params }: PageProps) {
   const { data: milestone } = await adminClient
     .from('milestones')
-    .select('*, athletes(name), users(name), milestone_definitions(icon, label)')
+    .select('*, athletes(name), milestone_definitions(icon, label)')
     .eq('id', params.id)
     .single()
 
   if (!milestone) notFound()
 
+  const coachId = (milestone as any).awarded_by ?? null
+  const { data: coach } = coachId
+    ? await adminClient.from('users').select('name').eq('id', coachId).single()
+    : { data: null }
+
   const athleteName = (milestone.athletes as any)?.name ?? 'Athlete'
-  const coachName = (milestone.users as any)?.name ?? null
+  const coachName = coach?.name ?? null
   const icon = (milestone.milestone_definitions as any)?.icon ?? '🏆'
   const label = milestone.label
   const date = new Date(milestone.achieved_at).toLocaleDateString('en-SG', {
