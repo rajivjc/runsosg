@@ -26,6 +26,20 @@ export default async function AccountPage({
     .eq('user_id', user.id)
     .single()
 
+  const { data: statsData } = user ? await adminClient
+    .from('sessions')
+    .select('id, athlete_id, date')
+    .eq('coach_user_id', user.id)
+    .eq('status', 'completed')
+    : { data: [] }
+
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+
+  const totalSessions = (statsData ?? []).length
+  const totalAthletes = new Set((statsData ?? []).map((s: any) => s.athlete_id)).size
+  const thisMonth = (statsData ?? []).filter((s: any) => s.date >= monthStart).length
+
   return (
     <main className="max-w-2xl mx-auto px-4 py-8 pb-24 space-y-8">
       <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
@@ -53,6 +67,27 @@ export default async function AccountPage({
         )}
         <DisplayNameForm currentName={userRow?.name ?? null} />
       </section>
+
+      {/* Coaching stats */}
+      <div className="mb-6">
+        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your coaching stats</p>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4">
+          <div className="grid grid-cols-3 divide-x divide-gray-100">
+            <div className="flex flex-col items-center px-2">
+              <span className="text-2xl font-bold text-gray-900">{totalSessions}</span>
+              <span className="text-xs text-gray-400 mt-1 text-center">sessions</span>
+            </div>
+            <div className="flex flex-col items-center px-2">
+              <span className="text-2xl font-bold text-gray-900">{totalAthletes}</span>
+              <span className="text-xs text-gray-400 mt-1 text-center">athletes</span>
+            </div>
+            <div className="flex flex-col items-center px-2">
+              <span className="text-2xl font-bold text-teal-600">{thisMonth}</span>
+              <span className="text-xs text-gray-400 mt-1 text-center">this month</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Strava */}
       <section>
