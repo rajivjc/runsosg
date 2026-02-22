@@ -73,10 +73,12 @@ export default async function FeedPage() {
 
   const { data: rawSessions } = await adminClient
     .from('sessions')
-    .select('*, athletes(name), users(name)')
+    .select('*, athletes!inner(name), users(name)')
     .eq('status', 'completed')
     .order('date', { ascending: false })
     .limit(30)
+
+  console.log('feed raw:', JSON.stringify(rawSessions?.slice(0, 2), null, 2))
 
   const sessions: FeedSession[] = (rawSessions ?? []).map((s: any) => ({
     id: s.id,
