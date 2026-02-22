@@ -303,19 +303,21 @@ export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly =
       {!isReadOnly && weeklyData.length >= 2 && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 mb-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Weekly distance</p>
-          <div className="flex items-end gap-2 h-24" style={{ minHeight: '96px' }}>
+          <div className="flex items-end gap-2" style={{ height: '80px' }}>
             {(() => {
               const maxKm = Math.max(...weeklyData.map(w => w.km), 0.1)
               return weeklyData.map((w, i) => (
-                <div key={i} className="flex flex-col items-center gap-1" style={{ width: '36px', flexShrink: 0 }}>
-                  <span className="text-xs text-gray-500 font-medium">{w.km > 0 ? `${w.km}` : ''}</span>
-                  <div className="w-full flex items-end" style={{ height: '64px' }}>
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <span className="text-xs text-gray-500 font-medium leading-none">
+                    {w.km > 0 ? `${w.km}` : ''}
+                  </span>
+                  <div className="w-full flex items-end flex-1">
                     <div
                       className="w-full bg-teal-400 rounded-t-sm hover:bg-teal-500 transition-colors"
-                      style={{ height: `${Math.max((w.km / maxKm) * 64, 3)}px` }}
+                      style={{ height: `${Math.max((w.km / maxKm) * 48, 3)}px` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-400 whitespace-nowrap">{w.label}</span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap leading-none">{w.label}</span>
                 </div>
               ))
             })()}
