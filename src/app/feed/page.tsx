@@ -149,12 +149,19 @@ export default async function FeedPage() {
                       <span className="text-sm font-medium text-gray-800">{a.name}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-teal-600">{sessionCount} run{sessionCount !== 1 ? 's' : ''}</span>
-                        <span className="text-sm tracking-wide">{lastFeels.join(' ')}</span>
+                        <div className="flex items-center gap-0.5">
+                          {lastFeels.map((emoji, i) => (
+                            <span key={i} className="text-sm" title={`Session ${sessionCount - lastFeels.length + i + 1} feel`}>
+                              {emoji}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )
                 })}
               </div>
+              <p className="text-xs text-teal-400 mb-2">&larr; older &middot; recent feel scores &middot; newer &rarr;</p>
               <p className="text-xs text-teal-600 font-medium border-t border-teal-100 pt-2">
                 You&apos;ve coached {myMonthSessions?.length} session{myMonthSessions?.length !== 1 ? 's' : ''} this month 💪
               </p>
