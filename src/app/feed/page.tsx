@@ -42,17 +42,33 @@ export default async function FeedPage() {
 
   const { data: sessions, error } = await adminClient
     .from('sessions')
-    .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, athletes(name), users(name)')
+    .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id')
     .eq('status', 'completed')
     .order('date', { ascending: false })
     .limit(30)
 
   console.log('feed sessions:', sessions?.length, 'error:', error?.message)
 
+  // Fetch athlete and coach names separately
+  const athleteIds = [...new Set((sessions ?? []).map((s: any) => s.athlete_id).filter(Boolean))]
+  const coachIds = [...new Set((sessions ?? []).map((s: any) => s.coach_user_id).filter(Boolean))]
+
+  const [{ data: athletes }, { data: coaches }] = await Promise.all([
+    athleteIds.length > 0
+      ? adminClient.from('athletes').select('id, name').in('id', athleteIds)
+      : Promise.resolve({ data: [] }),
+    coachIds.length > 0
+      ? adminClient.from('users').select('id, name').in('id', coachIds)
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const athleteMap = Object.fromEntries((athletes ?? []).map((a: any) => [a.id, a.name]))
+  const coachMap = Object.fromEntries((coaches ?? []).map((u: any) => [u.id, u.name]))
+
   const feed = (sessions ?? []).map((s: any) => ({
     ...s,
-    athlete_name: s.athletes?.name ?? 'Unknown athlete',
-    coach_name: s.users?.name ?? 'Unknown coach',
+    athlete_name: athleteMap[s.athlete_id] ?? 'Unknown athlete',
+    coach_name: coachMap[s.coach_user_id] ?? 'Unknown coach',
   }))
 
   const groups = groupByDate(feed)
