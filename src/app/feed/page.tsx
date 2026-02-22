@@ -64,20 +64,35 @@ export default async function FeedPage() {
 
   const athleteMap = Object.fromEntries((athletes ?? []).map((a: any) => [a.id, a.name]))
   const coachMap = Object.fromEntries(
-    (coaches ?? []).map((u: any) => [u.id, u.name ?? u.email?.split('@')[0] ?? 'Coach'])
+    (coaches ?? []).map((u: any) => [u.id, u.name ?? u.email?.split('@')[0] ?? null])
   )
 
   const feed = (sessions ?? []).map((s: any) => ({
     ...s,
     athlete_name: athleteMap[s.athlete_id] ?? 'Unknown athlete',
-    coach_name: coachMap[s.coach_user_id] ?? 'Unknown coach',
+    coach_name: coachMap[s.coach_user_id] ?? null,
   }))
 
   const groups = groupByDate(feed)
 
+  const thisWeek = feed.filter(s => {
+    const d = new Date(s.date)
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    return d >= weekAgo
+  })
+  const weeklyKm = thisWeek.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
+  const weeklyAthletes = new Set(thisWeek.map(s => s.athlete_id)).size
+
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
       <h1 className="text-xl font-bold text-gray-900 mb-6">Club Activity Feed</h1>
+
+      {thisWeek.length > 0 && (
+        <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-6 text-sm text-teal-800 font-medium">
+          🏃 This week · {thisWeek.length} runs · {weeklyKm.toFixed(1)} km across {weeklyAthletes} athlete{weeklyAthletes !== 1 ? 's' : ''}
+        </div>
+      )}
 
       {feed.length === 0 && (
         <p className="text-center text-gray-400 py-12 text-sm">No sessions yet.</p>
@@ -96,7 +111,7 @@ export default async function FeedPage() {
                 const card = (
                   <div className={`bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 ${borderClass}`}>
                     <p className="text-sm font-medium text-gray-800 mb-1">
-                      🏃 {s.coach_name} ran with {s.athlete_name}
+                      🏃 {s.coach_name ? `${s.coach_name} ran with` : 'Run with'} {s.athlete_name}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                       {s.distance_km != null && <span>{formatDistance(s.distance_km * 1000)}</span>}
