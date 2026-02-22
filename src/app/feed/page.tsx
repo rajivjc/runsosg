@@ -81,7 +81,7 @@ export default async function FeedPage() {
     .order('achieved_at', { ascending: false })
     .limit(20)
 
-  const milestoneFeed = (milestones ?? []).map((m: any) => ({
+  const milestoneFeed = (milestones ?? []).slice(0, 3).map((m: any) => ({
     ...m,
     athlete_name: m.athletes?.name ?? 'Unknown athlete',
     icon: m.milestone_definitions?.icon ?? '',
@@ -128,12 +128,16 @@ export default async function FeedPage() {
               {items.map((item: any) => {
                 if (item._type === 'milestone') {
                   return (
-                    <div key={item.id} className="bg-teal-50 border-2 border-teal-300 rounded-xl px-4 py-3">
-                      <p className="text-lg font-bold text-teal-800">
-                        {item.icon} {item.athlete_name}
-                      </p>
-                      <p className="text-sm text-teal-700 font-medium">{item.label}</p>
-                      <p className="text-xs text-teal-500 mt-1">{formatDate(item.achieved_at)}</p>
+                    <div key={item.id} className="bg-gradient-to-r from-teal-50 to-emerald-50 border-2 border-teal-200 rounded-xl px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{item.icon}</span>
+                        <div className="flex-1">
+                          <p className="text-xs font-semibold text-teal-500 uppercase tracking-wide mb-0.5">Milestone</p>
+                          <p className="text-base font-bold text-gray-900">{item.athlete_name}</p>
+                          <p className="text-sm font-medium text-teal-700">{item.label}</p>
+                        </div>
+                        <span className="text-xs text-teal-400">{formatDate(item.date)}</span>
+                      </div>
                     </div>
                   )
                 }
