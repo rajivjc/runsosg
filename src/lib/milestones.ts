@@ -2,7 +2,8 @@ import { adminClient } from '@/lib/supabase/admin'
 
 export async function checkAndAwardMilestones(
   athleteId: string,
-  sessionId: string
+  sessionId: string,
+  coachUserId?: string
 ): Promise<number> {
   try {
     // 1. Fetch all active automatic milestone definitions
@@ -87,7 +88,7 @@ export async function checkAndAwardMilestones(
       label: def.label,
       achieved_at: achievedAt,
       session_id: sessionId,
-      awarded_by: null,
+      awarded_by: coachUserId ?? null,
       share_image_url: null,
     }))
 

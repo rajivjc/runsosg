@@ -106,7 +106,7 @@ export async function createManualSession(
     .single()
 
   if (newSession?.id) {
-    await checkAndAwardMilestones(athleteId, newSession.id)
+    await checkAndAwardMilestones(athleteId, newSession.id, user.id)
   }
 
   revalidatePath(`/athletes/${athleteId}`)
