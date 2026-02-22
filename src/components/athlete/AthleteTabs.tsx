@@ -67,6 +67,7 @@ type AthleteTabsProps = {
   cues: CuesData | null
   notes: NoteData[]
   milestones: MilestoneData[]
+  weeklyData: { label: string; km: number; weekStart: string }[]
   addCoachNote: (athleteId: string, content: string) => Promise<void>
   isReadOnly?: boolean
   currentUserId?: string
@@ -78,6 +79,7 @@ export default function AthleteTabs({
   cues,
   notes,
   milestones,
+  weeklyData,
   addCoachNote,
   isReadOnly = false,
   currentUserId,
@@ -130,6 +132,7 @@ export default function AthleteTabs({
         <RunsTab
           sessions={sessions}
           milestones={milestones}
+          weeklyData={weeklyData}
           isReadOnly={isReadOnly}
           onSessionUpdated={() => router.refresh()}
           onLogRun={() => setLogRunOpen(true)}

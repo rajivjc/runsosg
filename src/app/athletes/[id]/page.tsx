@@ -88,6 +88,33 @@ export default async function AthleteHubPage({ params }: PageProps) {
     icon: (m.milestone_definitions as any)?.icon ?? undefined,
   }))
 
+  // Weekly distance chart data — last 8 weeks
+  const eightWeeksAgo = new Date()
+  eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56)
+  const eightWeeksAgoStr = eightWeeksAgo.toISOString().split('T')[0]
+
+  function getISOWeekLabel(dateStr: string): string {
+    const d = new Date(dateStr)
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+    const monday = new Date(d.setDate(diff))
+    return monday.toISOString().split('T')[0]
+  }
+
+  const weeklyMap: Record<string, number> = {}
+  for (const s of (sessions ?? []).filter((s: any) => s.date >= eightWeeksAgoStr)) {
+    const weekKey = getISOWeekLabel(s.date)
+    weeklyMap[weekKey] = (weeklyMap[weekKey] ?? 0) + (s.distance_km ?? 0)
+  }
+
+  const weeklyData = Object.entries(weeklyMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([week, km], i) => ({
+      label: `W${i + 1}`,
+      km: Math.round(km * 10) / 10,
+      weekStart: week,
+    }))
+
   if (!athlete) {
     notFound()
   }
@@ -152,6 +179,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
         cues={cues ?? null}
         notes={flatNotes}
         milestones={flatMilestones}
+        weeklyData={weeklyData}
         addCoachNote={addCoachNote}
         isReadOnly={isReadOnly}        currentUserId={user?.id}      />
     </main>

@@ -9,6 +9,7 @@ import { updateManualSession } from '@/app/athletes/[id]/actions'
 type RunsTabProps = {
   sessions: SessionData[]
   milestones: MilestoneData[]
+  weeklyData: { label: string; km: number; weekStart: string }[]
   isReadOnly?: boolean
   onSessionUpdated?: () => void
   onLogRun?: () => void
@@ -274,7 +275,7 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
   )
 }
 
-export default function RunsTab({ sessions, milestones, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
+export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
   const milestonesBySession: Record<string, MilestoneData[]> = {}
   for (const m of milestones) {
     if (!m.session_id) continue
@@ -296,6 +297,30 @@ export default function RunsTab({ sessions, milestones, isReadOnly = false, onSe
         >
           + Log a run manually
         </button>
+      )}
+
+      {/* Weekly distance bar chart — coaches only, min 2 weeks */}
+      {!isReadOnly && weeklyData.length >= 2 && (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 mb-2">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Weekly distance</p>
+          <div className="flex items-end gap-1.5 h-16">
+            {(() => {
+              const maxKm = Math.max(...weeklyData.map(w => w.km), 0.1)
+              return weeklyData.map((w, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                  <div className="relative w-full flex items-end justify-center">
+                    <div
+                      className="w-full bg-teal-400 rounded-t-sm group-hover:bg-teal-500 transition-colors"
+                      style={{ height: `${Math.max((w.km / maxKm) * 56, 4)}px` }}
+                      title={`${w.km} km`}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-400">{w.label}</span>
+                </div>
+              ))
+            })()}
+          </div>
+        </div>
       )}
 
       {feedItems.length === 0 && (
