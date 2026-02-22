@@ -77,24 +77,22 @@ export default async function FeedPage() {
 
   const { data: milestones } = await adminClient
     .from('milestones')
-    .select('id, athlete_id, label, achieved_at, athletes(name), milestone_definitions(icon)')
+    .select('id, athlete_id, session_id, label, achieved_at, athletes(name), milestone_definitions(icon)')
     .order('achieved_at', { ascending: false })
     .limit(20)
 
-  const milestoneFeed = (milestones ?? []).slice(0, 3).map((m: any) => ({
-    ...m,
-    athlete_name: m.athletes?.name ?? 'Unknown athlete',
-    icon: m.milestone_definitions?.icon ?? '',
-    _type: 'milestone',
-    date: m.achieved_at,
-  }))
+  console.log('combined today:', feed.filter((i: any) => i.date === '2026-02-22').map((i: any) => 'session:' + i.id))
 
-  const sessionFeed = feed.map(s => ({ ...s, _type: 'session' }))
-
-  const combined = [...sessionFeed, ...milestoneFeed]
-    .sort((a, b) => b.date.localeCompare(a.date))
-
-  const combinedGroups = groupByDate(combined)
+  const milestonesBySession: Record<string, { icon: string; label: string }[]> = {}
+  for (const m of milestones ?? []) {
+    const anyM = m as any
+    if (!anyM.session_id) continue
+    if (!milestonesBySession[anyM.session_id]) milestonesBySession[anyM.session_id] = []
+    milestonesBySession[anyM.session_id].push({
+      icon: anyM.milestone_definitions?.icon ?? '',
+      label: anyM.label,
+    })
+  }
 
   const thisWeek = feed.filter(s => {
     const d = new Date(s.date)
@@ -119,32 +117,17 @@ export default async function FeedPage() {
         <p className="text-center text-gray-400 py-12 text-sm">No sessions yet.</p>
       )}
 
-      {Object.entries(combinedGroups).map(([label, items]) => {
+      {Object.entries(groups).map(([label, items]) => {
         if (items.length === 0) return null
         return (
           <div key={label} className="mb-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
             <div className="space-y-3">
-              {items.map((item: any) => {
-                if (item._type === 'milestone') {
-                  return (
-                    <div key={item.id} className="bg-gradient-to-r from-teal-50 to-emerald-50 border-2 border-teal-200 rounded-xl px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{item.icon}</span>
-                        <div className="flex-1">
-                          <p className="text-xs font-semibold text-teal-500 uppercase tracking-wide mb-0.5">Milestone</p>
-                          <p className="text-base font-bold text-gray-900">{item.athlete_name}</p>
-                          <p className="text-sm font-medium text-teal-700">{item.label}</p>
-                        </div>
-                        <span className="text-xs text-teal-400">{formatDate(item.date)}</span>
-                      </div>
-                    </div>
-                  )
-                }
-                const s = item
+              {items.map((s: any) => {
                 const borderClass = s.feel === 1 ? 'border-l-4 border-l-red-400'
                   : s.feel === 2 ? 'border-l-4 border-l-orange-400'
                   : 'border-l-4 border-l-transparent'
+                const badges = milestonesBySession[s.id] ?? []
                 const card = (
                   <div className={`bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 ${borderClass}`}>
                     <p className="text-sm font-medium text-gray-800 mb-1">
@@ -157,6 +140,15 @@ export default async function FeedPage() {
                     </div>
                     {s.note && (
                       <p className="text-xs text-gray-400 italic mt-1">&ldquo;{s.note}&rdquo;</p>
+                    )}
+                    {badges.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {badges.map((m, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                            {m.icon} {m.label}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </div>
                 )

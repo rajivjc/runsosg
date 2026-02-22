@@ -86,6 +86,7 @@ export async function checkAndAwardMilestones(
       milestone_definition_id: def.id,
       label: def.label,
       achieved_at: achievedAt,
+      session_id: sessionId,
       awarded_by: null,
       share_image_url: null,
     }))

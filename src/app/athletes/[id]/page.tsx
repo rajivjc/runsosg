@@ -55,7 +55,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
     adminClient
       .from('milestones')
-      .select('id, label, achieved_at')
+      .select('id, label, achieved_at, milestone_definitions(icon)')
       .eq('athlete_id', id)
       .order('achieved_at', { ascending: false }),
   ])
@@ -77,6 +77,13 @@ export default async function AthleteHubPage({ params }: PageProps) {
   const flatSessions = (sessions ?? []).map((s: any) => ({
     ...s,
     coach_name: coachMap[s.coach_user_id] ?? null,
+  }))
+
+  const flatMilestones = (milestones ?? []).map((m: any) => ({
+    id: m.id,
+    label: m.label,
+    achieved_at: m.achieved_at,
+    icon: (m.milestone_definitions as any)?.icon ?? undefined,
   }))
 
   if (!athlete) {
@@ -142,7 +149,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
         sessions={flatSessions}
         cues={cues ?? null}
         notes={flatNotes}
-        milestones={milestones ?? []}
+        milestones={flatMilestones}
         addCoachNote={addCoachNote}
         isReadOnly={isReadOnly}        currentUserId={user?.id}      />
     </main>

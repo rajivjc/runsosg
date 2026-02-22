@@ -299,13 +299,11 @@ export default function RunsTab({ sessions, milestones, isReadOnly = false, onSe
         }
         const m = item.data
         return (
-          <div key={`milestone-${m.id}`} className="bg-teal-50 border border-teal-200 rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl" aria-hidden="true">🏆</span>
-              <div>
-                <p className="font-semibold text-teal-800 text-sm">{m.label}</p>
-                <p className="text-xs text-teal-600">{formatDate(m.achieved_at)}</p>
-              </div>
+          <div key={`milestone-${m.id}`} className="flex items-center gap-2 px-3 py-2 bg-teal-50 border border-teal-100 rounded-lg">
+            <span className="text-lg">{m.icon ?? '🏆'}</span>
+            <div>
+              <p className="text-xs font-semibold text-teal-700">{m.label}</p>
+              <p className="text-xs text-teal-500">{formatDate(m.achieved_at)}</p>
             </div>
           </div>
         )
