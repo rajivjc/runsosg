@@ -177,7 +177,7 @@ export default async function FeedPage() {
         if (items.length === 0) return null
         return (
           <div key={label} className="mb-6">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
+            <p className="text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 mt-1">{label}</p>
             <div className="space-y-3">
               {items.map((s: any) => {
                 const borderClass = s.feel === 1 ? 'border-l-4 border-l-red-400'
@@ -185,15 +185,23 @@ export default async function FeedPage() {
                   : 'border-l-4 border-l-transparent'
                 const badges = milestonesBySession[s.id] ?? []
                 const card = (
-                  <div className={`bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 ${borderClass}`}>
-                    <p className="text-sm font-medium text-gray-800 mb-1">
-                      🏃 {s.coach_name ? `${s.coach_name} ran with` : 'Run with'} {s.athlete_name}
+                  <div className={`bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-4 ${borderClass}`}>
+                    <p className="text-xs text-gray-500 mb-0.5">
+                      🏃 {s.coach_name ? `${s.coach_name} ran with` : 'Run with'}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      {s.distance_km != null && <span>{formatDistance(s.distance_km * 1000)}</span>}
-                      {s.duration_seconds != null && <span>· {formatDuration(s.duration_seconds)}</span>}
-                      {s.feel != null && <span>· {FEEL_EMOJI[s.feel]}</span>}
+                    <p className="text-base font-bold text-gray-900 mb-1">{s.athlete_name}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      {s.distance_km != null && (
+                        <span className="text-lg font-bold text-gray-900">{formatDistance(s.distance_km * 1000)}</span>
+                      )}
+                      {s.duration_seconds != null && (
+                        <span className="text-sm text-gray-400">{formatDuration(s.duration_seconds)}</span>
+                      )}
+                      {s.feel != null && (
+                        <span className="text-base ml-1">{FEEL_EMOJI[s.feel]}</span>
+                      )}
                     </div>
+                    <p className="text-xs text-gray-400 mt-1">{formatDate(s.date)}</p>
                     {s.note && (
                       <p className="text-xs text-gray-400 italic mt-1">&ldquo;{s.note}&rdquo;</p>
                     )}
