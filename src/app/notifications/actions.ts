@@ -30,16 +30,17 @@ export async function fetchUnreadNotifications(userId: string): Promise<{
     read: boolean
   }>
 }> {
-  const { data, count } = await adminClient
+  const { data } = await adminClient
     .from('notifications')
-    .select('id, type, payload, created_at, read', { count: 'exact' })
+    .select('id, type, payload, created_at, read')
     .eq('user_id', userId)
     .eq('read', false)
     .order('created_at', { ascending: false })
     .limit(20)
 
+  const notifications = (data ?? []) as any
   return {
-    count: count ?? 0,
-    notifications: (data ?? []) as any,
+    count: notifications.length,
+    notifications,
   }
 }
