@@ -68,26 +68,28 @@ export default async function AccountPage({
         <DisplayNameForm currentName={userRow?.name ?? null} />
       </section>
 
-      {/* Coaching stats */}
-      <div className="mb-6">
-        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your coaching stats</p>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4">
-          <div className="grid grid-cols-3 divide-x divide-gray-100">
-            <div className="flex flex-col items-center px-2">
-              <span className="text-2xl font-bold text-gray-900">{totalSessions}</span>
-              <span className="text-xs text-gray-400 mt-1 text-center">sessions</span>
-            </div>
-            <div className="flex flex-col items-center px-2">
-              <span className="text-2xl font-bold text-gray-900">{totalAthletes}</span>
-              <span className="text-xs text-gray-400 mt-1 text-center">athletes</span>
-            </div>
-            <div className="flex flex-col items-center px-2">
-              <span className="text-2xl font-bold text-teal-600">{thisMonth}</span>
-              <span className="text-xs text-gray-400 mt-1 text-center">this month</span>
+      {/* Coaching stats — only for coaches and admins */}
+      {userRow?.role !== 'caregiver' && (
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your coaching stats</p>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4">
+            <div className="grid grid-cols-3 divide-x divide-gray-100">
+              <div className="flex flex-col items-center px-2">
+                <span className="text-2xl font-bold text-gray-900">{totalSessions}</span>
+                <span className="text-xs text-gray-400 mt-1 text-center">sessions</span>
+              </div>
+              <div className="flex flex-col items-center px-2">
+                <span className="text-2xl font-bold text-gray-900">{totalAthletes}</span>
+                <span className="text-xs text-gray-400 mt-1 text-center">athletes</span>
+              </div>
+              <div className="flex flex-col items-center px-2">
+                <span className="text-2xl font-bold text-teal-600">{thisMonth}</span>
+                <span className="text-xs text-gray-400 mt-1 text-center">this month</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Strava */}
       <section>

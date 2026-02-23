@@ -24,12 +24,12 @@ export default function AthleteSearch({ athletes }: AthleteSearchProps) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search athletes..."
-        className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 mb-4"
+        className="block w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-colors mb-4"
       />
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-8">
-          No athletes match your search
+        <p className="text-sm text-gray-400 text-center py-8">
+          No athletes match &ldquo;{query}&rdquo;
         </p>
       ) : (
         <div className="space-y-3">

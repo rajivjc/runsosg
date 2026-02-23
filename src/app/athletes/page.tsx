@@ -79,13 +79,13 @@ export default async function AthletesPage({
   })
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6 pb-24">
+    <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Athletes</h1>
         {isAdmin && !isCaregiver && (
           <Link
             href="/admin/athletes/new"
-            className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg px-3 py-1.5 transition-colors"
+            className="inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors shadow-sm"
           >
             + Add athlete
           </Link>
@@ -93,15 +93,19 @@ export default async function AthletesPage({
       </div>
 
       {searchParams.connected === 'strava' && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800 flex items-center gap-2">
-          <span>✓</span>
+        <div className="mb-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800 flex items-center gap-2">
+          <span className="text-green-600 font-bold">✓</span>
           <span>Strava connected! Your runs will now sync automatically.</span>
         </div>
       )}
       {showStravaBanner && <StravaConnectBanner />}
 
       {athleteList.length === 0 ? (
-        <p className="text-center text-gray-500 py-12">No athletes found</p>
+        <div className="text-center py-16">
+          <p className="text-4xl mb-3">🏃</p>
+          <p className="text-base font-semibold text-gray-900 mb-1">No athletes yet</p>
+          <p className="text-sm text-gray-500">Add your first athlete to get started.</p>
+        </div>
       ) : (
         <AthleteSearch athletes={athleteList} />
       )}

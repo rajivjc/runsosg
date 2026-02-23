@@ -2,9 +2,18 @@ import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
+import KudosButton from '@/components/feed/KudosButton'
 
 const FEEL_EMOJI: Record<number, string> = {
   1: '😰', 2: '😐', 3: '🙂', 4: '😊', 5: '🔥',
+}
+
+const FEEL_BORDER: Record<number, string> = {
+  1: 'border-l-red-400',
+  2: 'border-l-orange-400',
+  3: 'border-l-yellow-400',
+  4: 'border-l-green-400',
+  5: 'border-l-teal-500',
 }
 
 function groupByDate(sessions: any[]) {
@@ -16,16 +25,16 @@ function groupByDate(sessions: any[]) {
   weekAgo.setDate(today.getDate() - 7)
 
   const groups: Record<string, any[]> = {
-    'TODAY': [], 'YESTERDAY': [], 'THIS WEEK': [], 'EARLIER': [],
+    'Today': [], 'Yesterday': [], 'This week': [], 'Earlier': [],
   }
 
   for (const s of sessions) {
     const d = new Date(s.date)
     d.setHours(0, 0, 0, 0)
-    if (d.getTime() === today.getTime()) groups['TODAY'].push(s)
-    else if (d.getTime() === yesterday.getTime()) groups['YESTERDAY'].push(s)
-    else if (d >= weekAgo) groups['THIS WEEK'].push(s)
-    else groups['EARLIER'].push(s)
+    if (d.getTime() === today.getTime()) groups['Today'].push(s)
+    else if (d.getTime() === yesterday.getTime()) groups['Yesterday'].push(s)
+    else if (d >= weekAgo) groups['This week'].push(s)
+    else groups['Earlier'].push(s)
   }
   return groups
 }
@@ -90,6 +99,23 @@ export default async function FeedPage() {
     })
   }
 
+  // Fetch kudos counts and user's own kudos
+  const sessionIds = (sessions ?? []).map((s: any) => s.id)
+  const [{ data: kudosCounts }, { data: myKudos }] = await Promise.all([
+    sessionIds.length > 0
+      ? adminClient.from('kudos').select('session_id').in('session_id', sessionIds)
+      : Promise.resolve({ data: [] }),
+    sessionIds.length > 0 && user
+      ? adminClient.from('kudos').select('session_id').in('session_id', sessionIds).eq('user_id', user.id)
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const kudosCountMap: Record<string, number> = {}
+  for (const k of kudosCounts ?? []) {
+    kudosCountMap[k.session_id] = (kudosCountMap[k.session_id] ?? 0) + 1
+  }
+  const myKudosSet = new Set((myKudos ?? []).map((k: any) => k.session_id))
+
   const thisWeek = feed.filter(s => {
     const d = new Date(s.date)
     const weekAgo = new Date()
@@ -116,24 +142,50 @@ export default async function FeedPage() {
     ? await adminClient.from('athletes').select('id, name').in('id', myAthleteIds)
     : { data: [] }
 
+  // Caregiver card data — fetch their linked athlete's recent activity
+  let caregiverAthlete: { id: string; name: string } | null = null
+  let caregiverRecentSessions: any[] = []
+  if (isReadOnly && user) {
+    const { data: linkedAthlete } = await adminClient
+      .from('athletes')
+      .select('id, name')
+      .eq('caregiver_user_id', user.id)
+      .maybeSingle()
+    if (linkedAthlete) {
+      caregiverAthlete = linkedAthlete
+      const { data: recentSessions } = await adminClient
+        .from('sessions')
+        .select('id, date, distance_km, feel')
+        .eq('athlete_id', linkedAthlete.id)
+        .eq('status', 'completed')
+        .gte('date', monthStart)
+        .order('date', { ascending: false })
+      caregiverRecentSessions = recentSessions ?? []
+    }
+  }
+
   const hour = now.getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
-  const coachFirstName = (userRow as any)?.name?.split(' ')[0] ?? 'Coach'
+  const firstName = (userRow as any)?.name?.split(' ')[0] ?? (isReadOnly ? 'there' : 'Coach')
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
-      <h1 className="text-xl font-bold text-gray-900 mb-6">Club Activity Feed</h1>
-
+    <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
+      {/* Coach greeting card */}
       {!isReadOnly && (
-        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-4 py-4 mb-4">
-          <p className="text-base font-bold text-gray-900 mb-3">
-            {greeting}, {coachFirstName} 👋
+        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200/60 rounded-2xl px-5 py-5 mb-5 shadow-sm">
+          <p className="text-lg font-bold text-gray-900 mb-1">
+            {greeting}, {firstName}
           </p>
           {myMonthSessions?.length === 0 ? (
-            <p className="text-sm text-teal-700">No sessions logged yet this month. Time to get running 🏃</p>
+            <p className="text-sm text-teal-700">
+              No sessions this month yet — let&apos;s get out there!
+            </p>
           ) : (
             <>
-              <div className="space-y-2 mb-3">
+              <p className="text-sm text-teal-700 mb-3">
+                {myMonthSessions?.length} session{myMonthSessions?.length !== 1 ? 's' : ''} coached this month with {myAthletes?.length} athlete{myAthletes?.length !== 1 ? 's' : ''}
+              </p>
+              <div className="space-y-2">
                 {myAthletes?.map((a: any) => {
                   const athleteSessions = (myMonthSessions ?? [])
                     .filter((s: any) => s.athlete_id === a.id)
@@ -141,13 +193,13 @@ export default async function FeedPage() {
                   const sessionCount = athleteSessions.length
                   const lastFeels = athleteSessions.slice(0, 3).map((s: any) => s.feel ? FEEL_EMOJI[s.feel] : '—')
                   return (
-                    <div key={a.id} className="flex items-center justify-between">
+                    <div key={a.id} className="flex items-center justify-between bg-white/50 rounded-lg px-3 py-2">
                       <span className="text-sm font-medium text-gray-800">{a.name}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-teal-600">{sessionCount} run{sessionCount !== 1 ? 's' : ''}</span>
+                        <span className="text-xs text-teal-600 font-medium">{sessionCount} run{sessionCount !== 1 ? 's' : ''}</span>
                         <div className="flex items-center gap-0.5">
                           {lastFeels.map((emoji, i) => (
-                            <span key={i} className="text-sm" title={`Session ${sessionCount - lastFeels.length + i + 1} feel`}>
+                            <span key={i} className="text-sm" title="Feel score">
                               {emoji}
                             </span>
                           ))}
@@ -157,64 +209,144 @@ export default async function FeedPage() {
                   )
                 })}
               </div>
-              <p className="text-xs text-teal-400 mb-2">&larr; older &middot; recent feel scores &middot; newer &rarr;</p>
-              <p className="text-xs text-teal-600 font-medium border-t border-teal-100 pt-2">
-                You&apos;ve coached {myMonthSessions?.length} session{myMonthSessions?.length !== 1 ? 's' : ''} this month 💪
-              </p>
             </>
           )}
         </div>
       )}
 
-      {thisWeek.length > 0 && (
-        <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-6 text-sm text-teal-800 font-medium">
-          🏃 This week · {thisWeek.length} runs · {weeklyKm.toFixed(1)} km across {weeklyAthletes} athlete{weeklyAthletes !== 1 ? 's' : ''}
+      {/* Caregiver greeting card */}
+      {isReadOnly && (
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl px-5 py-5 mb-5 shadow-sm">
+          <p className="text-lg font-bold text-gray-900 mb-1">
+            {greeting}, {firstName}
+          </p>
+          {caregiverAthlete ? (
+            caregiverRecentSessions.length === 0 ? (
+              <p className="text-sm text-amber-700">
+                No runs logged for {caregiverAthlete.name} this month yet — stay tuned!
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-amber-700 mb-3">
+                  Here&apos;s how {caregiverAthlete.name} is doing this month
+                </p>
+                <div className="flex items-center gap-4 bg-white/50 rounded-lg px-4 py-3">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-gray-900">{caregiverRecentSessions.length}</p>
+                    <p className="text-xs text-amber-600 font-medium">run{caregiverRecentSessions.length !== 1 ? 's' : ''}</p>
+                  </div>
+                  <div className="w-px self-stretch bg-amber-200/60" />
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-gray-900">
+                      {caregiverRecentSessions.reduce((sum: number, s: any) => sum + (s.distance_km ?? 0), 0).toFixed(1)}
+                    </p>
+                    <p className="text-xs text-amber-600 font-medium">km</p>
+                  </div>
+                  <div className="w-px self-stretch bg-amber-200/60" />
+                  <div className="text-center">
+                    <div className="flex items-center gap-0.5 justify-center">
+                      {caregiverRecentSessions.slice(0, 5).map((s: any, i: number) => (
+                        <span key={i} className="text-lg">{s.feel ? FEEL_EMOJI[s.feel] : '—'}</span>
+                      ))}
+                    </div>
+                    <p className="text-xs text-amber-600 font-medium">recent feels</p>
+                  </div>
+                </div>
+              </>
+            )
+          ) : (
+            <p className="text-sm text-amber-700">
+              Welcome to the SOSG Running Club! Your athlete hasn&apos;t been linked yet — please ask a coach.
+            </p>
+          )}
         </div>
       )}
 
-      {feed.length === 0 && (
-        <p className="text-center text-gray-400 py-12 text-sm">No sessions yet.</p>
+      {/* Weekly club summary */}
+      {thisWeek.length > 0 && (
+        <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 mb-5 shadow-sm flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
+            <span className="text-lg">🏃</span>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900">
+              {thisWeek.length} run{thisWeek.length !== 1 ? 's' : ''} this week
+            </p>
+            <p className="text-xs text-gray-500">
+              {weeklyKm.toFixed(1)} km across {weeklyAthletes} athlete{weeklyAthletes !== 1 ? 's' : ''} — growing together
+            </p>
+          </div>
+        </div>
       )}
 
+      {/* Empty state */}
+      {feed.length === 0 && (
+        <div className="text-center py-16">
+          <p className="text-4xl mb-3">👟</p>
+          <p className="text-base font-semibold text-gray-900 mb-1">The club is quiet today</p>
+          <p className="text-sm text-gray-500">Be the first to log a run!</p>
+        </div>
+      )}
+
+      {/* Session groups */}
       {Object.entries(groups).map(([label, items]) => {
         if (items.length === 0) return null
         return (
           <div key={label} className="mb-6">
-            <p className="text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 mt-1">{label}</p>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 mt-1">{label}</p>
             <div className="space-y-3">
               {items.map((s: any) => {
-                const borderClass = s.feel === 1 ? 'border-l-4 border-l-red-400'
-                  : s.feel === 2 ? 'border-l-4 border-l-orange-400'
-                  : 'border-l-4 border-l-transparent'
+                const hasMilestone = (milestonesBySession[s.id] ?? []).length > 0
+                const feelColor = s.feel ? (FEEL_BORDER[s.feel] ?? 'border-l-gray-200') : 'border-l-gray-200'
                 const badges = milestonesBySession[s.id] ?? []
+                const cardBg = hasMilestone ? 'bg-amber-50/40' : 'bg-white'
                 const card = (
-                  <div className={`bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-4 ${borderClass}`}>
-                    <p className="text-xs text-gray-500 mb-0.5">
-                      🏃 {s.coach_name ? `${s.coach_name} ran with` : 'Run with'}
-                    </p>
-                    <p className="text-base font-bold text-gray-900 mb-1">{s.athlete_name}</p>
-                    <div className="flex items-center gap-2 mb-1">
-                      {s.distance_km != null && (
-                        <span className="text-lg font-bold text-gray-900">{formatDistance(s.distance_km * 1000)}</span>
-                      )}
-                      {s.duration_seconds != null && (
-                        <span className="text-sm text-gray-400">{formatDuration(s.duration_seconds)}</span>
-                      )}
+                  <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-4 ${feelColor} hover:shadow-md transition-shadow`}>
+                    {/* Header: coach + athlete */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">
+                          {s.coach_name ? `${s.coach_name} ran with` : 'Run with'}
+                        </p>
+                        <p className="text-base font-bold text-gray-900">{s.athlete_name}</p>
+                      </div>
                       {s.feel != null && (
-                        <span className="text-base ml-1">{FEEL_EMOJI[s.feel]}</span>
+                        <span className="text-xl flex-shrink-0">{FEEL_EMOJI[s.feel]}</span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">{formatDate(s.date)}</p>
+                    {/* Stats row */}
+                    <div className="flex items-baseline gap-3 mb-2">
+                      {s.distance_km != null && (
+                        <span className="text-2xl font-bold text-gray-900 leading-none">{formatDistance(s.distance_km * 1000)}</span>
+                      )}
+                      {s.duration_seconds != null && (
+                        <span className="text-sm text-gray-500 font-medium">{formatDuration(s.duration_seconds)}</span>
+                      )}
+                    </div>
+                    {/* Date */}
+                    <p className="text-xs text-gray-400">{formatDate(s.date)}</p>
+                    {/* Note */}
                     {s.note && (
-                      <p className="text-xs text-gray-400 italic mt-1">&ldquo;{s.note}&rdquo;</p>
+                      <p className="text-sm text-gray-500 italic mt-2 line-clamp-2">&ldquo;{s.note}&rdquo;</p>
                     )}
+                    {/* Milestone badges — unified amber style */}
                     {badges.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
+                      <div className="flex flex-wrap gap-1.5 mt-3">
                         {badges.map((m, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium px-2 py-0.5 rounded-full">
-                            {m.icon} {m.label}
+                          <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                            {m.icon || '🏆'} {m.label}
                           </span>
                         ))}
+                      </div>
+                    )}
+                    {/* Kudos / high five — available to all logged-in users including caregivers */}
+                    {user && (
+                      <div className="mt-3 pt-2 border-t border-gray-100">
+                        <KudosButton
+                          sessionId={s.id}
+                          initialCount={kudosCountMap[s.id] ?? 0}
+                          initialGiven={myKudosSet.has(s.id)}
+                        />
                       </div>
                     )}
                   </div>

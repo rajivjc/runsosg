@@ -1,4 +1,6 @@
 import { adminClient } from '@/lib/supabase/admin'
+import { sendEmail } from '@/lib/email/resend'
+import { milestoneEmail } from '@/lib/email/templates'
 
 export async function checkAndAwardMilestones(
   athleteId: string,
@@ -98,6 +100,47 @@ export async function checkAndAwardMilestones(
     if (error) {
       console.error('Failed to insert milestones:', error)
       return 0
+    }
+
+    // Send milestone email to caregiver (if athlete has one linked)
+    try {
+      const { data: athlete } = await adminClient
+        .from('athletes')
+        .select('name, caregiver_user_id')
+        .eq('id', athleteId)
+        .single()
+
+      if (athlete?.caregiver_user_id) {
+        const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
+        const caregiverAuth = authUsers?.find(u => u.id === athlete.caregiver_user_id)
+        const { data: coach } = coachUserId
+          ? await adminClient.from('users').select('name').eq('id', coachUserId).single()
+          : { data: null }
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+
+        if (caregiverAuth?.email) {
+          for (const def of toAward) {
+            const date = new Date().toLocaleDateString('en-SG', {
+              day: 'numeric', month: 'long', year: 'numeric',
+            })
+            await sendEmail({
+              to: caregiverAuth.email,
+              subject: `${athlete.name} achieved a milestone: ${def.label}!`,
+              html: milestoneEmail({
+                athleteName: athlete.name,
+                milestoneLabel: def.label,
+                milestoneIcon: (def as any).icon ?? '🏆',
+                coachName: coach?.name ?? null,
+                date,
+                milestoneUrl: `${appUrl}/milestone/${inserts[0]?.athlete_id ?? ''}`,
+              }),
+            })
+          }
+        }
+      }
+    } catch (emailErr) {
+      // Email failures should not block milestone creation
+      console.warn('Milestone email notification failed:', emailErr)
     }
 
     // 6. Create milestone notifications for the coach

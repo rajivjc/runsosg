@@ -133,7 +133,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          type: 'milestone' | 'feel_prompt' | 'unmatched_run' | 'strava_disconnected' | 'general' | 'low_feel_alert'
+          type: 'milestone' | 'feel_prompt' | 'low_feel_alert' | 'unmatched_run' | 'strava_disconnected' | 'general'
           payload: Json
           read?: boolean
           channel: 'in_app' | 'email' | 'push'
@@ -147,6 +147,12 @@ export interface Database {
         Row: Invitation & Record<string, unknown>
         Insert: Omit<Invitation, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<Invitation>
+        Relationships: []
+      }
+      kudos: {
+        Row: Kudos & Record<string, unknown>
+        Insert: Omit<Kudos, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<Kudos>
         Relationships: []
       }
     }
@@ -330,7 +336,7 @@ export interface SessionRsvp {
 export interface Notification {
   id: string
   user_id: string
-  type: 'milestone' | 'feel_prompt' | 'unmatched_run' | 'strava_disconnected' | 'general' | 'low_feel_alert'
+  type: 'milestone' | 'feel_prompt' | 'low_feel_alert' | 'unmatched_run' | 'strava_disconnected' | 'general'
   payload: Json
   read: boolean
   channel: 'in_app' | 'email' | 'push'
@@ -345,5 +351,12 @@ export interface Invitation {
   athlete_id: string | null
   invited_by: string | null
   accepted_at: string | null
+  created_at: string
+}
+
+export interface Kudos {
+  id: string
+  session_id: string
+  user_id: string
   created_at: string
 }

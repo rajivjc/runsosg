@@ -15,10 +15,10 @@
   --type-display-line: 1.2;
   --type-display-weight: 700;
 
-  /* Heading 1 (32/40, 650) */
+  /* Heading 1 (32/40, 700) */
   --type-h1-size: 32px;
   --type-h1-line: 1.25;
-  --type-h1-weight: 650;
+  --type-h1-weight: 700;
 
   /* Heading 2 (24/32, 600) */
   --type-h2-size: 24px;
@@ -35,24 +35,34 @@
   --type-body-lg-line: 1.5;
   --type-body-lg-weight: 400;
 
-  /* Body (14/22, 400) */
-  --type-body-size: 14px;
-  --type-body-line: 1.57;
+  /* Body (15/24, 400) */
+  --type-body-size: 15px;
+  --type-body-line: 1.6;
   --type-body-weight: 400;
+
+  /* Body Small (13/20, 400) */
+  --type-body-sm-size: 13px;
+  --type-body-sm-line: 1.5;
+  --type-body-sm-weight: 400;
 
   /* Meta (12/18, 500) */
   --type-meta-size: 12px;
   --type-meta-line: 1.5;
   --type-meta-weight: 500;
 
+  /* Section Header (11/16, 700, uppercase, tracked) */
+  --type-section-size: 11px;
+  --type-section-line: 1.45;
+  --type-section-weight: 700;
+
   /* ============================================
      COLORS
      ============================================ */
   
   /* Background & Surfaces */
-  --color-bg: #F8F9FB;
+  --color-bg: #FBF9F7;
   --color-surface: #FFFFFF;
-  --color-surface-subtle: #F3F4F6;
+  --color-surface-subtle: #F5F3F0;
 
   /* Borders */
   --color-border: #E5E7EB;
@@ -64,8 +74,8 @@
   --color-text-muted: #6B7280;
 
   /* Brand */
-  --color-brand: #111111;
-  --color-brand-hover: #000000;
+  --color-brand: #1A1A2E;
+  --color-brand-hover: #0F0F1E;
   --color-brand-contrast: #FFFFFF;
 
   /* Accent (Teal) */
@@ -87,6 +97,22 @@
   --color-status-active: #10B981;
   --color-status-inactive: #F59E0B;
 
+  /* Celebration & Warmth */
+  --color-celebrate: #F59E0B;
+  --color-celebrate-light: rgba(245, 158, 11, 0.1);
+  --color-warmth: #FEF3C7;
+  --color-warmth-strong: #FDE68A;
+
+  /* Badge colors (tokenized from hardcoded values) */
+  --color-badge-active-bg: #dcfce7;
+  --color-badge-active-text: #15803d;
+  --color-badge-inactive-bg: #fef08a;
+  --color-badge-inactive-text: #854d0e;
+
+  /* Strava brand */
+  --color-strava: #FC4C02;
+  --color-strava-light: rgba(252, 76, 2, 0.08);
+
   /* ============================================
      SPACING
      ============================================ */
@@ -96,6 +122,7 @@
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
+  --space-7: 28px;
   --space-8: 32px;
   --space-10: 40px;
   --space-12: 48px;
@@ -314,15 +341,14 @@ button.primary:hover {
   box-shadow: var(--shadow-md);
 }
 
-/* --- Legacy bare <button> (no variant class) used in forms / auth:
-       maintain brand fill + full-width so existing screens keep working --- */
-button:not(.btn-primary):not(.btn-secondary):not(.btn-ghost):not(.btn-icon):not(.secondary):not(.icon-button):not(.tab-button):not(.segmented-button):not(.modal-close):not(.toast-close):not(.athlete-row-item):not(.empty-state-cta):not([class]) {
+/* --- Legacy bare <button> (no variant class) used in forms / auth --- */
+button:not([class]) {
   background-color: var(--color-brand);
   color: var(--color-brand-contrast);
   width: 100%;
 }
 
-button:not(.btn-primary):not(.btn-secondary):not(.btn-ghost):not(.btn-icon):not(.secondary):not(.icon-button):not(.tab-button):not(.segmented-button):not(.modal-close):not(.toast-close):not(.athlete-row-item):not(.empty-state-cta):not([class]):hover {
+button:not([class]):hover {
   background-color: var(--color-brand-hover);
   box-shadow: var(--shadow-md);
 }
@@ -531,13 +557,13 @@ dd {
 }
 
 .badge-active {
-  background-color: #dcfce7;
-  color: #15803d;
+  background-color: var(--color-badge-active-bg);
+  color: var(--color-badge-active-text);
 }
 
 .badge-inactive {
-  background-color: #fef08a;
-  color: #854d0e;
+  background-color: var(--color-badge-inactive-bg);
+  color: var(--color-badge-inactive-text);
 }
 
 .feed-item-badge {
@@ -1227,7 +1253,7 @@ dd {
   display: flex;
   flex-direction: column;
   gap: var(--space-7);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 480px) {
@@ -1612,15 +1638,15 @@ textarea {
 
 .card-feed-item:hover {
   border-left-color: var(--color-accent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-feed-item.session {
-  border-left-color: #10B981;
+  border-left-color: var(--color-status-active);
 }
 
 .card-feed-item.note {
-  border-left-color: #F59E0B;
+  border-left-color: var(--color-celebrate);
 }
 
 .card-feed-item.milestone {
@@ -1639,8 +1665,8 @@ textarea {
 }
 
 .feed-item-badge-strava-sync {
-  background-color: #E0F2FE;
-  color: #0369A1;
+  background-color: var(--color-strava-light);
+  color: var(--color-strava);
 }
 
 /* Action buttons - sticky */
@@ -1669,30 +1695,7 @@ textarea:focus-visible {
   outline: none;
 }
 
-/* Semantic heading hierarchy */
-h1 {
-  font-size: var(--type-h1-size);
-  font-weight: var(--type-h1-weight);
-  line-height: var(--type-h1-line);
-  color: var(--color-text-primary);
-  margin: var(--space-4) 0 var(--space-3) 0;
-}
-
-h2 {
-  font-size: var(--type-h2-size);
-  font-weight: var(--type-h2-weight);
-  line-height: var(--type-h2-line);
-  color: var(--color-text-primary);
-  margin: var(--space-3) 0 var(--space-2) 0;
-}
-
-h3 {
-  font-size: var(--type-h3-size);
-  font-weight: var(--type-h3-weight);
-  line-height: var(--type-h3-line);
-  color: var(--color-text-primary);
-  margin: var(--space-2) 0 var(--space-1) 0;
-}
+/* Semantic heading hierarchy — see TYPOGRAPHY section above for h1/h2/h3 */
 
 /* Touch targets - minimum 44px */
 button,
@@ -1886,7 +1889,7 @@ a:active {
   color: white;
   padding: var(--space-4);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -2027,7 +2030,7 @@ a:active {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-6);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   animation: fadeIn 200ms ease-out;
 }

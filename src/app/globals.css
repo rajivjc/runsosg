@@ -1,1 +1,29 @@
 @import "tailwindcss";
+
+/* Smooth page entrance */
+main {
+  animation: fadeInUp 200ms ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Safe area support for bottom nav on modern phones */
+nav.fixed.bottom-0 {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  main {
+    animation: none;
+  }
+}

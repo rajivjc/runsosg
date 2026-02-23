@@ -6,6 +6,16 @@
  * should be awarded based on session data.
  */
 
+// ── Mock email modules ────────────────────────────────────────────────────────
+
+jest.mock('@/lib/email/resend', () => ({
+  sendEmail: jest.fn().mockResolvedValue({ success: true }),
+}))
+
+jest.mock('@/lib/email/templates', () => ({
+  milestoneEmail: jest.fn().mockReturnValue('<html>test</html>'),
+}))
+
 // ── Mock adminClient ──────────────────────────────────────────────────────────
 
 const mockFrom = jest.fn()
@@ -13,6 +23,7 @@ const mockFrom = jest.fn()
 jest.mock('@/lib/supabase/admin', () => ({
   adminClient: {
     from: (...args: unknown[]) => mockFrom(...args),
+    auth: { admin: { listUsers: jest.fn().mockResolvedValue({ data: { users: [] } }) } },
   },
 }))
 

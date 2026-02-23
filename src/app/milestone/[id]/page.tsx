@@ -1,8 +1,42 @@
 import { adminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import ShareButton from '@/components/milestone/ShareButton'
 
 interface PageProps {
   params: { id: string }
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { data: milestone } = await adminClient
+    .from('milestones')
+    .select('*, athletes(name), milestone_definitions(icon, label)')
+    .eq('id', params.id)
+    .single()
+
+  if (!milestone) return { title: 'Milestone Not Found' }
+
+  const athleteName = (milestone.athletes as any)?.name ?? 'Athlete'
+  const label = milestone.label
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://runsosg.vercel.app'
+  const imageUrl = `${appUrl}/api/milestone/${params.id}/image`
+
+  return {
+    title: `${athleteName} — ${label} | SOSG Running Club`,
+    description: `${athleteName} achieved a milestone: ${label}. Growing together at SOSG Running Club.`,
+    openGraph: {
+      title: `${athleteName} — ${label}`,
+      description: `${athleteName} achieved a milestone: ${label}. Growing together at SOSG Running Club.`,
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: `${athleteName} - ${label}` }],
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${athleteName} — ${label}`,
+      description: `${athleteName} achieved a milestone: ${label}. Growing together.`,
+      images: [imageUrl],
+    },
+  }
 }
 
 export default async function MilestoneSharePage({ params }: PageProps) {
@@ -39,8 +73,13 @@ export default async function MilestoneSharePage({ params }: PageProps) {
         {coachName && (
           <p className="text-sm text-gray-400">Coached by {coachName}</p>
         )}
-        <div className="mt-8 pt-6 border-t border-gray-100 w-full">
-          <p className="text-xs text-gray-300 font-medium uppercase tracking-widest">SOSG Running Club</p>
+        <div className="mt-8 pt-6 border-t border-gray-100 w-full flex flex-col items-center gap-4">
+          <ShareButton
+            title={`${athleteName} — ${label}`}
+            text={`${athleteName} achieved a milestone: ${label}. Growing together at SOSG Running Club!`}
+            url={`${process.env.NEXT_PUBLIC_APP_URL ?? ''}/milestone/${params.id}`}
+          />
+          <p className="text-xs text-gray-300 font-medium uppercase tracking-widest">SOSG Running Club — Growing Together</p>
         </div>
       </div>
     </div>

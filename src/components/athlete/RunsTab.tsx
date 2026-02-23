@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Plus, ChevronRight } from 'lucide-react'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import type { SessionData, MilestoneData } from './AthleteTabs'
 import { updateManualSession, updateSessionFeel } from '@/app/athletes/[id]/actions'
@@ -66,6 +67,14 @@ const FEEL_BG: Record<number, string> = {
   5: 'bg-teal-50',
 }
 
+const FEEL_TEXT: Record<number, string> = {
+  1: 'text-red-700',
+  2: 'text-orange-700',
+  3: 'text-yellow-700',
+  4: 'text-green-700',
+  5: 'text-teal-700',
+}
+
 function formatPace(distanceKm: number, durationSeconds: number): string {
   if (distanceKm <= 0 || durationSeconds <= 0) return ''
   const paceSecondsPerKm = durationSeconds / distanceKm
@@ -117,7 +126,7 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
     : null
 
   return (
-    <div className={`bg-white rounded-xl border border-gray-100 border-l-4 ${borderColor} shadow-sm overflow-hidden`}>
+    <div className={`bg-white rounded-xl border border-gray-100 border-l-4 ${borderColor} shadow-sm overflow-hidden transition-shadow hover:shadow-md`}>
       <button
         className="w-full text-left"
         onClick={() => !isReadOnly && setExpanded((v) => !v)}
@@ -138,12 +147,7 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {feel != null && (
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${FEEL_BG[feel]} ${
-                  feel === 1 ? 'text-red-700' :
-                  feel === 2 ? 'text-orange-700' :
-                  feel === 3 ? 'text-yellow-700' :
-                  feel === 4 ? 'text-green-700' : 'text-teal-700'
-                }`}>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${FEEL_BG[feel]} ${FEEL_TEXT[feel]}`}>
                   {FEEL_EMOJI[feel]} {FEEL_LABELS[feel]}
                 </span>
               )}
@@ -176,18 +180,18 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
             <p className="text-sm text-gray-600 mt-2 line-clamp-2 italic">&ldquo;{note}&rdquo;</p>
           )}
 
-          {/* Milestone badges */}
+          {/* Milestone badges — unified amber style (matches feed page) */}
           {badges.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {badges.map((m, i) => (
-                <span key={i} className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                   {m.icon ?? '🏆'} {m.label}
                   {m.id && (
                     <a
                       href={`/milestone/${m.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-1 text-teal-400 hover:text-teal-600"
+                      className="ml-1 text-amber-400 hover:text-amber-600"
                       onClick={e => e.stopPropagation()}
                       title="Share this milestone"
                     >
@@ -215,11 +219,10 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
               )}
             </div>
             {!isReadOnly && (
-              <svg xmlns="http://www.w3.org/2000/svg"
-                className={`w-4 h-4 text-gray-300 transition-transform ${expanded ? 'rotate-90' : ''}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+              <ChevronRight
+                size={16}
+                className={`text-gray-300 transition-transform ${expanded ? 'rotate-90' : ''}`}
+              />
             )}
           </div>
         </div>
@@ -227,23 +230,23 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
 
       {/* Expanded panel — coaches only */}
       {expanded && !isReadOnly && (
-        <div className="border-t border-gray-100 px-4 py-4 bg-gray-50 space-y-4">
+        <div className="border-t border-gray-100 px-4 py-4 bg-gray-50/80 space-y-4">
           {s.sync_source === 'manual' && (
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Date</p>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none w-full" />
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none w-full" />
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Distance (km)</p>
                 <input type="number" step="0.01" value={distanceKm} onChange={(e) => setDistanceKm(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none w-full" />
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none w-full" />
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Duration (mins)</p>
                 <input type="number" step="1" value={durationMins} onChange={(e) => setDurationMins(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none w-full" />
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none w-full" />
               </div>
             </div>
           )}
@@ -252,8 +255,8 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
             <div className="flex gap-2">
               {([1, 2, 3, 4, 5] as Feel[]).map((v) => (
                 <button key={v} onClick={() => setFeel(v)}
-                  className={`flex-1 flex flex-col items-center py-2 rounded-xl transition-all ${
-                    feel === v ? 'bg-teal-50 ring-2 ring-teal-400' : 'bg-white border border-gray-200 hover:bg-gray-50'
+                  className={`flex-1 flex flex-col items-center py-2.5 rounded-xl transition-all ${
+                    feel === v ? 'bg-teal-50 ring-2 ring-teal-400 shadow-sm' : 'bg-white border border-gray-200 hover:bg-gray-50'
                   }`}
                   aria-label={FEEL_LABELS[v]} aria-pressed={feel === v}>
                   <span className="text-2xl">{FEEL_EMOJI[v]}</span>
@@ -269,14 +272,14 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
             <textarea value={note} onChange={(e) => setNote(e.target.value)}
               placeholder="How did it go? Any observations about this run…"
               rows={2}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-teal-500 focus:outline-none" />
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none" />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex justify-end gap-3">
             <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? ''); setDate(s.date); setDistanceKm(s.distance_km != null ? String(s.distance_km) : ''); setDurationMins(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '') }}
-              className="text-sm text-gray-500 px-3 py-1.5">Cancel</button>
+              className="text-sm text-gray-500 px-4 py-2 hover:text-gray-700 transition-colors">Cancel</button>
             <button onClick={handleSave} disabled={saving}
-              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-colors">
+              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-5 py-2 transition-colors shadow-sm">
               {saving ? 'Saving…' : 'Save'}
             </button>
           </div>
@@ -304,16 +307,17 @@ export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly =
       {!isReadOnly && (
         <button
           onClick={onLogRun}
-          className="w-full border-2 border-dashed border-gray-200 hover:border-teal-400 hover:bg-teal-50 text-gray-400 hover:text-teal-600 rounded-xl py-3 text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 hover:text-teal-800 rounded-xl py-3.5 text-sm font-semibold transition-colors"
         >
-          + Log a run manually
+          <Plus size={18} strokeWidth={2.5} />
+          Log a run
         </button>
       )}
 
       {/* Weekly distance bar chart — coaches only, min 2 weeks */}
       {!isReadOnly && weeklyData.length >= 2 && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 mb-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Weekly distance</p>
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Weekly distance</p>
           <div className="flex items-end gap-2" style={{ height: '80px' }}>
             {(() => {
               const maxKm = Math.max(...weeklyData.map(w => w.km), 0.1)
@@ -328,7 +332,7 @@ export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly =
                       style={{ height: `${Math.max((w.km / maxKm) * 48, 3)}px` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-400 whitespace-nowrap leading-none">{w.label}</span>
+                  <span className="text-[10px] text-gray-400 whitespace-nowrap leading-none">{w.label}</span>
                 </div>
               ))
             })()}
@@ -337,9 +341,11 @@ export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly =
       )}
 
       {feedItems.length === 0 && (
-        <p className="text-center text-gray-500 py-8 text-sm">
-          No runs yet. Sessions will appear here after runs are synced from Strava.
-        </p>
+        <div className="text-center py-12">
+          <p className="text-4xl mb-3">👟</p>
+          <p className="text-sm font-semibold text-gray-900 mb-1">Ready for the first run?</p>
+          <p className="text-xs text-gray-500">Sessions will appear here once logged or synced from Strava.</p>
+        </div>
       )}
       {feedItems.map((item) => (
         <SessionCard
