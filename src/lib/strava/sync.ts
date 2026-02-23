@@ -206,8 +206,7 @@ export async function processStravaActivity(
       })
     }
 
-    const awarded = await checkAndAwardMilestones(matchResult.athleteId, sessionId, coachUserId)
-    console.log(`Milestones awarded: ${awarded}`)
+    await checkAndAwardMilestones(matchResult.athleteId, sessionId, coachUserId)
 
     return
   }

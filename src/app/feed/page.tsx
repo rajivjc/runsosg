@@ -47,8 +47,6 @@ export default async function FeedPage() {
     .order('date', { ascending: false })
     .limit(30)
 
-  console.log('feed sessions:', sessions?.length, 'error:', error?.message)
-
   // Fetch athlete and coach names separately
   const athleteIds = [...new Set((sessions ?? []).map((s: any) => s.athlete_id).filter(Boolean))]
   const coachIds = [...new Set((sessions ?? []).map((s: any) => s.coach_user_id).filter(Boolean))]
@@ -80,8 +78,6 @@ export default async function FeedPage() {
     .select('id, athlete_id, session_id, label, achieved_at, athletes(name), milestone_definitions(icon)')
     .order('achieved_at', { ascending: false })
     .limit(20)
-
-  console.log('combined today:', feed.filter((i: any) => i.date === '2026-02-22').map((i: any) => 'session:' + i.id))
 
   const milestonesBySession: Record<string, { icon: string; label: string }[]> = {}
   for (const m of milestones ?? []) {

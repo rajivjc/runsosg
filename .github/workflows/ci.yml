@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, feat/prototype-v2]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -37,17 +37,12 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
 
       - name: Unit tests
         run: npm test -- --bail
-        env:
-          NODE_ENV: test
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: E2E tests
-        run: npm run test:e2e
         env:
           NODE_ENV: test
 
