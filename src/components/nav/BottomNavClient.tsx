@@ -25,12 +25,9 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, userId }
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [panelOpen, setPanelOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
 
   async function fetchNotifications() {
-    console.log('[notifications] fetching for userId:', userId)
     const result = await fetchUnreadNotifications(userId)
-    console.log('[notifications] result:', result.count, result.notifications.length)
     setUnreadCount(result.count)
     setNotifications(result.notifications)
   }
@@ -54,38 +51,46 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, userId }
         const isFeed = tab.href === '/feed'
 
         if (isFeed) {
-          return (
-            <div key={tab.href} className="flex flex-1 relative">
-              <Link
-                href={tab.href}
+          const feedContent = (
+            <>
+              <span className="relative inline-flex">
+                <span className="text-xl leading-none">{tab.emoji}</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-[16px] px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full leading-none">
+                    {unreadCount >= 10 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </span>
+              <span>{tab.label}</span>
+            </>
+          )
+
+          if (unreadCount > 0) {
+            return (
+              <button
+                key={tab.href}
                 className={`flex flex-1 flex-col items-center justify-center py-3 gap-0.5 text-xs font-medium transition-colors ${
                   active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'
                 }`}
+                onClick={() => {
+                  fetchNotifications().then(() => setPanelOpen(true))
+                }}
               >
-                <span className="text-xl leading-none">{tab.emoji}</span>
-                <span>{tab.label}</span>
-              </Link>
-              {unreadCount > 0 && (
-                <button
-                  className="absolute top-1 left-1/2 -translate-x-1/2 translate-x-2 flex items-center justify-center min-w-[16px] h-[16px] px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full leading-none"
-                  style={{ zIndex: 9999 }}
-                  onPointerDown={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    console.log('[notifications] badge pointerDown fired')
-                    setLoading(true)
-                    fetchNotifications().then(() => {
-                      setLoading(false)
-                      setPanelOpen(true)
-                      console.log('[notifications] panel opened')
-                    })
-                  }}
-                  aria-label="Open notifications"
-                >
-                  {loading ? '·' : (unreadCount >= 10 ? '9+' : unreadCount)}
-                </button>
-              )}
-            </div>
+                {feedContent}
+              </button>
+            )
+          }
+
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`flex flex-1 flex-col items-center justify-center py-3 gap-0.5 text-xs font-medium transition-colors ${
+                active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              {feedContent}
+            </Link>
           )
         }
 

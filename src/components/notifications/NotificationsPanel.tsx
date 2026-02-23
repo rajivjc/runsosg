@@ -104,12 +104,12 @@ export default function NotificationsPanel({ notifications, userId, onClose }: P
             <p className="text-sm text-gray-400 text-center py-8">You&apos;re all caught up 👍</p>
           ) : (
             notifications.map((n) => {
-              const { message, tappable } = getNotificationConfig(n)
+              const { message } = getNotificationConfig(n)
               const row = (
                 <div
                   key={n.id}
-                  className={`flex items-start gap-3 border-b border-gray-100 py-3 ${tappable && !n.read ? 'cursor-pointer' : ''}`}
-                  onClick={tappable && !n.read ? () => handleMarkOne(n.id) : undefined}
+                  className="flex items-start gap-3 border-b border-gray-100 py-3 cursor-pointer"
+                  onClick={() => handleMarkOne(n.id)}
                 >
                   <span
                     className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
@@ -121,6 +121,7 @@ export default function NotificationsPanel({ notifications, userId, onClose }: P
                       {message}
                     </span>
                     <span className="text-xs text-gray-400">{relativeTime(n.created_at)}</span>
+                    <span className="text-xs text-gray-400 mt-0.5">Tap to dismiss</span>
                   </div>
                 </div>
               )
