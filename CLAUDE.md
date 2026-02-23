@@ -186,8 +186,8 @@ Required in `.env.local` (see `.env.local.example`):
 ### CI (GitHub Actions)
 
 - Workflow: `.github/workflows/ci.yml`
-- Triggers: push to `main`/`feat/prototype-v2`, all PRs
-- Steps: `npm ci` → `npm run build` → `npm test --bail` → install Chromium → `npm run test:e2e`
+- Triggers: push to `main`, all PRs
+- Steps: `npm ci` → `npm run build` → `npm test --bail`
 - Node 20, Ubuntu latest
 - Test artifacts uploaded on failure
 
