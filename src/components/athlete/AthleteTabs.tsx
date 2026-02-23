@@ -26,6 +26,9 @@ export type SessionData = {
   sync_source: 'strava_webhook' | 'manual' | 'backfill' | null
   coach_user_id: string | null
   strava_activity_id: number | null
+  strava_title: string | null
+  avg_heart_rate: number | null
+  max_heart_rate: number | null
   coach_name: string | null
 }
 

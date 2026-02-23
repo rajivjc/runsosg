@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { markNotificationRead, markAllNotificationsRead } from '@/app/notifications/actions'
 
@@ -76,24 +77,43 @@ export function NotificationList({ variant, userId, notification }: Props) {
   const n = notification!
   const message = getNotificationMessage(n)
   const icon = getNotificationIcon(n.type)
+  const [dismissed, setDismissed] = useState(n.read)
+  const isRead = n.read || dismissed
+
+  // Unmatched run notifications link to the resolution page
+  const unmatchedId = n.type === 'unmatched_run' ? n.payload.unmatched_id : null
+  const handleClick = unmatchedId
+    ? () => router.push(`/notifications/unmatched/${unmatchedId}`)
+    : undefined
 
   return (
     <div
-      className={`bg-white rounded-xl border shadow-sm px-4 py-3 flex items-start gap-3 ${
-        n.read ? 'border-gray-100 opacity-60' : 'border-teal-200'
-      }`}
+      className={`rounded-xl border shadow-sm px-4 py-3 flex items-start gap-3 transition-all duration-500 ease-in-out ${
+        isRead
+          ? 'bg-gray-50 border-gray-200 opacity-40 scale-[0.98]'
+          : 'bg-white border-teal-200'
+      } ${unmatchedId ? 'cursor-pointer' : ''}`}
+      onClick={handleClick}
     >
-      <span className="text-lg mt-0.5 flex-shrink-0">{icon}</span>
+      <span className={`text-lg mt-0.5 flex-shrink-0 transition-all duration-500 ${isRead ? 'grayscale' : ''}`}>{icon}</span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm ${n.read ? 'text-gray-500' : 'text-gray-900 font-medium'}`}>
+        <p className={`text-sm transition-all duration-500 ${isRead ? 'text-gray-400 line-through' : 'text-gray-900 font-medium'}`}>
           {message}
         </p>
-        <p className="text-xs text-gray-400 mt-1">{relativeTime(n.created_at)}</p>
+        <p className="text-xs text-gray-400 mt-1">
+          {relativeTime(n.created_at)}
+          {isRead && <span className="ml-2 text-gray-300 italic">dismissed</span>}
+        </p>
+        {unmatchedId && !isRead && (
+          <p className="text-xs text-teal-600 mt-1">Tap to link to an athlete</p>
+        )}
       </div>
-      {!n.read && (
+      {!isRead && (
         <button
           className="flex-shrink-0 text-xs text-teal-600 font-medium hover:text-teal-700 mt-0.5"
-          onClick={async () => {
+          onClick={async (e) => {
+            e.stopPropagation()
+            setDismissed(true)
             await markNotificationRead(n.id)
             router.refresh()
           }}

@@ -1,9 +1,10 @@
 /**
  * Unit tests for Strava activity → athlete matching logic.
  *
- * We test the two matching strategies:
- * 1. Hashtag matching (#sosg <name>)
- * 2. Schedule proximity matching (planned session within ±2h window)
+ * Matching strategies:
+ * 1. #sosg <name> (multi-word supported)
+ * 2. #<name> plain hashtag
+ * 3. Multiple hashtags → multiple athlete matches
  */
 
 const mockFrom = jest.fn()
@@ -14,7 +15,7 @@ jest.mock('@/lib/supabase/admin', () => ({
   },
 }))
 
-import { matchActivityToAthlete } from '@/lib/strava/matching'
+import { matchActivityToAthlete, extractIdentifiers } from '@/lib/strava/matching'
 import type { StravaActivity } from '@/lib/strava/client'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -50,16 +51,70 @@ beforeEach(() => {
   jest.clearAllMocks()
 })
 
-// ── Hashtag matching ──────────────────────────────────────────────────────────
+// ── extractIdentifiers (pure function) ───────────────────────────────────────
 
-describe('hashtag matching', () => {
-  it('matches when activity name contains #sosg <name> and one athlete found', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'athletes') {
-        return chainable([{ id: 'athlete-1', name: 'Daniel' }])
-      }
-      return chainable([])
-    })
+describe('extractIdentifiers', () => {
+  it('extracts single #sosg name', () => {
+    expect(extractIdentifiers('Run with #sosg Daniel')).toEqual(['Daniel'])
+  })
+
+  it('extracts multi-word #sosg name (captures until next # or end)', () => {
+    expect(extractIdentifiers('Run #sosg Alex Tan')).toEqual(['Alex Tan'])
+  })
+
+  it('extracts plain hashtag', () => {
+    expect(extractIdentifiers('Morning run #Daniel')).toEqual(['Daniel'])
+  })
+
+  it('extracts multiple plain hashtags', () => {
+    expect(extractIdentifiers('Group run #Daniel #Ben')).toEqual([
+      'Daniel',
+      'Ben',
+    ])
+  })
+
+  it('extracts mixed #sosg and plain hashtags', () => {
+    expect(extractIdentifiers('#sosg Alex Tan #Ben')).toEqual([
+      'Alex Tan',
+      'Ben',
+    ])
+  })
+
+  it('extracts multiple #sosg tags', () => {
+    expect(extractIdentifiers('#sosg Daniel #sosg Ben')).toEqual([
+      'Daniel',
+      'Ben',
+    ])
+  })
+
+  it('is case-insensitive for #sosg / SOSG', () => {
+    expect(extractIdentifiers('Run SOSG Daniel')).toEqual(['Daniel'])
+    expect(extractIdentifiers('Run #SOSG Daniel')).toEqual(['Daniel'])
+  })
+
+  it('returns empty array when no hashtags', () => {
+    expect(extractIdentifiers('Just a morning run')).toEqual([])
+  })
+
+  it('returns empty when #sosg has no name after it', () => {
+    expect(extractIdentifiers('#sosg')).toEqual([])
+    expect(extractIdentifiers('#sosg   ')).toEqual([])
+  })
+
+  it('does not treat #sosg itself as a plain hashtag', () => {
+    // #sosg without a name should not produce "sosg" as a plain hashtag match
+    const result = extractIdentifiers('#sosg')
+    expect(result).not.toContain('sosg')
+  })
+})
+
+// ── Hashtag matching (single athlete) ────────────────────────────────────────
+
+describe('hashtag matching — single athlete', () => {
+  it('matches #sosg <name> when one athlete found', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([{ id: 'athlete-1', name: 'Daniel' }])
+    )
 
     const result = await matchActivityToAthlete(
       makeActivity({ name: 'Run with #sosg Daniel' }),
@@ -67,36 +122,64 @@ describe('hashtag matching', () => {
     )
 
     expect(result.matched).toBe(true)
-    expect(result.athleteId).toBe('athlete-1')
-    expect(result.method).toBe('hashtag')
-    expect(result.confidence).toBe('high')
+    expect(result.athletes).toHaveLength(1)
+    expect(result.athletes[0].athleteId).toBe('athlete-1')
+    expect(result.athletes[0].method).toBe('hashtag')
+    expect(result.athletes[0].confidence).toBe('high')
   })
 
-  it('matches when #sosg tag is in description', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'athletes') {
-        return chainable([{ id: 'athlete-2', name: 'Sarah' }])
-      }
-      return chainable([])
-    })
+  it('matches #sosg in description', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([{ id: 'athlete-2', name: 'Sarah' }])
+    )
 
     const result = await matchActivityToAthlete(
-      makeActivity({ name: 'Morning Run', description: '#sosg Sarah great session' }),
+      makeActivity({
+        name: 'Morning Run',
+        description: '#sosg Sarah great session',
+      }),
       'coach-1'
     )
 
     expect(result.matched).toBe(true)
-    expect(result.athleteId).toBe('athlete-2')
-    expect(result.method).toBe('hashtag')
+    expect(result.athletes[0].athleteId).toBe('athlete-2')
   })
 
-  it('is case-insensitive for the #sosg tag', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'athletes') {
-        return chainable([{ id: 'athlete-1', name: 'Daniel' }])
-      }
-      return chainable([])
-    })
+  it('matches plain hashtag #<name>', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([{ id: 'athlete-1', name: 'Daniel' }])
+    )
+
+    const result = await matchActivityToAthlete(
+      makeActivity({ name: 'Morning run #Daniel' }),
+      'coach-1'
+    )
+
+    expect(result.matched).toBe(true)
+    expect(result.athletes).toHaveLength(1)
+    expect(result.athletes[0].athleteId).toBe('athlete-1')
+    expect(result.athletes[0].identifier).toBe('Daniel')
+  })
+
+  it('matches multi-word #sosg name', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([{ id: 'athlete-3', name: 'Alex Tan' }])
+    )
+
+    const result = await matchActivityToAthlete(
+      makeActivity({ name: 'Run #sosg Alex Tan' }),
+      'coach-1'
+    )
+
+    expect(result.matched).toBe(true)
+    expect(result.athletes[0].athleteId).toBe('athlete-3')
+    expect(result.athletes[0].identifier).toBe('Alex Tan')
+  })
+
+  it('is case-insensitive for SOSG tag', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([{ id: 'athlete-1', name: 'Daniel' }])
+    )
 
     const result = await matchActivityToAthlete(
       makeActivity({ name: 'Run with SOSG Daniel' }),
@@ -104,21 +187,88 @@ describe('hashtag matching', () => {
     )
 
     expect(result.matched).toBe(true)
-    expect(result.method).toBe('hashtag')
+  })
+})
+
+// ── Multi-athlete matching ───────────────────────────────────────────────────
+
+describe('multi-athlete matching', () => {
+  it('matches multiple plain hashtags to different athletes', async () => {
+    const callArgs: string[][] = []
+    mockFrom.mockImplementation(() => {
+      const obj: Record<string, unknown> = {}
+      const handler: ProxyHandler<Record<string, unknown>> = {
+        get(_target, prop) {
+          if (prop === 'then') {
+            // Return different athletes based on the ilike calls
+            const identifier = callArgs[callArgs.length - 1]?.[0] ?? ''
+            if (identifier.includes('Daniel')) {
+              return (resolve: (v: unknown) => void) =>
+                resolve({
+                  data: [{ id: 'athlete-1', name: 'Daniel' }],
+                  error: null,
+                })
+            }
+            if (identifier.includes('Ben')) {
+              return (resolve: (v: unknown) => void) =>
+                resolve({
+                  data: [{ id: 'athlete-2', name: 'Ben' }],
+                  error: null,
+                })
+            }
+            return (resolve: (v: unknown) => void) =>
+              resolve({ data: [], error: null })
+          }
+          if (prop === 'ilike') {
+            return (_col: string, val: string) => {
+              callArgs.push([val])
+              return new Proxy(obj, handler)
+            }
+          }
+          return () => new Proxy(obj, handler)
+        },
+      }
+      return new Proxy(obj, handler)
+    })
+
+    const result = await matchActivityToAthlete(
+      makeActivity({ name: 'Group run #Daniel #Ben' }),
+      'coach-1'
+    )
+
+    expect(result.matched).toBe(true)
+    expect(result.athletes).toHaveLength(2)
+    expect(result.athletes.map((a) => a.athleteId).sort()).toEqual([
+      'athlete-1',
+      'athlete-2',
+    ])
   })
 
-  it('does not match hashtag when multiple athletes match the name', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'athletes') {
-        return chainable([
-          { id: 'a1', name: 'Daniel Tan' },
-          { id: 'a2', name: 'Daniel Lee' },
-        ])
-      }
-      // Falls through to schedule matching — no planned sessions
-      if (table === 'sessions') return chainable([])
-      return chainable([])
-    })
+  it('deduplicates when same athlete matched by multiple identifiers', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([{ id: 'athlete-1', name: 'Daniel' }])
+    )
+
+    const result = await matchActivityToAthlete(
+      makeActivity({ name: '#sosg Daniel #Daniel' }),
+      'coach-1'
+    )
+
+    expect(result.matched).toBe(true)
+    expect(result.athletes).toHaveLength(1)
+  })
+})
+
+// ── Ambiguous matches ────────────────────────────────────────────────────────
+
+describe('ambiguous matches', () => {
+  it('marks identifier as ambiguous when multiple athletes match', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([
+        { id: 'a1', name: 'Daniel Tan' },
+        { id: 'a2', name: 'Daniel Lee' },
+      ])
+    )
 
     const result = await matchActivityToAthlete(
       makeActivity({ name: '#sosg Daniel' }),
@@ -126,14 +276,78 @@ describe('hashtag matching', () => {
     )
 
     expect(result.matched).toBe(false)
+    expect(result.athletes).toHaveLength(0)
+    expect(result.ambiguousIdentifiers).toEqual(['Daniel'])
   })
 
-  it('does not match hashtag when no athletes match the name', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'athletes') return chainable([])
-      if (table === 'sessions') return chainable([])
-      return chainable([])
+  it('matches unambiguous identifiers even when others are ambiguous', async () => {
+    const callArgs: string[][] = []
+    mockFrom.mockImplementation(() => {
+      const obj: Record<string, unknown> = {}
+      const handler: ProxyHandler<Record<string, unknown>> = {
+        get(_target, prop) {
+          if (prop === 'then') {
+            const identifier = callArgs[callArgs.length - 1]?.[0] ?? ''
+            if (identifier.includes('Daniel')) {
+              return (resolve: (v: unknown) => void) =>
+                resolve({
+                  data: [
+                    { id: 'a1', name: 'Daniel Tan' },
+                    { id: 'a2', name: 'Daniel Lee' },
+                  ],
+                  error: null,
+                })
+            }
+            if (identifier.includes('Sarah')) {
+              return (resolve: (v: unknown) => void) =>
+                resolve({
+                  data: [{ id: 'a3', name: 'Sarah' }],
+                  error: null,
+                })
+            }
+            return (resolve: (v: unknown) => void) =>
+              resolve({ data: [], error: null })
+          }
+          if (prop === 'ilike') {
+            return (_col: string, val: string) => {
+              callArgs.push([val])
+              return new Proxy(obj, handler)
+            }
+          }
+          return () => new Proxy(obj, handler)
+        },
+      }
+      return new Proxy(obj, handler)
     })
+
+    const result = await matchActivityToAthlete(
+      makeActivity({ name: '#Daniel #Sarah' }),
+      'coach-1'
+    )
+
+    expect(result.matched).toBe(true)
+    expect(result.athletes).toHaveLength(1)
+    expect(result.athletes[0].athleteId).toBe('a3')
+    expect(result.ambiguousIdentifiers).toEqual(['Daniel'])
+  })
+})
+
+// ── No match ─────────────────────────────────────────────────────────────────
+
+describe('no match', () => {
+  it('returns unmatched when no hashtags present', async () => {
+    const result = await matchActivityToAthlete(
+      makeActivity({ name: 'Solo run' }),
+      'coach-1'
+    )
+
+    expect(result.matched).toBe(false)
+    expect(result.athletes).toHaveLength(0)
+    expect(result.ambiguousIdentifiers).toHaveLength(0)
+  })
+
+  it('returns unmatched when hashtag name matches no athletes', async () => {
+    mockFrom.mockImplementation(() => chainable([]))
 
     const result = await matchActivityToAthlete(
       makeActivity({ name: '#sosg UnknownPerson' }),
@@ -141,68 +355,6 @@ describe('hashtag matching', () => {
     )
 
     expect(result.matched).toBe(false)
-  })
-})
-
-// ── Schedule matching ─────────────────────────────────────────────────────────
-
-describe('schedule matching', () => {
-  it('matches when exactly one planned session is within the ±2h window', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'athletes') return chainable([])
-      if (table === 'sessions') {
-        return chainable([{ id: 'session-1', athlete_id: 'athlete-3' }])
-      }
-      return chainable([])
-    })
-
-    const result = await matchActivityToAthlete(
-      makeActivity({ name: 'Easy jog' }), // no hashtag
-      'coach-1'
-    )
-
-    expect(result.matched).toBe(true)
-    expect(result.athleteId).toBe('athlete-3')
-    expect(result.method).toBe('schedule')
-    expect(result.confidence).toBe('medium')
-  })
-
-  it('does not match schedule when multiple planned sessions are in the window', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'athletes') return chainable([])
-      if (table === 'sessions') {
-        return chainable([
-          { id: 's1', athlete_id: 'a1' },
-          { id: 's2', athlete_id: 'a2' },
-        ])
-      }
-      return chainable([])
-    })
-
-    const result = await matchActivityToAthlete(
-      makeActivity({ name: 'Easy jog' }),
-      'coach-1'
-    )
-
-    expect(result.matched).toBe(false)
-    expect(result.athleteId).toBeNull()
-    expect(result.method).toBeNull()
-    expect(result.confidence).toBeNull()
-  })
-
-  it('returns unmatched when no hashtag and no planned sessions', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'athletes') return chainable([])
-      if (table === 'sessions') return chainable([])
-      return chainable([])
-    })
-
-    const result = await matchActivityToAthlete(
-      makeActivity({ name: 'Solo run' }),
-      'coach-1'
-    )
-
-    expect(result.matched).toBe(false)
-    expect(result.athleteId).toBeNull()
+    expect(result.athletes).toHaveLength(0)
   })
 })
