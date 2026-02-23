@@ -233,7 +233,6 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
               )}
               {s.strava_activity_id && (
                 <a href={`https://www.strava.com/activities/${s.strava_activity_id}`}
-                  target="_blank" rel="noopener noreferrer"
                   className="text-xs text-orange-500 hover:text-orange-600 font-medium"
                   onClick={(e) => e.stopPropagation()}>
                   View on Strava ↗
