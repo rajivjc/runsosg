@@ -23,6 +23,7 @@ export interface StravaActivity {
     summary_polyline: string | null
   }
   average_heartrate?: number
+  max_heartrate?: number
 }
 
 // ─── Auth URL ──────────────────────────────────────────────────────────────────

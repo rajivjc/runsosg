@@ -51,7 +51,7 @@ export default async function FeedPage() {
 
   const { data: sessions, error } = await adminClient
     .from('sessions')
-    .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id')
+    .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, avg_heart_rate, max_heart_rate')
     .eq('status', 'completed')
     .order('date', { ascending: false })
     .limit(30)
@@ -302,6 +302,10 @@ export default async function FeedPage() {
                 const cardBg = hasMilestone ? 'bg-amber-50/40' : 'bg-white'
                 const card = (
                   <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-4 ${feelColor} hover:shadow-md transition-shadow`}>
+                    {/* Strava title — shown when present (e.g. race name) */}
+                    {s.strava_title && (
+                      <p className="text-xs font-semibold text-orange-600 mb-1.5 truncate">{s.strava_title}</p>
+                    )}
                     {/* Header: coach + athlete */}
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
@@ -323,8 +327,15 @@ export default async function FeedPage() {
                         <span className="text-sm text-gray-500 font-medium">{formatDuration(s.duration_seconds)}</span>
                       )}
                     </div>
-                    {/* Date */}
-                    <p className="text-xs text-gray-400">{formatDate(s.date)}</p>
+                    {/* Heart rate + date */}
+                    <div className="flex items-center gap-3 mb-0">
+                      {s.avg_heart_rate != null && (
+                        <span className="text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
+                          {s.avg_heart_rate} bpm{s.max_heart_rate != null ? ` / ${s.max_heart_rate} max` : ''}
+                        </span>
+                      )}
+                      <p className="text-xs text-gray-400">{formatDate(s.date)}</p>
+                    </div>
                     {/* Note */}
                     {s.note && (
                       <p className="text-sm text-gray-500 italic mt-2 line-clamp-2">&ldquo;{s.note}&rdquo;</p>

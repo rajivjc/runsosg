@@ -133,6 +133,13 @@ export async function processStravaActivity(
       distance_km: activity.distance / 1000,
       duration_seconds: activity.moving_time,
       map_polyline: activity.map.summary_polyline,
+      strava_title: activity.name || null,
+      avg_heart_rate: activity.average_heartrate
+        ? Math.round(activity.average_heartrate)
+        : null,
+      max_heart_rate: activity.max_heartrate
+        ? Math.round(activity.max_heartrate)
+        : null,
       sync_source: 'strava_webhook' as const,
       match_method: matchResult.method,
       match_confidence: matchResult.confidence,
@@ -154,6 +161,9 @@ export async function processStravaActivity(
           distance_km: upsertPayload.distance_km,
           duration_seconds: upsertPayload.duration_seconds,
           map_polyline: upsertPayload.map_polyline,
+          strava_title: upsertPayload.strava_title,
+          avg_heart_rate: upsertPayload.avg_heart_rate,
+          max_heart_rate: upsertPayload.max_heart_rate,
           sync_source: upsertPayload.sync_source,
           match_method: upsertPayload.match_method,
           match_confidence: upsertPayload.match_confidence,

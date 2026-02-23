@@ -133,6 +133,10 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
         aria-expanded={expanded}
       >
         <div className="px-4 pt-4 pb-3">
+          {/* Strava title — shown when present (e.g. race name) */}
+          {s.strava_title && (
+            <p className="text-xs font-semibold text-orange-600 mb-1.5 truncate">{s.strava_title}</p>
+          )}
           {/* Top row — distance hero + feel + date */}
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex items-baseline gap-2">
@@ -157,11 +161,16 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
             </div>
           </div>
 
-          {/* Stats row — pace + date + strava */}
-          <div className="flex items-center gap-3 mb-1">
+          {/* Stats row — pace + HR + date + strava */}
+          <div className="flex items-center gap-3 mb-1 flex-wrap">
             {pace && (
               <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                 {pace}
+              </span>
+            )}
+            {s.avg_heart_rate != null && (
+              <span className="text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
+                {s.avg_heart_rate} bpm{s.max_heart_rate != null ? ` / ${s.max_heart_rate} max` : ''}
               </span>
             )}
             <span className="text-xs text-gray-400">{formatDate(s.date)}</span>

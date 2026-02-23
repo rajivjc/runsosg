@@ -47,6 +47,9 @@ export interface Database {
           sync_source?: 'strava_webhook' | 'manual' | 'backfill' | null
           match_method?: 'hashtag' | 'schedule' | 'manual_review' | null
           match_confidence?: 'high' | 'medium' | 'manual' | null
+          strava_title?: string | null
+          avg_heart_rate?: number | null
+          max_heart_rate?: number | null
           strava_deleted_at?: string | null
           created_at?: string
         } & Record<string, unknown>
@@ -225,6 +228,9 @@ export interface Session {
   sync_source: 'strava_webhook' | 'manual' | 'backfill' | null
   match_method: 'hashtag' | 'schedule' | 'manual_review' | null
   match_confidence: 'high' | 'medium' | 'manual' | null
+  strava_title: string | null
+  avg_heart_rate: number | null
+  max_heart_rate: number | null
   strava_deleted_at: string | null
   created_at: string
 }
