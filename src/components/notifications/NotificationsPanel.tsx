@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { markNotificationRead, markAllNotificationsRead } from '@/app/notifications/actions'
 
 type Notification = {
@@ -60,15 +61,18 @@ function getNotificationConfig(n: Notification): { message: string; tappable: bo
 
 export default function NotificationsPanel({ notifications, userId, onClose }: Props) {
   const hasUnread = notifications.some((n) => !n.read)
+  const router = useRouter()
 
   async function handleMarkOne(id: string) {
     await markNotificationRead(id)
     onClose()
+    router.refresh()
   }
 
   async function handleMarkAll() {
     await markAllNotificationsRead(userId)
     onClose()
+    router.refresh()
   }
 
   return (

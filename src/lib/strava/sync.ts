@@ -191,17 +191,20 @@ export async function processStravaActivity(
       })
       .eq('user_id', coachUserId)
 
-    await adminClient.from('notifications').insert({
-      user_id: coachUserId,
-      type: 'feel_prompt' as const,
-      channel: 'in_app' as const,
-      payload: {
-        session_id: sessionId,
-        athlete_id: matchResult.athleteId,
-        message: 'How did the run go? Add a feel score.',
-      },
-      read: false,
-    })
+    const feelIsNull = existing?.feel == null
+    if (feelIsNull) {
+      await adminClient.from('notifications').insert({
+        user_id: coachUserId,
+        type: 'feel_prompt' as const,
+        channel: 'in_app' as const,
+        payload: {
+          session_id: sessionId,
+          athlete_id: matchResult.athleteId,
+          message: 'How did the run go? Add a feel score.',
+        },
+        read: false,
+      })
+    }
 
     const awarded = await checkAndAwardMilestones(matchResult.athleteId, sessionId, coachUserId)
     console.log(`Milestones awarded: ${awarded}`)
