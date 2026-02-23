@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import type { SessionData, MilestoneData } from './AthleteTabs'
-import { updateManualSession } from '@/app/athletes/[id]/actions'
+import { updateManualSession, updateSessionFeel } from '@/app/athletes/[id]/actions'
 
 type RunsTabProps = {
   sessions: SessionData[]
@@ -84,7 +83,6 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
   const [durationMins, setDurationMins] = useState(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
 
   async function handleSave() {
     setSaving(true)
@@ -102,10 +100,10 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
       setSaving(false)
       if (error) { setError('Could not save. Please try again.'); return }
     } else {
-      const { error } = await supabase
-        .from('sessions')
-        .update({ feel, note: note.trim() || null })
-        .eq('id', s.id)
+      const { error } = await updateSessionFeel(s.id, {
+        feel,
+        note: note.trim() || null,
+      })
       setSaving(false)
       if (error) { setError('Could not save. Please try again.'); return }
     }

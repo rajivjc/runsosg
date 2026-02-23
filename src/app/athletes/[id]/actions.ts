@@ -226,6 +226,51 @@ export async function deleteCoachNote(
   return {}
 }
 
+export async function updateSessionFeel(
+  sessionId: string,
+  data: { feel: number | null; note: string | null }
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await adminClient
+    .from('sessions')
+    .update({
+      feel: data.feel as 1 | 2 | 3 | 4 | 5 | null,
+      note: data.note,
+    })
+    .eq('id', sessionId)
+
+  if (error) return { error: error.message }
+
+  if (data.feel !== null && (data.feel === 1 || data.feel === 2)) {
+    const { data: session } = await adminClient
+      .from('sessions')
+      .select('athlete_id, feel, athlete:athletes(name)')
+      .eq('id', sessionId)
+      .single()
+    if (session) {
+      await adminClient.from('notifications').insert({
+        user_id: user.id,
+        type: 'low_feel_alert',
+        channel: 'in_app',
+        payload: {
+          session_id: sessionId,
+          athlete_id: session.athlete_id,
+          feel: session.feel,
+          athlete_name: (session as any).athlete?.name ?? 'An athlete',
+          message: `${(session as any).athlete?.name ?? 'An athlete'} had a tough session. Check in before next run.`,
+        },
+        read: false,
+      })
+    }
+  }
+
+  revalidatePath('/athletes')
+  return {}
+}
+
 export async function updateManualSession(
   sessionId: string,
   data: {

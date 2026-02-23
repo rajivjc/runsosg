@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { updateSessionFeel } from '@/app/athletes/[id]/actions'
 
 type QuickLogSheetProps = {
   sessionId: string | null
@@ -33,7 +33,6 @@ export default function QuickLogSheet({
   const [noteText, setNoteText] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-  const supabase = createClient()
 
   if (!isOpen) return null
 
@@ -46,10 +45,10 @@ export default function QuickLogSheet({
     if (!sessionId || selectedFeel == null) return
     setSaving(true)
     setSaveError(null)
-    const { error } = await supabase
-      .from('sessions')
-      .update({ feel: selectedFeel, note: skipNote ? undefined : noteText || undefined })
-      .eq('id', sessionId)
+    const { error } = await updateSessionFeel(sessionId, {
+      feel: selectedFeel,
+      note: skipNote ? null : noteText || null,
+    })
     setSaving(false)
     if (error) {
       setSaveError('Could not save. Please try again.')
