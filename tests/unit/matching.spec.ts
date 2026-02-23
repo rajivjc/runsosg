@@ -106,6 +106,32 @@ describe('extractIdentifiers', () => {
     const result = extractIdentifiers('#sosg')
     expect(result).not.toContain('sosg')
   })
+
+  it('extracts hyphenated names (#Wei-Lin)', () => {
+    expect(extractIdentifiers('Run with #Wei-Lin')).toEqual(['Wei-Lin'])
+  })
+
+  it('extracts names with apostrophes (#O\'Brien)', () => {
+    expect(extractIdentifiers("Run with #O'Brien")).toEqual(["O'Brien"])
+  })
+
+  it('extracts Unicode names (#José)', () => {
+    expect(extractIdentifiers('Run with #José')).toEqual(['José'])
+  })
+
+  it('extracts names with smart quotes (#O\u2019Brien)', () => {
+    expect(extractIdentifiers('Run with #O\u2019Brien')).toEqual([
+      'O\u2019Brien',
+    ])
+  })
+
+  it('strips trailing hyphens from match', () => {
+    expect(extractIdentifiers('#Daniel- next run')).toEqual(['Daniel'])
+  })
+
+  it('handles #sosg with hyphenated multi-word name', () => {
+    expect(extractIdentifiers('#sosg Wei-Lin Tan')).toEqual(['Wei-Lin Tan'])
+  })
 })
 
 // ── Hashtag matching (single athlete) ────────────────────────────────────────
@@ -187,6 +213,36 @@ describe('hashtag matching — single athlete', () => {
     )
 
     expect(result.matched).toBe(true)
+  })
+
+  it('matches hyphenated hashtag #Wei-Lin', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([{ id: 'athlete-wl', name: 'Wei-Lin' }])
+    )
+
+    const result = await matchActivityToAthlete(
+      makeActivity({ name: 'Morning run #Wei-Lin' }),
+      'coach-1'
+    )
+
+    expect(result.matched).toBe(true)
+    expect(result.athletes).toHaveLength(1)
+    expect(result.athletes[0].athleteId).toBe('athlete-wl')
+    expect(result.athletes[0].identifier).toBe('Wei-Lin')
+  })
+
+  it('matches Unicode hashtag #José', async () => {
+    mockFrom.mockImplementation(() =>
+      chainable([{ id: 'athlete-j', name: 'José' }])
+    )
+
+    const result = await matchActivityToAthlete(
+      makeActivity({ name: 'Group run #José' }),
+      'coach-1'
+    )
+
+    expect(result.matched).toBe(true)
+    expect(result.athletes[0].athleteId).toBe('athlete-j')
   })
 })
 

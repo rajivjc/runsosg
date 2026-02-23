@@ -46,15 +46,26 @@ export async function getValidAccessToken(coachUserId: string): Promise<string> 
       })
       .eq('user_id', coachUserId)
 
-    await adminClient.from('notifications').insert({
-      user_id: coachUserId,
-      type: 'strava_disconnected' as const,
-      channel: 'in_app' as const,
-      payload: {
-        message: 'Strava connection expired, please reconnect',
-      },
-      read: false,
-    })
+    // Only create a strava_disconnected notification if one isn't already unread
+    const { data: existingDisconnect } = await adminClient
+      .from('notifications')
+      .select('id')
+      .eq('user_id', coachUserId)
+      .eq('type', 'strava_disconnected')
+      .eq('read', false)
+      .limit(1)
+
+    if (!existingDisconnect || existingDisconnect.length === 0) {
+      await adminClient.from('notifications').insert({
+        user_id: coachUserId,
+        type: 'strava_disconnected' as const,
+        channel: 'in_app' as const,
+        payload: {
+          message: 'Strava connection expired, please reconnect',
+        },
+        read: false,
+      })
+    }
 
     throw err
   }

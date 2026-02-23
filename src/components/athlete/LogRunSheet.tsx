@@ -78,6 +78,19 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
           <h2 className="text-base font-semibold text-gray-900 mb-5 text-center">Log a run</h2>
 
           <form action={handleAction} className="space-y-4">
+            {/* Title */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                Title <span className="font-normal normal-case">(optional)</span>
+              </label>
+              <input
+                type="text"
+                name="title"
+                placeholder="e.g. Sunday long run"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+
             {/* Date */}
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
@@ -116,6 +129,36 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                   name="duration_minutes"
                   min="0"
                   placeholder="e.g. 30"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+            </div>
+
+            {/* Heart Rate side by side */}
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                  Avg HR <span className="font-normal normal-case">(bpm, optional)</span>
+                </label>
+                <input
+                  type="number"
+                  name="avg_heart_rate"
+                  min="30"
+                  max="250"
+                  placeholder="e.g. 145"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                  Max HR <span className="font-normal normal-case">(bpm, optional)</span>
+                </label>
+                <input
+                  type="number"
+                  name="max_heart_rate"
+                  min="30"
+                  max="250"
+                  placeholder="e.g. 170"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>

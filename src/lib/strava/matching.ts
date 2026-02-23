@@ -42,13 +42,16 @@ export function extractIdentifiers(text: string): string[] {
   }
 
   // Pattern 2: plain #<name> — any hashtag that isn't #sosg
+  // Supports hyphens, apostrophes, and Unicode letters (e.g. #Wei-Lin, #O'Brien, #José)
   // Remove all #sosg... segments first so we don't double-match
   const withoutSosg = text.replace(/(?:#sosg|sosg)\s*[^#]*/gi, '')
-  const plainPattern = /#([a-zA-Z][a-zA-Z0-9]*)/g
+  const plainPattern = /#([\p{L}][\p{L}\p{N}'\u2019-]*)/gu
   while ((match = plainPattern.exec(withoutSosg)) !== null) {
     // Skip if the captured word is "sosg" (standalone #sosg with no name)
     if (match[1].toLowerCase() === 'sosg') continue
-    identifiers.push(match[1])
+    // Strip trailing hyphens/apostrophes from the match
+    const cleaned = match[1].replace(/[-'\u2019]+$/, '')
+    if (cleaned.length > 0) identifiers.push(cleaned)
   }
 
   return identifiers
@@ -64,7 +67,7 @@ async function findAthletesByIdentifier(
 ): Promise<Array<{ id: string; name: string }>> {
   const words = identifier
     .split(/\s+/)
-    .map((w) => w.replace(/[^a-zA-Z0-9]/g, ''))
+    .map((w) => w.replace(/[^\p{L}\p{N}'-]/gu, ''))
     .filter((w) => w.length > 0)
 
   if (words.length === 0) return []

@@ -87,10 +87,13 @@ export async function createManualSession(
   const date = (formData.get('date') as string ?? '').trim()
   if (!date) return { error: 'Date is required' }
 
+  const title = (formData.get('title') as string ?? '').trim() || null
   const distanceKm = parseFloat(formData.get('distance_km') as string ?? '')
   const durationMinutes = parseInt(formData.get('duration_minutes') as string ?? '')
   const feel = parseInt(formData.get('feel') as string ?? '') || null
   const note = (formData.get('note') as string ?? '').trim() || null
+  const avgHr = parseInt(formData.get('avg_heart_rate') as string ?? '')
+  const maxHr = parseInt(formData.get('max_heart_rate') as string ?? '')
 
   const { error } = await supabase
     .from('sessions')
@@ -102,6 +105,9 @@ export async function createManualSession(
       duration_seconds: isNaN(durationMinutes) ? null : durationMinutes * 60,
       feel: (feel !== null && feel >= 1 && feel <= 5) ? (feel as 1 | 2 | 3 | 4 | 5) : null,
       note,
+      strava_title: title,
+      avg_heart_rate: isNaN(avgHr) ? null : avgHr,
+      max_heart_rate: isNaN(maxHr) ? null : maxHr,
       sync_source: 'manual',
       status: 'completed',
     })

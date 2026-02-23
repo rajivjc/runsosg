@@ -117,6 +117,52 @@ describe('checkAndAwardMilestones', () => {
     expect((insertedRows[0] as Record<string, unknown>).awarded_by).toBe(coachId)
   })
 
+  it('awards session_count milestone when count EXCEEDS threshold (>=)', async () => {
+    const insertedRows: unknown[] = []
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'milestone_definitions') {
+        return chainable([
+          { id: 'def-3', label: '3 Runs', icon: '🏃', condition: { metric: 'session_count', threshold: 3 } },
+        ])
+      }
+      if (table === 'milestones') {
+        const obj: Record<string, unknown> = {}
+        const handler: ProxyHandler<Record<string, unknown>> = {
+          get(_target, prop) {
+            if (prop === 'then') {
+              return (resolve: (v: unknown) => void) => resolve({ data: [], error: null })
+            }
+            if (prop === 'insert') {
+              return (rows: unknown[]) => {
+                insertedRows.push(...rows)
+                return new Proxy(obj, handler)
+              }
+            }
+            return (..._args: unknown[]) => new Proxy(obj, handler)
+          },
+        }
+        return new Proxy(obj, handler)
+      }
+      if (table === 'sessions') {
+        // 5 sessions — exceeds threshold of 3 (tests >= instead of ===)
+        return chainable([
+          { id: 's1', date: '2026-01-01', distance_km: 2 },
+          { id: 's2', date: '2026-01-02', distance_km: 3 },
+          { id: 's3', date: '2026-01-03', distance_km: 2 },
+          { id: 's4', date: '2026-01-04', distance_km: 4 },
+          { id: sessionId, date: '2026-01-05', distance_km: 2.5 },
+        ])
+      }
+      return chainable([])
+    })
+
+    const count = await checkAndAwardMilestones(athleteId, sessionId, coachId)
+    expect(count).toBe(1)
+    expect(insertedRows).toHaveLength(1)
+    expect((insertedRows[0] as Record<string, unknown>).milestone_definition_id).toBe('def-3')
+  })
+
   it('does NOT award session_count milestone when count does not match', async () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'milestone_definitions') {

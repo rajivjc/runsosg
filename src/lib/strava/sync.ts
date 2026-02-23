@@ -97,14 +97,64 @@ export async function processStravaActivity(
   try {
   // ── Step 2: Handle delete ──────────────────────────────────────────────────
   if (eventType === 'delete') {
+    const now = new Date().toISOString()
+
     await adminClient
       .from('sessions')
-      .update({ strava_deleted_at: new Date().toISOString() })
+      .update({ strava_deleted_at: now })
       .eq('strava_activity_id', stravaActivityId)
+
+    // Resolve any open unmatched rows for this activity
+    await adminClient
+      .from('strava_unmatched')
+      .update({ resolved_at: now, resolved_by: coachUserId })
+      .eq('strava_activity_id', stravaActivityId)
+      .is('resolved_at', null)
+
+    // Mark unmatched_run notifications for this activity as read
+    const { data: unmatchedNotifs } = await adminClient
+      .from('notifications')
+      .select('id')
+      .eq('user_id', coachUserId)
+      .eq('type', 'unmatched_run')
+      .eq('read', false)
+      .contains('payload', { strava_activity_id: stravaActivityId })
+
+    if (unmatchedNotifs && unmatchedNotifs.length > 0) {
+      await adminClient
+        .from('notifications')
+        .update({ read: true })
+        .in('id', unmatchedNotifs.map(n => n.id))
+    }
+
+    // Mark feel_prompt notifications for sessions of this activity as read
+    const { data: deletedSessions } = await adminClient
+      .from('sessions')
+      .select('id')
+      .eq('strava_activity_id', stravaActivityId)
+
+    if (deletedSessions && deletedSessions.length > 0) {
+      for (const s of deletedSessions) {
+        const { data: feelNotifs } = await adminClient
+          .from('notifications')
+          .select('id')
+          .eq('user_id', coachUserId)
+          .eq('type', 'feel_prompt')
+          .eq('read', false)
+          .contains('payload', { session_id: s.id })
+
+        if (feelNotifs && feelNotifs.length > 0) {
+          await adminClient
+            .from('notifications')
+            .update({ read: true })
+            .in('id', feelNotifs.map(n => n.id))
+        }
+      }
+    }
 
     await adminClient
       .from('strava_sync_log')
-      .update({ status: 'matched' as const, processed_at: new Date().toISOString() })
+      .update({ status: 'matched' as const, processed_at: now })
       .eq('id', logId)
 
     return
@@ -194,28 +244,41 @@ export async function processStravaActivity(
 
       if (!firstSessionId) firstSessionId = sessionId
 
-      // Send feel prompt if this is a new session (no existing feel)
-      const { data: session } = await adminClient
-        .from('sessions')
-        .select('feel')
-        .eq('id', sessionId)
-        .single()
+      // Send feel prompt only if this is a new session with no existing feel
+      // and no feel_prompt notification already exists for this session
+      if (sessionId) {
+        const { data: session } = await adminClient
+          .from('sessions')
+          .select('feel')
+          .eq('id', sessionId)
+          .single()
 
-      if (session?.feel == null) {
-        await adminClient.from('notifications').insert({
-          user_id: coachUserId,
-          type: 'feel_prompt' as const,
-          channel: 'in_app' as const,
-          payload: {
-            session_id: sessionId,
-            athlete_id: athleteMatch.athleteId,
-            message: `How did the run go? Add a feel score for ${athleteMatch.athleteName}.`,
-          },
-          read: false,
-        })
+        if (session?.feel == null) {
+          const { data: existingPrompt } = await adminClient
+            .from('notifications')
+            .select('id')
+            .eq('user_id', coachUserId)
+            .eq('type', 'feel_prompt')
+            .contains('payload', { session_id: sessionId })
+            .limit(1)
+
+          if (!existingPrompt || existingPrompt.length === 0) {
+            await adminClient.from('notifications').insert({
+              user_id: coachUserId,
+              type: 'feel_prompt' as const,
+              channel: 'in_app' as const,
+              payload: {
+                session_id: sessionId,
+                athlete_id: athleteMatch.athleteId,
+                message: `How did the run go? Add a feel score for ${athleteMatch.athleteName}.`,
+              },
+              read: false,
+            })
+          }
+        }
+
+        await checkAndAwardMilestones(athleteMatch.athleteId, sessionId, coachUserId)
       }
-
-      await checkAndAwardMilestones(athleteMatch.athleteId, sessionId, coachUserId)
     }
 
     await adminClient
@@ -236,6 +299,7 @@ export async function processStravaActivity(
       .eq('user_id', coachUserId)
 
     // If this was a re-process of a previously unmatched activity, resolve it
+    // and mark old unmatched_run notifications as read
     if (eventType === 'update') {
       await adminClient
         .from('strava_unmatched')
@@ -246,6 +310,22 @@ export async function processStravaActivity(
         })
         .eq('strava_activity_id', stravaActivityId)
         .is('resolved_at', null)
+
+      // Mark any existing unmatched_run notifications for this activity as read
+      const { data: unmatchedNotifications } = await adminClient
+        .from('notifications')
+        .select('id')
+        .eq('user_id', coachUserId)
+        .eq('type', 'unmatched_run')
+        .eq('read', false)
+        .contains('payload', { strava_activity_id: stravaActivityId })
+
+      if (unmatchedNotifications && unmatchedNotifications.length > 0) {
+        await adminClient
+          .from('notifications')
+          .update({ read: true })
+          .in('id', unmatchedNotifications.map(n => n.id))
+      }
     }
 
     // If some identifiers were ambiguous, notify the coach
@@ -266,41 +346,75 @@ export async function processStravaActivity(
   }
 
   // ── Step 8b: Unmatched ─────────────────────────────────────────────────────
-  const { data: unmatchedRow } = await adminClient
+
+  // Check if there's already an unresolved strava_unmatched row for this activity
+  const { data: existingUnmatched } = await adminClient
     .from('strava_unmatched')
-    .insert({
-      coach_user_id: coachUserId,
-      strava_activity_id: stravaActivityId,
-      activity_data: activity as unknown as Json,
-    })
     .select('id')
-    .single()
+    .eq('strava_activity_id', stravaActivityId)
+    .is('resolved_at', null)
+    .maybeSingle()
+
+  let unmatchedId: string | null = existingUnmatched?.id ?? null
+
+  if (!existingUnmatched) {
+    // Only create a new unmatched row if one doesn't already exist
+    const { data: unmatchedRow } = await adminClient
+      .from('strava_unmatched')
+      .insert({
+        coach_user_id: coachUserId,
+        strava_activity_id: stravaActivityId,
+        activity_data: activity as unknown as Json,
+      })
+      .select('id')
+      .single()
+
+    unmatchedId = unmatchedRow?.id ?? null
+  } else {
+    // Update the existing unmatched row with fresh activity data
+    await adminClient
+      .from('strava_unmatched')
+      .update({ activity_data: activity as unknown as Json })
+      .eq('id', existingUnmatched.id)
+  }
 
   await adminClient
     .from('strava_sync_log')
     .update({ status: 'unmatched' as const, processed_at: new Date().toISOString() })
     .eq('id', logId)
 
-  const activityDesc = activity.name
-    ? `"${activity.name}" (${(activity.distance / 1000).toFixed(1)} km)`
-    : `your ${(activity.distance / 1000).toFixed(1)} km run`
+  // Only create an unmatched notification if one doesn't already exist for this activity
+  const { data: existingNotif } = await adminClient
+    .from('notifications')
+    .select('id')
+    .eq('user_id', coachUserId)
+    .eq('type', 'unmatched_run')
+    .eq('read', false)
+    .contains('payload', { strava_activity_id: stravaActivityId })
+    .limit(1)
 
-  const unmatchedMessage =
-    matchResult.ambiguousIdentifiers.length > 0
-      ? `${activityDesc} matched multiple athletes for "${matchResult.ambiguousIdentifiers.join(', ')}". Tap to link manually.`
-      : `${activityDesc} couldn't be linked — add #sosg <name> to the Strava title and save, or tap to link manually.`
+  if (!existingNotif || existingNotif.length === 0) {
+    const activityDesc = activity.name
+      ? `"${activity.name}" (${(activity.distance / 1000).toFixed(1)} km)`
+      : `your ${(activity.distance / 1000).toFixed(1)} km run`
 
-  await adminClient.from('notifications').insert({
-    user_id: coachUserId,
-    type: 'unmatched_run' as const,
-    channel: 'in_app' as const,
-    payload: {
-      strava_activity_id: stravaActivityId,
-      unmatched_id: unmatchedRow?.id ?? null,
-      message: unmatchedMessage,
-    },
-    read: false,
-  })
+    const unmatchedMessage =
+      matchResult.ambiguousIdentifiers.length > 0
+        ? `${activityDesc} matched multiple athletes for "${matchResult.ambiguousIdentifiers.join(', ')}". Tap to link manually.`
+        : `${activityDesc} couldn't be linked — add #sosg <name> to the Strava title and save, or tap to link manually.`
+
+    await adminClient.from('notifications').insert({
+      user_id: coachUserId,
+      type: 'unmatched_run' as const,
+      channel: 'in_app' as const,
+      payload: {
+        strava_activity_id: stravaActivityId,
+        unmatched_id: unmatchedId,
+        message: unmatchedMessage,
+      },
+      read: false,
+    })
+  }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('processStravaActivity fatal error:', message)

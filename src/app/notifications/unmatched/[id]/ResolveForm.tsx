@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { resolveUnmatchedRun } from './actions'
+import { resolveUnmatchedRun, resyncFromStrava } from './actions'
 
 type Athlete = { id: string; name: string }
 
@@ -17,6 +17,7 @@ export function ResolveForm({
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [resyncing, setResyncing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const filtered = search.trim()
@@ -41,8 +42,49 @@ export function ResolveForm({
     router.refresh()
   }
 
+  async function handleResync() {
+    setResyncing(true)
+    setError(null)
+
+    const result = await resyncFromStrava(unmatchedId)
+    if (result.matched) {
+      router.push('/notifications')
+      router.refresh()
+      return
+    }
+
+    setError(result.error ?? 'Re-sync did not find a match')
+    setResyncing(false)
+  }
+
+  const busy = submitting || resyncing
+
   return (
     <div>
+      {/* Re-sync option */}
+      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-5">
+        <p className="text-sm font-medium text-orange-800 mb-1">
+          Already tagged in Strava?
+        </p>
+        <p className="text-xs text-orange-600 mb-3">
+          If you added hashtags (e.g. #sosg #athletename) to the title or description, re-sync to auto-match.
+        </p>
+        <button
+          type="button"
+          onClick={handleResync}
+          disabled={busy}
+          className="w-full bg-orange-500 text-white font-medium rounded-lg py-2.5 text-sm hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {resyncing ? 'Re-syncing...' : 'Re-sync from Strava'}
+        </button>
+      </div>
+
+      <div className="relative flex items-center justify-center mb-5">
+        <div className="border-t border-gray-200 w-full" />
+        <span className="absolute bg-gray-50 px-3 text-xs text-gray-400 uppercase tracking-wide">or link manually</span>
+      </div>
+
+      {/* Manual link */}
       <label className="block text-sm font-medium text-gray-700 mb-2">
         Select an athlete
       </label>
@@ -66,6 +108,7 @@ export function ResolveForm({
               key={a.id}
               type="button"
               onClick={() => setSelectedId(a.id)}
+              disabled={busy}
               className={`w-full text-left px-4 py-3 text-sm border-b border-gray-50 last:border-b-0 transition-colors ${
                 selectedId === a.id
                   ? 'bg-teal-50 text-teal-900 font-medium'
@@ -85,7 +128,7 @@ export function ResolveForm({
       <button
         type="button"
         onClick={handleSubmit}
-        disabled={!selectedId || submitting}
+        disabled={!selectedId || busy}
         className="w-full bg-teal-600 text-white font-medium rounded-lg py-3 text-sm hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {submitting ? 'Linking...' : 'Link to athlete'}

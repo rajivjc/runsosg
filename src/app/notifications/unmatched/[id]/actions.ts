@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { checkAndAwardMilestones } from '@/lib/milestones'
+import { processStravaActivity } from '@/lib/strava/sync'
 
 export async function resolveUnmatchedRun(
   unmatchedId: string,
@@ -90,6 +91,22 @@ export async function resolveUnmatchedRun(
     .eq('strava_activity_id', unmatched.strava_activity_id)
     .eq('status', 'unmatched')
 
+  // Mark any unmatched_run notifications for this activity as read
+  const { data: unmatchedNotifs } = await adminClient
+    .from('notifications')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('type', 'unmatched_run')
+    .eq('read', false)
+    .contains('payload', { strava_activity_id: unmatched.strava_activity_id })
+
+  if (unmatchedNotifs && unmatchedNotifs.length > 0) {
+    await adminClient
+      .from('notifications')
+      .update({ read: true })
+      .in('id', unmatchedNotifs.map((n) => n.id))
+  }
+
   // Award milestones
   await checkAndAwardMilestones(athleteId, session.id, unmatched.coach_user_id ?? user.id)
 
@@ -97,4 +114,68 @@ export async function resolveUnmatchedRun(
   revalidatePath('/feed')
 
   return { sessionId: session.id }
+}
+
+export async function resyncFromStrava(
+  unmatchedId: string
+): Promise<{ error?: string; matched?: boolean }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!callerUser || callerUser.role === 'caregiver') {
+    return { error: 'Not authorised' }
+  }
+
+  // Fetch the unmatched row
+  const { data: unmatched } = await adminClient
+    .from('strava_unmatched')
+    .select('*')
+    .eq('id', unmatchedId)
+    .is('resolved_at', null)
+    .single()
+
+  if (!unmatched) {
+    return { error: 'Unmatched run not found or already resolved' }
+  }
+
+  const coachUserId = unmatched.coach_user_id ?? user.id
+
+  // Re-run the full sync pipeline as an 'update' event.
+  // This fetches the latest activity data from Strava (including any
+  // description edits), runs matching, creates sessions, and handles
+  // notifications.
+  try {
+    await processStravaActivity(
+      unmatched.strava_activity_id,
+      coachUserId,
+      'update',
+      { source: 'manual_resync', unmatched_id: unmatchedId }
+    )
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return { error: `Sync failed: ${message}` }
+  }
+
+  // Check if it was resolved by the sync
+  const { data: refreshed } = await adminClient
+    .from('strava_unmatched')
+    .select('resolved_at')
+    .eq('id', unmatchedId)
+    .single()
+
+  revalidatePath('/notifications')
+  revalidatePath('/feed')
+
+  if (refreshed?.resolved_at) {
+    return { matched: true }
+  }
+
+  return { matched: false, error: 'No athlete match found. Add hashtags like #sosg #athletename to the Strava activity title or description, then try again.' }
 }
