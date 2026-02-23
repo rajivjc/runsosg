@@ -8,6 +8,7 @@ export async function markNotificationRead(notificationId: string): Promise<void
     .from('notifications')
     .update({ read: true })
     .eq('id', notificationId)
+  revalidatePath('/notifications')
   revalidatePath('/feed')
 }
 
@@ -17,6 +18,7 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
     .update({ read: true })
     .eq('user_id', userId)
     .eq('read', false)
+  revalidatePath('/notifications')
   revalidatePath('/feed')
 }
 

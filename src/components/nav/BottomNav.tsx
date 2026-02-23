@@ -16,11 +16,23 @@ export default async function BottomNav() {
   const isAdmin = userRow?.role === 'admin'
   const isCaregiver = userRow?.role === 'caregiver'
 
+  // Fetch unread notification count server-side (coaches/admins only)
+  let unreadCount = 0
+  if (!isCaregiver) {
+    const { data: unread } = await adminClient
+      .from('notifications')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('read', false)
+      .limit(10)
+    unreadCount = (unread ?? []).length
+  }
+
   return (
     <BottomNavClient
       isAdmin={isAdmin}
       isCaregiver={isCaregiver}
-      userId={user.id}
+      unreadCount={unreadCount}
     />
   )
 }
