@@ -43,13 +43,15 @@ export async function checkAndAwardMilestones(
     const currentDistanceKm: number | null = currentSession?.distance_km ?? null
 
     // Check if this session is the athlete's longest run ever
-    const maxDistance = allSessions.reduce((max: number, s: any) => {
+    const previousMax = allSessions.reduce((max: number, s: any) => {
+      if (s.id === sessionId) return max
       return (s.distance_km ?? 0) > max ? (s.distance_km as number) : max
     }, 0)
+
     const isLongestRun =
       currentDistanceKm != null &&
       currentDistanceKm > 0 &&
-      currentDistanceKm >= maxDistance
+      currentDistanceKm > previousMax
 
     // 4. Evaluate each definition condition
     const toAward: typeof definitions = []

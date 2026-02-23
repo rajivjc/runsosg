@@ -107,6 +107,27 @@ export async function createManualSession(
 
   if (newSession?.id) {
     await checkAndAwardMilestones(athleteId, newSession.id, user.id)
+
+    if (feel !== null && (feel === 1 || feel === 2)) {
+      const { data: athleteRow } = await adminClient
+        .from('athletes')
+        .select('name')
+        .eq('id', athleteId)
+        .single()
+      await adminClient.from('notifications').insert({
+        user_id: user.id,
+        type: 'low_feel_alert' as unknown as 'feel_prompt',
+        channel: 'in_app',
+        payload: {
+          session_id: newSession.id,
+          athlete_id: athleteId,
+          feel: feel,
+          athlete_name: athleteRow?.name ?? 'An athlete',
+          message: `${athleteRow?.name ?? 'An athlete'} had a tough session. Check in before next run.`,
+        },
+        read: false,
+      })
+    }
   }
 
   revalidatePath(`/athletes/${athleteId}`)
@@ -217,6 +238,30 @@ export async function updateManualSession(
     .eq('coach_user_id', user.id)
 
   if (error) return { error: error.message }
+
+  if (data.feel !== null && (data.feel === 1 || data.feel === 2)) {
+    const { data: updatedSession } = await adminClient
+      .from('sessions')
+      .select('athlete_id, feel, athlete:athletes(name)')
+      .eq('id', sessionId)
+      .single()
+    if (updatedSession) {
+      await adminClient.from('notifications').insert({
+        user_id: user.id,
+        type: 'low_feel_alert' as unknown as 'feel_prompt',
+        channel: 'in_app',
+        payload: {
+          session_id: sessionId,
+          athlete_id: updatedSession.athlete_id,
+          feel: updatedSession.feel,
+          athlete_name: (updatedSession as any).athlete?.name ?? 'An athlete',
+          message: `${(updatedSession as any).athlete?.name ?? 'An athlete'} had a tough session. Check in before next run.`,
+        },
+        read: false,
+      })
+    }
+  }
+
   revalidatePath('/athletes')
   return {}
 }
