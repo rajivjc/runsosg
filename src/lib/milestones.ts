@@ -67,7 +67,7 @@ export async function checkAndAwardMilestones(
       if (
         condition.metric === 'session_count' &&
         condition.threshold != null &&
-        sessionCount === condition.threshold
+        sessionCount >= condition.threshold
       ) {
         toAward.push(def)
       } else if (

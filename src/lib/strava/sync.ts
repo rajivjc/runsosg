@@ -97,14 +97,64 @@ export async function processStravaActivity(
   try {
   // ── Step 2: Handle delete ──────────────────────────────────────────────────
   if (eventType === 'delete') {
+    const now = new Date().toISOString()
+
     await adminClient
       .from('sessions')
-      .update({ strava_deleted_at: new Date().toISOString() })
+      .update({ strava_deleted_at: now })
       .eq('strava_activity_id', stravaActivityId)
+
+    // Resolve any open unmatched rows for this activity
+    await adminClient
+      .from('strava_unmatched')
+      .update({ resolved_at: now, resolved_by: coachUserId })
+      .eq('strava_activity_id', stravaActivityId)
+      .is('resolved_at', null)
+
+    // Mark unmatched_run notifications for this activity as read
+    const { data: unmatchedNotifs } = await adminClient
+      .from('notifications')
+      .select('id')
+      .eq('user_id', coachUserId)
+      .eq('type', 'unmatched_run')
+      .eq('read', false)
+      .contains('payload', { strava_activity_id: stravaActivityId })
+
+    if (unmatchedNotifs && unmatchedNotifs.length > 0) {
+      await adminClient
+        .from('notifications')
+        .update({ read: true })
+        .in('id', unmatchedNotifs.map(n => n.id))
+    }
+
+    // Mark feel_prompt notifications for sessions of this activity as read
+    const { data: deletedSessions } = await adminClient
+      .from('sessions')
+      .select('id')
+      .eq('strava_activity_id', stravaActivityId)
+
+    if (deletedSessions && deletedSessions.length > 0) {
+      for (const s of deletedSessions) {
+        const { data: feelNotifs } = await adminClient
+          .from('notifications')
+          .select('id')
+          .eq('user_id', coachUserId)
+          .eq('type', 'feel_prompt')
+          .eq('read', false)
+          .contains('payload', { session_id: s.id })
+
+        if (feelNotifs && feelNotifs.length > 0) {
+          await adminClient
+            .from('notifications')
+            .update({ read: true })
+            .in('id', feelNotifs.map(n => n.id))
+        }
+      }
+    }
 
     await adminClient
       .from('strava_sync_log')
-      .update({ status: 'matched' as const, processed_at: new Date().toISOString() })
+      .update({ status: 'matched' as const, processed_at: now })
       .eq('id', logId)
 
     return

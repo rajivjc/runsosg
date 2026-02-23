@@ -91,6 +91,22 @@ export async function resolveUnmatchedRun(
     .eq('strava_activity_id', unmatched.strava_activity_id)
     .eq('status', 'unmatched')
 
+  // Mark any unmatched_run notifications for this activity as read
+  const { data: unmatchedNotifs } = await adminClient
+    .from('notifications')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('type', 'unmatched_run')
+    .eq('read', false)
+    .contains('payload', { strava_activity_id: unmatched.strava_activity_id })
+
+  if (unmatchedNotifs && unmatchedNotifs.length > 0) {
+    await adminClient
+      .from('notifications')
+      .update({ read: true })
+      .in('id', unmatchedNotifs.map((n) => n.id))
+  }
+
   // Award milestones
   await checkAndAwardMilestones(athleteId, session.id, unmatched.coach_user_id ?? user.id)
 
