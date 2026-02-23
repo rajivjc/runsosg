@@ -68,7 +68,7 @@ type AthleteTabsProps = {
   notes: NoteData[]
   milestones: MilestoneData[]
   weeklyData: { label: string; km: number; weekStart: string }[]
-  addCoachNote: (athleteId: string, content: string) => Promise<void>
+  addCoachNote: (athleteId: string, content: string) => Promise<{ error?: string }>
   isReadOnly?: boolean
   currentUserId?: string
 }

@@ -265,6 +265,7 @@ export interface Milestone {
   label: string
   achieved_at: string
   awarded_by: string | null
+  session_id: string | null
   share_image_url: string | null
   created_at: string
 }
