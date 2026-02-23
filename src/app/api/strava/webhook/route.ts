@@ -45,6 +45,14 @@ export async function POST(request: NextRequest): Promise<Response> {
     return NextResponse.json({ ok: true })
   }
 
+  if (typeof object_id !== 'number' || !Number.isFinite(object_id) || !Number.isInteger(object_id) || object_id <= 0) {
+    return NextResponse.json({ ok: true })
+  }
+
+  if (typeof owner_id !== 'number' || !Number.isFinite(owner_id) || !Number.isInteger(owner_id) || owner_id <= 0) {
+    return NextResponse.json({ ok: true })
+  }
+
   const { data: connection } = await adminClient
     .from('strava_connections')
     .select('user_id')

@@ -98,6 +98,10 @@ export async function getActivity(
   activityId: number,
   accessToken: string
 ): Promise<StravaActivity> {
+  if (!Number.isFinite(activityId) || activityId <= 0 || !Number.isInteger(activityId)) {
+    throw new Error(`Invalid Strava activity ID: ${activityId}`)
+  }
+
   const res = await fetch(
     `https://www.strava.com/api/v3/activities/${activityId}`,
     {
