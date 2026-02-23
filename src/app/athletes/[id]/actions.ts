@@ -8,7 +8,7 @@ import { checkAndAwardMilestones } from '@/lib/milestones'
 export async function addCoachNote(athleteId: string, content: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { data: callerUser } = await adminClient
     .from('users')
@@ -25,7 +25,7 @@ export async function addCoachNote(athleteId: string, content: string): Promise<
     visibility: 'all',
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save the note. Please try again.' }
   revalidatePath(`/athletes/${athleteId}`)
   return {}
 }
@@ -36,7 +36,7 @@ export async function updateAthlete(
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { data: callerUser } = await adminClient
     .from('users')
@@ -44,7 +44,7 @@ export async function updateAthlete(
     .eq('id', user.id)
     .single()
   if (callerUser?.role !== 'admin' && callerUser?.role !== 'coach') {
-    return { error: 'Not authorised' }
+    return { error: 'Only coaches and admins can edit athlete profiles.' }
   }
 
   const name = (formData.get('name') as string ?? '').trim()
@@ -70,7 +70,7 @@ export async function updateAthlete(
     })
     .eq('id', athleteId)
 
-  if (error) return { error: `Failed to update athlete: ${error.message}` }
+  if (error) return { error: 'Could not update athlete profile. Please try again.' }
 
   revalidatePath(`/athletes/${athleteId}`)
   return {}
@@ -82,7 +82,7 @@ export async function createManualSession(
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const date = (formData.get('date') as string ?? '').trim()
   if (!date) return { error: 'Date is required' }
@@ -112,7 +112,7 @@ export async function createManualSession(
       status: 'completed',
     })
 
-  if (error) return { error: `Failed to log session: ${error.message}` }
+  if (error) return { error: 'Could not log the session. Please try again.' }
 
   const { data: newSession } = await adminClient
     .from('sessions')
@@ -181,7 +181,7 @@ export async function saveCues(
 ): Promise<{ error?: string; data?: any }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const payload = {
     athlete_id: athleteId,
@@ -202,7 +202,7 @@ export async function saveCues(
     .select()
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save cues. Please try again.' }
   revalidatePath(`/athletes/${athleteId}`)
   return { data }
 }
@@ -213,7 +213,7 @@ export async function updateCoachNote(
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { error } = await adminClient
     .from('coach_notes')
@@ -221,7 +221,7 @@ export async function updateCoachNote(
     .eq('id', noteId)
     .eq('coach_user_id', user.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not update the note. Please try again.' }
 
   // Fetch the athlete ID so we revalidate the correct athlete detail page
   const { data: noteRow } = await adminClient
@@ -239,7 +239,7 @@ export async function deleteCoachNote(
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { error } = await adminClient
     .from('coach_notes')
@@ -247,7 +247,7 @@ export async function deleteCoachNote(
     .eq('id', noteId)
     .eq('coach_user_id', user.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not delete the note. Please try again.' }
   revalidatePath(`/athletes/${athleteId}`)
   return {}
 }
@@ -258,7 +258,7 @@ export async function updateSessionFeel(
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { error } = await adminClient
     .from('sessions')
@@ -268,7 +268,7 @@ export async function updateSessionFeel(
     })
     .eq('id', sessionId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not update the session. Please try again.' }
 
   if (data.feel !== null && (data.feel === 1 || data.feel === 2)) {
     const { data: existing } = await adminClient
@@ -319,7 +319,7 @@ export async function updateManualSession(
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { error } = await adminClient
     .from('sessions')
@@ -333,7 +333,7 @@ export async function updateManualSession(
     .eq('id', sessionId)
     .eq('coach_user_id', user.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not update the session. Please try again.' }
 
   // Fetch the session to get athlete_id for revalidation
   const { data: updatedSession } = await adminClient
@@ -380,7 +380,7 @@ export async function deleteManualSession(
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   // Verify the session exists, is manual, and belongs to this coach
   const { data: session } = await adminClient
@@ -408,7 +408,7 @@ export async function deleteManualSession(
 
   // Delete the session
   const { error } = await adminClient.from('sessions').delete().eq('id', sessionId)
-  if (error) return { error: `Failed to delete session: ${error.message}` }
+  if (error) return { error: 'Could not delete the session. Please try again.' }
 
   revalidatePath(`/athletes/${athleteId}`)
   revalidatePath('/feed')

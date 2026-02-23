@@ -59,6 +59,7 @@ type Props =
 
 export function NotificationList({ variant, userId, notification }: Props) {
   const router = useRouter()
+  const [dismissed, setDismissed] = useState(notification?.read ?? false)
 
   if (variant === 'mark-all') {
     return (
@@ -77,7 +78,6 @@ export function NotificationList({ variant, userId, notification }: Props) {
   const n = notification!
   const message = getNotificationMessage(n)
   const icon = getNotificationIcon(n.type)
-  const [dismissed, setDismissed] = useState(n.read)
   const isRead = n.read || dismissed
 
   // Unmatched run notifications link to the resolution page

@@ -30,7 +30,7 @@ export async function updateDisplayName(
 ): Promise<{ error?: string; success?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const name = (formData.get('name') as string ?? '').trim()
   if (!name) return { error: 'Name is required' }
@@ -40,7 +40,7 @@ export async function updateDisplayName(
     .update({ name })
     .eq('id', user.id)
 
-  if (error) return { error: `Failed to update name: ${error.message}` }
+  if (error) return { error: 'Could not update your name. Please try again.' }
 
   revalidatePath('/account')
   return { success: 'Name updated' }

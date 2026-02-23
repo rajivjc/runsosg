@@ -11,14 +11,11 @@ type Props = {
 
 export default function DeleteAthleteButton({ athleteId, athleteName }: Props) {
   const router = useRouter()
+  const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleDelete() {
-    if (!window.confirm(
-      `Permanently delete ${athleteName}? This will remove all their sessions, notes, and cues. This cannot be undone.`
-    )) return
-
+  async function handleConfirm() {
     setBusy(true)
     setError(null)
     const result = await deleteAthlete(athleteId)
@@ -30,14 +27,45 @@ export default function DeleteAthleteButton({ athleteId, athleteName }: Props) {
     router.push('/athletes')
   }
 
+  if (confirming) {
+    return (
+      <div className="space-y-2">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+          <p className="text-sm text-red-700 font-medium mb-2">
+            Permanently delete {athleteName}?
+          </p>
+          <p className="text-xs text-red-600 mb-3">
+            This will remove all their sessions, notes, and cues. This cannot be undone.
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleConfirm}
+              disabled={busy}
+              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors"
+            >
+              {busy ? 'Deleting…' : 'Yes, delete permanently'}
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              disabled={busy}
+              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+        {error && <p className="text-xs text-red-600">{error}</p>}
+      </div>
+    )
+  }
+
   return (
     <div>
       <button
-        onClick={handleDelete}
-        disabled={busy}
-        className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50 border border-red-200 rounded-lg px-3 py-1.5 transition-colors"
+        onClick={() => setConfirming(true)}
+        className="text-sm text-red-500 hover:text-red-700 border border-red-200 rounded-lg px-3 py-1.5 transition-colors"
       >
-        {busy ? 'Deleting…' : 'Delete athlete'}
+        Delete athlete
       </button>
       {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
     </div>

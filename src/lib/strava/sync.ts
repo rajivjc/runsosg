@@ -394,10 +394,14 @@ export async function processStravaActivity(
     .limit(1)
 
   if (!existingNotif || existingNotif.length === 0) {
+    const activityDesc = activity.name
+      ? `"${activity.name}" (${(activity.distance / 1000).toFixed(1)} km)`
+      : `your ${(activity.distance / 1000).toFixed(1)} km run`
+
     const unmatchedMessage =
       matchResult.ambiguousIdentifiers.length > 0
-        ? `A run could not be linked: "${matchResult.ambiguousIdentifiers.join(', ')}" matched multiple athletes`
-        : 'A run could not be linked to an athlete'
+        ? `${activityDesc} matched multiple athletes for "${matchResult.ambiguousIdentifiers.join(', ')}". Tap to link manually.`
+        : `${activityDesc} couldn't be linked — add #sosg <name> to the Strava title and save, or tap to link manually.`
 
     await adminClient.from('notifications').insert({
       user_id: coachUserId,

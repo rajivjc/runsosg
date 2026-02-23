@@ -12,7 +12,7 @@ export async function resolveUnmatchedRun(
 ): Promise<{ error?: string; sessionId?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { data: callerUser } = await adminClient
     .from('users')
@@ -21,7 +21,7 @@ export async function resolveUnmatchedRun(
     .single()
 
   if (!callerUser || callerUser.role === 'caregiver') {
-    return { error: 'Not authorised' }
+    return { error: 'Only coaches and admins can link runs.' }
   }
 
   // Fetch the unmatched row

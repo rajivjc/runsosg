@@ -15,7 +15,7 @@ export async function inviteUser(
 ): Promise<InviteFormState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   // Verify caller is admin
   const { data: callerUser } = await adminClient
@@ -23,7 +23,7 @@ export async function inviteUser(
     .select('role')
     .eq('id', user.id)
     .single()
-  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+  if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
   const email = (formData.get('email') as string ?? '').trim().toLowerCase()
   const role = formData.get('role') as 'coach' | 'caregiver' | 'admin'
@@ -43,13 +43,13 @@ export async function inviteUser(
       invited_by: user.id,
       accepted_at: null,
     })
-  if (inviteRowError) return { error: `Failed to create invitation: ${inviteRowError.message}` }
+  if (inviteRowError) return { error: 'Could not create the invitation. The email may already be invited.' }
 
   // Send magic link via Supabase Auth admin
   const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
   })
-  if (emailError) return { error: `Failed to send invitation email: ${emailError.message}` }
+  if (emailError) return { error: 'Could not send the invitation email. Please check the email address and try again.' }
 
   revalidatePath('/admin')
   return { success: `Invitation sent to ${email}` }
@@ -66,7 +66,7 @@ export async function toggleUserActive(
 ): Promise<ToggleActiveState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   // Prevent self-deactivation
   if (userId === user.id) return { error: 'You cannot deactivate your own account' }
@@ -77,14 +77,14 @@ export async function toggleUserActive(
     .select('role')
     .eq('id', user.id)
     .single()
-  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+  if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
   const { error } = await adminClient
     .from('users')
     .update({ active })
     .eq('id', userId)
 
-  if (error) return { error: `Failed to update user: ${error.message}` }
+  if (error) return { error: 'Could not update user status. Please try again.' }
 
   revalidatePath('/admin')
   return { success: active ? 'User reactivated' : 'User deactivated' }
@@ -102,14 +102,14 @@ export async function createAthlete(
 ): Promise<CreateAthleteState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { data: callerUser } = await adminClient
     .from('users')
     .select('role')
     .eq('id', user.id)
     .single()
-  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+  if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
   const name = (formData.get('name') as string ?? '').trim()
   if (!name) return { error: 'Name is required' }
@@ -137,7 +137,7 @@ export async function createAthlete(
     .select('id')
     .single()
 
-  if (error) return { error: `Failed to create athlete: ${error.message}` }
+  if (error) return { error: 'Could not create the athlete. Please try again.' }
 
   revalidatePath('/athletes')
   revalidatePath('/admin')
@@ -156,7 +156,7 @@ export async function changeUserRole(
 ): Promise<ChangeRoleState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   // Prevent changing your own role
   if (userId === user.id) return { error: 'You cannot change your own role' }
@@ -167,14 +167,14 @@ export async function changeUserRole(
     .select('role')
     .eq('id', user.id)
     .single()
-  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+  if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
   const { error } = await adminClient
     .from('users')
     .update({ role: newRole })
     .eq('id', userId)
 
-  if (error) return { error: `Failed to update role: ${error.message}` }
+  if (error) return { error: 'Could not update the role. Please try again.' }
 
   // If changing to caregiver and athleteId provided, link them to the athlete
   if (newRole === 'caregiver' && athleteId) {
@@ -191,21 +191,21 @@ export async function changeUserRole(
 export async function cancelInvitation(invitationId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { data: callerUser } = await adminClient
     .from('users')
     .select('role')
     .eq('id', user.id)
     .single()
-  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+  if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
   const { error } = await adminClient
     .from('invitations')
     .delete()
     .eq('id', invitationId)
 
-  if (error) return { error: `Failed to cancel invitation: ${error.message}` }
+  if (error) return { error: 'Could not cancel the invitation. Please try again.' }
 
   revalidatePath('/admin')
   return {}
@@ -214,21 +214,21 @@ export async function cancelInvitation(invitationId: string): Promise<{ error?: 
 export async function deleteAthlete(athleteId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
   const { data: callerUser } = await adminClient
     .from('users')
     .select('role')
     .eq('id', user.id)
     .single()
-  if (callerUser?.role !== 'admin') return { error: 'Not authorised' }
+  if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
   const { error } = await adminClient
     .from('athletes')
     .delete()
     .eq('id', athleteId)
 
-  if (error) return { error: `Failed to delete athlete: ${error.message}` }
+  if (error) return { error: 'Could not delete the athlete. They may have linked data — try deactivating instead.' }
 
   revalidatePath('/athletes')
   revalidatePath('/admin')

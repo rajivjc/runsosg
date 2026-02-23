@@ -31,6 +31,7 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(note.content)
   const [saving, setSaving] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSaveEdit() {
@@ -45,10 +46,10 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
   }
 
   async function handleDelete() {
-    if (!window.confirm('Delete this note? This cannot be undone.')) return
     setSaving(true)
     const result = await deleteCoachNote(note.id, athleteId)
     setSaving(false)
+    setConfirmingDelete(false)
     if (result.error) { setError(result.error); return }
     onChanged?.()
   }
@@ -81,6 +82,20 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
             </button>
           </div>
         </div>
+      ) : confirmingDelete ? (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-red-600 font-medium">Delete this note?</span>
+          <div className="flex items-center gap-2">
+            <button onClick={handleDelete} disabled={saving}
+              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors">
+              {saving ? 'Deleting…' : 'Yes, delete'}
+            </button>
+            <button onClick={() => setConfirmingDelete(false)} disabled={saving}
+              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
       ) : (
         <>
           <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.content}</p>
@@ -102,7 +117,7 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
                   Edit
                 </button>
                 <button
-                  onClick={handleDelete}
+                  onClick={() => setConfirmingDelete(true)}
                   disabled={saving}
                   className="text-xs text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
                 >
@@ -111,6 +126,7 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
               </div>
             )}
           </div>
+          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
         </>
       )}
     </div>

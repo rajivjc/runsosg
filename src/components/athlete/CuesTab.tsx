@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { saveCues } from '@/app/athletes/[id]/actions'
 import type { CuesData } from './AthleteTabs'
 
@@ -20,6 +20,13 @@ type CuesTabProps = {
   initialCues: CuesData | null
 }
 
+type UndoState = {
+  section: Section
+  tag: string
+  index: number
+  prevCues: CuesData
+}
+
 function emptyCues(athleteId: string): CuesData {
   return {
     id: '',
@@ -35,6 +42,8 @@ function emptyCues(athleteId: string): CuesData {
   }
 }
 
+const UNDO_TIMEOUT_MS = 5000
+
 export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
   const [cues, setCues] = useState<CuesData>(initialCues ?? emptyCues(athleteId))
   const [inputValues, setInputValues] = useState<Record<Section, string>>({
@@ -42,6 +51,19 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
   })
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [undo, setUndo] = useState<UndoState | null>(null)
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearUndoTimer = useCallback(() => {
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current)
+      undoTimerRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => clearUndoTimer()
+  }, [clearUndoTimer])
 
   async function handleSave(updated: CuesData) {
     setSaveError(null)
@@ -65,6 +87,9 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
   function addTag(section: Section) {
     const value = inputValues[section].trim()
     if (!value) return
+    // Clear any pending undo — a new action supersedes it
+    clearUndoTimer()
+    setUndo(null)
     const updated = { ...cues, [section]: [...cues[section], value] }
     setCues(updated)
     setInputValues((prev) => ({ ...prev, [section]: '' }))
@@ -72,16 +97,37 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
   }
 
   function removeTag(section: Section, index: number) {
+    const removedTag = cues[section][index]
+    const prevCues = cues
     const updated = { ...cues, [section]: cues[section].filter((_, i) => i !== index) }
     setCues(updated)
     handleSave(updated)
+
+    // Set up undo
+    clearUndoTimer()
+    setUndo({ section, tag: removedTag, index, prevCues })
+    undoTimerRef.current = setTimeout(() => {
+      setUndo(null)
+    }, UNDO_TIMEOUT_MS)
+  }
+
+  function handleUndo() {
+    if (!undo) return
+    clearUndoTimer()
+    // Re-insert the tag at its original position
+    const currentList = [...cues[undo.section]]
+    currentList.splice(undo.index, 0, undo.tag)
+    const restored = { ...cues, [undo.section]: currentList }
+    setCues(restored)
+    setUndo(null)
+    handleSave(restored)
   }
 
   return (
     <div className="space-y-6">
       {saveError && (
         <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-          Could not save: {saveError}
+          {saveError}
         </div>
       )}
       {isPending && (
@@ -139,6 +185,19 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
           </div>
         )
       })}
+
+      {/* Undo toast */}
+      {undo && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white text-sm rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 animate-[fadeIn_0.2s_ease-out]">
+          <span>Removed &ldquo;{undo.tag}&rdquo;</span>
+          <button
+            onClick={handleUndo}
+            className="font-semibold text-teal-300 hover:text-teal-200 transition-colors"
+          >
+            Undo
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -94,6 +94,7 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
   const [durationMins, setDurationMins] = useState(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSave() {
@@ -110,25 +111,25 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
         note: note.trim() || null,
       })
       setSaving(false)
-      if (error) { setError('Could not save. Please try again.'); return }
+      if (error) { setError(error); return }
     } else {
       const { error } = await updateSessionFeel(s.id, {
         feel,
         note: note.trim() || null,
       })
       setSaving(false)
-      if (error) { setError('Could not save. Please try again.'); return }
+      if (error) { setError(error); return }
     }
     setExpanded(false)
     onUpdated?.()
   }
 
   async function handleDelete() {
-    if (!window.confirm('Delete this run? This cannot be undone.')) return
     setDeleting(true)
     setError(null)
     const { error } = await deleteManualSession(s.id, athleteId)
     setDeleting(false)
+    setConfirmingDelete(false)
     if (error) { setError(error); return }
     onUpdated?.()
   }
@@ -297,11 +298,24 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex items-center justify-between">
-            {s.sync_source === 'manual' && (
-              <button onClick={handleDelete} disabled={deleting || saving}
+            {s.sync_source === 'manual' && !confirmingDelete && (
+              <button onClick={() => setConfirmingDelete(true)} disabled={deleting || saving}
                 className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50 px-3 py-2 transition-colors font-medium">
-                {deleting ? 'Deleting…' : 'Delete run'}
+                Delete run
               </button>
+            )}
+            {s.sync_source === 'manual' && confirmingDelete && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-red-600 font-medium">Delete this run?</span>
+                <button onClick={handleDelete} disabled={deleting}
+                  className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors">
+                  {deleting ? 'Deleting…' : 'Yes, delete'}
+                </button>
+                <button onClick={() => setConfirmingDelete(false)} disabled={deleting}
+                  className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 transition-colors">
+                  Cancel
+                </button>
+              </div>
             )}
             {s.sync_source !== 'manual' && <div />}
             <div className="flex gap-3">
