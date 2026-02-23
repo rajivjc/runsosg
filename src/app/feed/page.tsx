@@ -122,18 +122,22 @@ export default async function FeedPage() {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
-      <h1 className="text-xl font-bold text-gray-900 mb-6">Club Activity Feed</h1>
-
+      {/* Coach greeting card */}
       {!isReadOnly && (
-        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl px-4 py-4 mb-4">
-          <p className="text-base font-bold text-gray-900 mb-3">
-            {greeting}, {coachFirstName} 👋
+        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200/60 rounded-2xl px-5 py-5 mb-5 shadow-sm">
+          <p className="text-lg font-bold text-gray-900 mb-1">
+            {greeting}, {coachFirstName}
           </p>
           {myMonthSessions?.length === 0 ? (
-            <p className="text-sm text-teal-700">No sessions logged yet this month. Time to get running 🏃</p>
+            <p className="text-sm text-teal-700">
+              No sessions this month yet — let&apos;s get out there!
+            </p>
           ) : (
             <>
-              <div className="space-y-2 mb-3">
+              <p className="text-sm text-teal-700 mb-3">
+                {myMonthSessions?.length} session{myMonthSessions?.length !== 1 ? 's' : ''} coached this month with {myAthletes?.length} athlete{myAthletes?.length !== 1 ? 's' : ''}
+              </p>
+              <div className="space-y-2">
                 {myAthletes?.map((a: any) => {
                   const athleteSessions = (myMonthSessions ?? [])
                     .filter((s: any) => s.athlete_id === a.id)
@@ -141,13 +145,13 @@ export default async function FeedPage() {
                   const sessionCount = athleteSessions.length
                   const lastFeels = athleteSessions.slice(0, 3).map((s: any) => s.feel ? FEEL_EMOJI[s.feel] : '—')
                   return (
-                    <div key={a.id} className="flex items-center justify-between">
+                    <div key={a.id} className="flex items-center justify-between bg-white/50 rounded-lg px-3 py-2">
                       <span className="text-sm font-medium text-gray-800">{a.name}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-teal-600">{sessionCount} run{sessionCount !== 1 ? 's' : ''}</span>
+                        <span className="text-xs text-teal-600 font-medium">{sessionCount} run{sessionCount !== 1 ? 's' : ''}</span>
                         <div className="flex items-center gap-0.5">
                           {lastFeels.map((emoji, i) => (
-                            <span key={i} className="text-sm" title={`Session ${sessionCount - lastFeels.length + i + 1} feel`}>
+                            <span key={i} className="text-sm" title={`Feel score`}>
                               {emoji}
                             </span>
                           ))}
@@ -157,62 +161,88 @@ export default async function FeedPage() {
                   )
                 })}
               </div>
-              <p className="text-xs text-teal-400 mb-2">&larr; older &middot; recent feel scores &middot; newer &rarr;</p>
-              <p className="text-xs text-teal-600 font-medium border-t border-teal-100 pt-2">
-                You&apos;ve coached {myMonthSessions?.length} session{myMonthSessions?.length !== 1 ? 's' : ''} this month 💪
-              </p>
             </>
           )}
         </div>
       )}
 
+      {/* Weekly club summary */}
       {thisWeek.length > 0 && (
-        <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-6 text-sm text-teal-800 font-medium">
-          🏃 This week · {thisWeek.length} runs · {weeklyKm.toFixed(1)} km across {weeklyAthletes} athlete{weeklyAthletes !== 1 ? 's' : ''}
+        <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 mb-5 shadow-sm flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
+            <span className="text-lg">🏃</span>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900">
+              {thisWeek.length} run{thisWeek.length !== 1 ? 's' : ''} this week
+            </p>
+            <p className="text-xs text-gray-500">
+              {weeklyKm.toFixed(1)} km across {weeklyAthletes} athlete{weeklyAthletes !== 1 ? 's' : ''} — growing together
+            </p>
+          </div>
         </div>
       )}
 
+      {/* Empty state */}
       {feed.length === 0 && (
-        <p className="text-center text-gray-400 py-12 text-sm">No sessions yet.</p>
+        <div className="text-center py-16">
+          <p className="text-4xl mb-3">👟</p>
+          <p className="text-base font-semibold text-gray-900 mb-1">The club is quiet today</p>
+          <p className="text-sm text-gray-500">Be the first to log a run!</p>
+        </div>
       )}
 
+      {/* Session groups */}
       {Object.entries(groups).map(([label, items]) => {
         if (items.length === 0) return null
         return (
           <div key={label} className="mb-6">
-            <p className="text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 mt-1">{label}</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 mt-1">{label}</p>
             <div className="space-y-3">
               {items.map((s: any) => {
-                const borderClass = s.feel === 1 ? 'border-l-4 border-l-red-400'
-                  : s.feel === 2 ? 'border-l-4 border-l-orange-400'
-                  : 'border-l-4 border-l-transparent'
+                const hasMilestone = (milestonesBySession[s.id] ?? []).length > 0
+                const feelColor = s.feel === 1 ? 'border-l-red-400'
+                  : s.feel === 2 ? 'border-l-orange-400'
+                  : s.feel === 4 ? 'border-l-green-400'
+                  : s.feel === 5 ? 'border-l-teal-500'
+                  : 'border-l-gray-200'
                 const badges = milestonesBySession[s.id] ?? []
+                const cardBg = hasMilestone ? 'bg-amber-50/50' : 'bg-white'
                 const card = (
-                  <div className={`bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-4 ${borderClass}`}>
-                    <p className="text-xs text-gray-500 mb-0.5">
-                      🏃 {s.coach_name ? `${s.coach_name} ran with` : 'Run with'}
-                    </p>
-                    <p className="text-base font-bold text-gray-900 mb-1">{s.athlete_name}</p>
-                    <div className="flex items-center gap-2 mb-1">
-                      {s.distance_km != null && (
-                        <span className="text-lg font-bold text-gray-900">{formatDistance(s.distance_km * 1000)}</span>
-                      )}
-                      {s.duration_seconds != null && (
-                        <span className="text-sm text-gray-400">{formatDuration(s.duration_seconds)}</span>
-                      )}
+                  <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-4 ${feelColor} hover:shadow-md transition-shadow`}>
+                    {/* Header: coach + athlete */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">
+                          {s.coach_name ? `${s.coach_name} ran with` : 'Run with'}
+                        </p>
+                        <p className="text-base font-bold text-gray-900">{s.athlete_name}</p>
+                      </div>
                       {s.feel != null && (
-                        <span className="text-base ml-1">{FEEL_EMOJI[s.feel]}</span>
+                        <span className="text-xl flex-shrink-0">{FEEL_EMOJI[s.feel]}</span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">{formatDate(s.date)}</p>
+                    {/* Stats row */}
+                    <div className="flex items-baseline gap-3 mb-2">
+                      {s.distance_km != null && (
+                        <span className="text-2xl font-bold text-gray-900 leading-none">{formatDistance(s.distance_km * 1000)}</span>
+                      )}
+                      {s.duration_seconds != null && (
+                        <span className="text-sm text-gray-500 font-medium">{formatDuration(s.duration_seconds)}</span>
+                      )}
+                    </div>
+                    {/* Date */}
+                    <p className="text-xs text-gray-400">{formatDate(s.date)}</p>
+                    {/* Note */}
                     {s.note && (
-                      <p className="text-xs text-gray-400 italic mt-1">&ldquo;{s.note}&rdquo;</p>
+                      <p className="text-sm text-gray-500 italic mt-2 line-clamp-2">&ldquo;{s.note}&rdquo;</p>
                     )}
+                    {/* Milestone badges */}
                     {badges.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
+                      <div className="flex flex-wrap gap-1.5 mt-3">
                         {badges.map((m, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium px-2 py-0.5 rounded-full">
-                            {m.icon} {m.label}
+                          <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                            {m.icon || '🏆'} {m.label}
                           </span>
                         ))}
                       </div>

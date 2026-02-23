@@ -68,7 +68,7 @@ export default function AthleteCard({
             {[...recentFeels].reverse().map((feel, i) => (
               <span
                 key={i}
-                className={`w-2.5 h-2.5 rounded-full ${FEEL_DOT[feel]}`}
+                className={`w-3.5 h-3.5 rounded-full ${FEEL_DOT[feel]}`}
                 title={FEEL_LABELS[feel]}
               />
             ))}

@@ -306,9 +306,9 @@ export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly =
       {!isReadOnly && (
         <button
           onClick={onLogRun}
-          className="w-full border-2 border-dashed border-gray-200 hover:border-teal-400 hover:bg-teal-50 text-gray-400 hover:text-teal-600 rounded-xl py-3 text-sm font-medium transition-colors"
+          className="w-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 hover:text-teal-800 rounded-xl py-3.5 text-sm font-semibold transition-colors"
         >
-          + Log a run manually
+          + Let&apos;s log a run
         </button>
       )}
 
@@ -339,9 +339,11 @@ export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly =
       )}
 
       {feedItems.length === 0 && (
-        <p className="text-center text-gray-500 py-8 text-sm">
-          No runs yet. Sessions will appear here after runs are synced from Strava.
-        </p>
+        <div className="text-center py-12">
+          <p className="text-3xl mb-2">👟</p>
+          <p className="text-sm font-medium text-gray-900 mb-1">Ready for the first run?</p>
+          <p className="text-xs text-gray-500">Sessions will appear here once logged or synced from Strava.</p>
+        </div>
       )}
       {feedItems.map((item) => (
         <SessionCard

@@ -162,7 +162,7 @@ export default function NotesTab({
           ) : (
             <button
               onClick={onToggleNoteInput}
-              className="w-full border-2 border-dashed border-gray-200 hover:border-teal-400 hover:bg-teal-50 text-gray-400 hover:text-teal-600 rounded-xl py-3 text-sm font-medium transition-colors"
+              className="w-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 hover:text-teal-800 rounded-xl py-3.5 text-sm font-semibold transition-colors"
             >
               + Add note
             </button>
@@ -171,9 +171,13 @@ export default function NotesTab({
       )}
 
       {notes.length === 0 && !showNoteInput ? (
-        <p className="text-center text-gray-500 py-8 text-sm">
-          No coach notes yet.{!isReadOnly && ' Tap "Add note" above to write one.'}
-        </p>
+        <div className="text-center py-12">
+          <p className="text-3xl mb-2">📝</p>
+          <p className="text-sm font-medium text-gray-900 mb-1">No notes yet</p>
+          <p className="text-xs text-gray-500">
+            {!isReadOnly ? 'Notes help track what works — add the first one above.' : 'Coach notes will appear here.'}
+          </p>
+        </div>
       ) : (
         <div className="space-y-3">
           {notes.map((note) => (

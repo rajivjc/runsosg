@@ -70,7 +70,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, userId }
               <button
                 key={tab.href}
                 className={`flex flex-1 flex-col items-center justify-center py-3 gap-0.5 text-xs font-medium transition-colors ${
-                  active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'
+                  active ? 'text-teal-600' : 'text-gray-500 hover:text-gray-800'
                 }`}
                 onClick={() => setPanelOpen(true)}
               >
@@ -84,7 +84,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, userId }
               key={tab.href}
               href={tab.href}
               className={`flex flex-1 flex-col items-center justify-center py-3 gap-0.5 text-xs font-medium transition-colors ${
-                active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'
+                active ? 'text-teal-600' : 'text-gray-500 hover:text-gray-800'
               }`}
             >
               {feedContent}
@@ -97,7 +97,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, userId }
             key={tab.href}
             href={tab.href}
             className={`flex flex-1 flex-col items-center justify-center py-3 gap-0.5 text-xs font-medium transition-colors ${
-              active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'
+              active ? 'text-teal-600' : 'text-gray-500 hover:text-gray-800'
             }`}
           >
             <span className="relative inline-flex">

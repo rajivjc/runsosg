@@ -15,10 +15,10 @@
   --type-display-line: 1.2;
   --type-display-weight: 700;
 
-  /* Heading 1 (32/40, 650) */
+  /* Heading 1 (32/40, 700) */
   --type-h1-size: 32px;
   --type-h1-line: 1.25;
-  --type-h1-weight: 650;
+  --type-h1-weight: 700;
 
   /* Heading 2 (24/32, 600) */
   --type-h2-size: 24px;
@@ -35,9 +35,9 @@
   --type-body-lg-line: 1.5;
   --type-body-lg-weight: 400;
 
-  /* Body (14/22, 400) */
-  --type-body-size: 14px;
-  --type-body-line: 1.57;
+  /* Body (15/24, 400) */
+  --type-body-size: 15px;
+  --type-body-line: 1.6;
   --type-body-weight: 400;
 
   /* Meta (12/18, 500) */
@@ -50,9 +50,9 @@
      ============================================ */
   
   /* Background & Surfaces */
-  --color-bg: #F8F9FB;
+  --color-bg: #FBF9F7;
   --color-surface: #FFFFFF;
-  --color-surface-subtle: #F3F4F6;
+  --color-surface-subtle: #F5F3F0;
 
   /* Borders */
   --color-border: #E5E7EB;
@@ -64,8 +64,8 @@
   --color-text-muted: #6B7280;
 
   /* Brand */
-  --color-brand: #111111;
-  --color-brand-hover: #000000;
+  --color-brand: #1A1A2E;
+  --color-brand-hover: #0F0F1E;
   --color-brand-contrast: #FFFFFF;
 
   /* Accent (Teal) */
@@ -86,6 +86,12 @@
   /* Status Colors */
   --color-status-active: #10B981;
   --color-status-inactive: #F59E0B;
+
+  /* Celebration & Warmth */
+  --color-celebrate: #F59E0B;
+  --color-celebrate-light: rgba(245, 158, 11, 0.1);
+  --color-warmth: #FEF3C7;
+  --color-warmth-strong: #FDE68A;
 
   /* ============================================
      SPACING
