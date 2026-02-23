@@ -85,17 +85,22 @@ export function NotificationList({ variant, userId, notification }: Props) {
 
   return (
     <div
-      className={`bg-white rounded-xl border shadow-sm px-4 py-3 flex items-start gap-3 ${
-        n.read ? 'border-gray-100 opacity-60' : 'border-teal-200'
+      className={`rounded-xl border shadow-sm px-4 py-3 flex items-start gap-3 transition-all duration-300 ${
+        n.read
+          ? 'bg-gray-50 border-gray-100 opacity-40 scale-[0.98]'
+          : 'bg-white border-teal-200'
       } ${unmatchedId ? 'cursor-pointer' : ''}`}
       onClick={handleClick}
     >
-      <span className="text-lg mt-0.5 flex-shrink-0">{icon}</span>
+      <span className={`text-lg mt-0.5 flex-shrink-0 ${n.read ? 'grayscale' : ''}`}>{icon}</span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm ${n.read ? 'text-gray-500' : 'text-gray-900 font-medium'}`}>
+        <p className={`text-sm ${n.read ? 'text-gray-400 line-through' : 'text-gray-900 font-medium'}`}>
           {message}
         </p>
-        <p className="text-xs text-gray-400 mt-1">{relativeTime(n.created_at)}</p>
+        <p className="text-xs text-gray-400 mt-1">
+          {relativeTime(n.created_at)}
+          {n.read && <span className="ml-2 text-gray-300">- dismissed</span>}
+        </p>
         {unmatchedId && !n.read && (
           <p className="text-xs text-teal-600 mt-1">Tap to link to an athlete</p>
         )}
