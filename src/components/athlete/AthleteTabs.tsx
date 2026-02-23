@@ -141,6 +141,7 @@ export default function AthleteTabs({
           sessions={sessions}
           milestones={milestones}
           weeklyData={weeklyData}
+          athleteId={athlete.id}
           isReadOnly={isReadOnly}
           onSessionUpdated={() => router.refresh()}
           onLogRun={() => setLogRunOpen(true)}

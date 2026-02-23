@@ -13,9 +13,10 @@ type Props = {
   createdAt: string
   isSelf: boolean
   athletes: AthleteOption[]
+  linkedAthleteName?: string | null
 }
 
-export default function UserRow({ userId, email, role, active, createdAt, isSelf, athletes }: Props) {
+export default function UserRow({ userId, email, role, active, createdAt, isSelf, athletes, linkedAthleteName }: Props) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentRole, setCurrentRole] = useState(role)
@@ -101,6 +102,11 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
             {!active && (
               <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
                 Inactive
+              </span>
+            )}
+            {currentRole === 'caregiver' && !showAthleteSelector && linkedAthleteName && (
+              <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
+                Linked to {linkedAthleteName}
               </span>
             )}
           </div>

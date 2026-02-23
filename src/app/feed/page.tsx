@@ -164,6 +164,15 @@ export default async function FeedPage() {
     }
   }
 
+  // Club statistics — all-time numbers for emotional pull
+  const [{ count: totalSessionCount }, { data: allSessionStats }, { count: totalAthleteCount }, { count: totalMilestoneCount }] = await Promise.all([
+    adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+    adminClient.from('sessions').select('distance_km').eq('status', 'completed'),
+    adminClient.from('athletes').select('*', { count: 'exact', head: true }).eq('active', true),
+    adminClient.from('milestones').select('*', { count: 'exact', head: true }),
+  ])
+  const totalKm = (allSessionStats ?? []).reduce((sum: number, s: any) => sum + (s.distance_km ?? 0), 0)
+
   const hour = now.getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const firstName = (userRow as any)?.name?.split(' ')[0] ?? (isReadOnly ? 'there' : 'Coach')
@@ -186,6 +195,13 @@ export default async function FeedPage() {
                 {myMonthSessions?.length} session{myMonthSessions?.length !== 1 ? 's' : ''} coached this month with {myAthletes?.length} athlete{myAthletes?.length !== 1 ? 's' : ''}
               </p>
               <div className="space-y-2">
+                <div className="flex items-center justify-between px-3 mb-1">
+                  <span className="text-[10px] font-semibold text-teal-600/70 uppercase tracking-wider">Athlete</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-semibold text-teal-600/70 uppercase tracking-wider">Runs</span>
+                    <span className="text-[10px] font-semibold text-teal-600/70 uppercase tracking-wider w-16 text-right">Recent feel</span>
+                  </div>
+                </div>
                 {myAthletes?.map((a: any) => {
                   const athleteSessions = (myMonthSessions ?? [])
                     .filter((s: any) => s.athlete_id === a.id)
@@ -195,11 +211,11 @@ export default async function FeedPage() {
                   return (
                     <div key={a.id} className="flex items-center justify-between bg-white/50 rounded-lg px-3 py-2">
                       <span className="text-sm font-medium text-gray-800">{a.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-teal-600 font-medium">{sessionCount} run{sessionCount !== 1 ? 's' : ''}</span>
-                        <div className="flex items-center gap-0.5">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-teal-600 font-medium">{sessionCount}</span>
+                        <div className="flex items-center gap-0.5 w-16 justify-end">
                           {lastFeels.map((emoji, i) => (
-                            <span key={i} className="text-sm" title="Feel score">
+                            <span key={i} className="text-sm" title={`Feel score from recent run ${i + 1}`}>
                               {emoji}
                             </span>
                           ))}
@@ -279,6 +295,31 @@ export default async function FeedPage() {
         </div>
       )}
 
+      {/* Club statistics */}
+      {(totalSessionCount ?? 0) > 0 && (
+        <div className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200/60 rounded-xl px-4 py-4 mb-5 shadow-sm">
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Club stats — all time</p>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="text-center">
+              <p className="text-xl font-bold text-gray-900">{totalSessionCount}</p>
+              <p className="text-[10px] text-gray-500 font-medium">runs</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-gray-900">{totalKm.toFixed(1)}</p>
+              <p className="text-[10px] text-gray-500 font-medium">km</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-gray-900">{totalAthleteCount ?? 0}</p>
+              <p className="text-[10px] text-gray-500 font-medium">athletes</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-gray-900">{totalMilestoneCount ?? 0}</p>
+              <p className="text-[10px] text-gray-500 font-medium">milestones</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Empty state */}
       {feed.length === 0 && (
         <div className="text-center py-16">
@@ -301,36 +342,35 @@ export default async function FeedPage() {
                 const badges = milestonesBySession[s.id] ?? []
                 const cardBg = hasMilestone ? 'bg-amber-50/40' : 'bg-white'
                 const card = (
-                  <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-4 ${feelColor} hover:shadow-md transition-shadow`}>
+                  <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-3.5 py-3 border-l-4 ${feelColor} hover:shadow-md transition-shadow`}>
                     {/* Strava title — shown when present (e.g. race name) */}
                     {s.strava_title && (
-                      <p className="text-xs font-semibold text-orange-600 mb-1.5 truncate">{s.strava_title}</p>
+                      <p className="text-xs font-semibold text-orange-600 mb-1 truncate">{s.strava_title}</p>
                     )}
-                    {/* Header: coach + athlete */}
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div>
-                        <p className="text-xs text-gray-500 mb-0.5">
+                    {/* Header: coach + athlete + stats inline */}
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-500 leading-tight">
                           {s.coach_name ? `${s.coach_name} ran with` : 'Run with'}
                         </p>
-                        <p className="text-base font-bold text-gray-900">{s.athlete_name}</p>
+                        <p className="text-sm font-bold text-gray-900 truncate">{s.athlete_name}</p>
                       </div>
-                      {s.feel != null && (
-                        <span className="text-xl flex-shrink-0">{FEEL_EMOJI[s.feel]}</span>
-                      )}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {s.distance_km != null && (
+                          <span className="text-lg font-bold text-gray-900 leading-none">{formatDistance(s.distance_km * 1000)}</span>
+                        )}
+                        {s.feel != null && (
+                          <span className="text-lg flex-shrink-0">{FEEL_EMOJI[s.feel]}</span>
+                        )}
+                      </div>
                     </div>
-                    {/* Stats row */}
-                    <div className="flex items-baseline gap-3 mb-2">
-                      {s.distance_km != null && (
-                        <span className="text-2xl font-bold text-gray-900 leading-none">{formatDistance(s.distance_km * 1000)}</span>
-                      )}
+                    {/* Stats row — duration + HR + date */}
+                    <div className="flex items-center gap-2 flex-wrap">
                       {s.duration_seconds != null && (
-                        <span className="text-sm text-gray-500 font-medium">{formatDuration(s.duration_seconds)}</span>
+                        <span className="text-xs text-gray-500 font-medium">{formatDuration(s.duration_seconds)}</span>
                       )}
-                    </div>
-                    {/* Heart rate + date */}
-                    <div className="flex items-center gap-3 mb-0">
                       {s.avg_heart_rate != null && (
-                        <span className="text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-medium text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">
                           {s.avg_heart_rate} bpm{s.max_heart_rate != null ? ` / ${s.max_heart_rate} max` : ''}
                         </span>
                       )}
@@ -338,13 +378,13 @@ export default async function FeedPage() {
                     </div>
                     {/* Note */}
                     {s.note && (
-                      <p className="text-sm text-gray-500 italic mt-2 line-clamp-2">&ldquo;{s.note}&rdquo;</p>
+                      <p className="text-xs text-gray-500 italic mt-1.5 line-clamp-1">&ldquo;{s.note}&rdquo;</p>
                     )}
                     {/* Milestone badges — unified amber style */}
                     {badges.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-3">
+                      <div className="flex flex-wrap gap-1 mt-2">
                         {badges.map((m, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                          <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded-full">
                             {m.icon || '🏆'} {m.label}
                           </span>
                         ))}
@@ -352,7 +392,7 @@ export default async function FeedPage() {
                     )}
                     {/* Kudos / high five — available to all logged-in users including caregivers */}
                     {user && (
-                      <div className="mt-3 pt-2 border-t border-gray-100">
+                      <div className="mt-2 pt-1.5 border-t border-gray-100">
                         <KudosButton
                           sessionId={s.id}
                           initialCount={kudosCountMap[s.id] ?? 0}

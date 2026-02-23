@@ -62,12 +62,13 @@ export default function AthleteCard({
           {lastSessionDate && (
             <>
               <span className="text-gray-300">·</span>
-              <span className="text-sm text-gray-400">{formatDate(lastSessionDate)}</span>
+              <span className="text-sm text-gray-400">Last run {formatDate(lastSessionDate)}</span>
             </>
           )}
         </div>
         {recentFeels.length > 0 && (
           <div className="flex items-center gap-1.5 mt-1.5">
+            <span className="text-[10px] text-gray-400 font-medium mr-0.5">Recent feel</span>
             {[...recentFeels].reverse().map((feel, i) => (
               <span
                 key={i}

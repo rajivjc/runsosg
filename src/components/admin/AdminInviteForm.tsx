@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
+import Link from 'next/link'
 import { inviteUser, type InviteFormState } from '@/app/admin/actions'
 
 type Athlete = { id: string; name: string }
@@ -70,6 +71,12 @@ export default function AdminInviteForm({ athletes }: { athletes: Athlete[] }) {
               <option key={a.id} value={a.id}>{a.name}</option>
             ))}
           </select>
+          <p className="text-xs text-gray-500 mt-1.5">
+            Athlete not listed?{' '}
+            <Link href="/admin/athletes/new" className="text-teal-600 hover:text-teal-700 font-medium underline">
+              Add a new athlete first
+            </Link>
+          </p>
         </div>
       )}
 
