@@ -250,7 +250,6 @@ export async function updateManualSession(
       note: data.note,
     })
     .eq('id', sessionId)
-    .eq('sync_source', 'manual')
     .eq('coach_user_id', user.id)
 
   if (error) return { error: error.message }
