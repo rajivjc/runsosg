@@ -108,12 +108,28 @@ export async function createManualSession(
   if (newSession?.id) {
     await checkAndAwardMilestones(athleteId, newSession.id, user.id)
 
+    const { data: athleteRow } = await adminClient
+      .from('athletes')
+      .select('name')
+      .eq('id', athleteId)
+      .single()
+
+    if (feel === null) {
+      await adminClient.from('notifications').insert({
+        user_id: user.id,
+        type: 'feel_prompt' as unknown as 'feel_prompt',
+        channel: 'in_app',
+        payload: {
+          session_id: newSession.id,
+          athlete_id: athleteId,
+          athlete_name: athleteRow?.name ?? 'An athlete',
+          message: `How did ${athleteRow?.name ?? 'the athlete'}'s run go? Add a feel score.`,
+        },
+        read: false,
+      })
+    }
+
     if (feel !== null && (feel === 1 || feel === 2)) {
-      const { data: athleteRow } = await adminClient
-        .from('athletes')
-        .select('name')
-        .eq('id', athleteId)
-        .single()
       await adminClient.from('notifications').insert({
         user_id: user.id,
         type: 'low_feel_alert' as unknown as 'feel_prompt',
