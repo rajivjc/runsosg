@@ -1,11 +1,72 @@
 import { adminClient } from '@/lib/supabase/admin'
 import type { Json } from '@/lib/supabase/types'
 import { getActivity } from './client'
+import type { StravaActivity } from './client'
 import { getValidAccessToken } from './tokens'
 import { matchActivityToAthlete } from './matching'
+import type { AthleteMatch } from './matching'
 import { checkAndAwardMilestones } from '@/lib/milestones'
 
 const RUN_SPORT_TYPES = ['Run', 'TrailRun', 'VirtualRun'] as const
+
+/**
+ * Create or update a session for a single matched athlete.
+ * Returns the session ID.
+ */
+async function upsertSessionForAthlete(
+  athleteMatch: AthleteMatch,
+  activity: StravaActivity,
+  stravaActivityId: number,
+  coachUserId: string
+): Promise<string> {
+  // Check if a session already exists for this athlete + activity
+  const { data: existing } = await adminClient
+    .from('sessions')
+    .select('id, feel, note')
+    .eq('strava_activity_id', stravaActivityId)
+    .eq('athlete_id', athleteMatch.athleteId)
+    .maybeSingle()
+
+  const payload = {
+    athlete_id: athleteMatch.athleteId,
+    coach_user_id: coachUserId,
+    strava_activity_id: stravaActivityId,
+    status: 'completed' as const,
+    date: activity.start_date,
+    distance_km: activity.distance / 1000,
+    duration_seconds: activity.moving_time,
+    map_polyline: activity.map.summary_polyline,
+    strava_title: activity.name || null,
+    avg_heart_rate: activity.average_heartrate
+      ? Math.round(activity.average_heartrate)
+      : null,
+    max_heart_rate: activity.max_heartrate
+      ? Math.round(activity.max_heartrate)
+      : null,
+    sync_source: 'strava_webhook' as const,
+    match_method: athleteMatch.method,
+    match_confidence: athleteMatch.confidence,
+  }
+
+  if (existing) {
+    const { data: updated } = await adminClient
+      .from('sessions')
+      .update(payload)
+      .eq('id', existing.id)
+      .select('id')
+      .single()
+
+    return updated?.id ?? existing.id
+  }
+
+  const { data: inserted } = await adminClient
+    .from('sessions')
+    .insert({ ...payload, feel: null, note: null })
+    .select('id')
+    .single()
+
+  return inserted?.id ?? ''
+}
 
 export async function processStravaActivity(
   stravaActivityId: number,
@@ -49,22 +110,27 @@ export async function processStravaActivity(
     return
   }
 
-  // ── Step 3: Check for duplicate ────────────────────────────────────────────
-  const { data: duplicates } = await adminClient
+  // ── Step 3: Check for duplicate / decide if re-processing ────────────────
+  const { data: previousLogs } = await adminClient
     .from('strava_sync_log')
-    .select('id')
+    .select('id, status')
     .eq('strava_activity_id', stravaActivityId)
-    .eq('event_type', 'create')
+    .in('event_type', ['create', 'update'])
     .in('status', ['matched', 'unmatched'])
     .neq('id', logId)
 
-  if (duplicates && duplicates.length > 0) {
-    await adminClient
-      .from('strava_sync_log')
-      .update({ status: 'skipped' as const })
-      .eq('id', logId)
+  if (previousLogs && previousLogs.length > 0) {
+    if (eventType === 'create') {
+      // True duplicate create — skip
+      await adminClient
+        .from('strava_sync_log')
+        .update({ status: 'skipped' as const })
+        .eq('id', logId)
+      return
+    }
 
-    return
+    // eventType === 'update' — re-process (coach may have edited title to add hashtags)
+    // Continue processing below
   }
 
   // ── Step 4: Get valid access token ─────────────────────────────────────────
@@ -110,85 +176,53 @@ export async function processStravaActivity(
     return
   }
 
-  // ── Step 7: Match activity to athlete ──────────────────────────────────────
+  // ── Step 7: Match activity to athlete(s) ─────────────────────────────────
   const matchResult = await matchActivityToAthlete(activity, coachUserId)
 
-  // ── Step 8a: Matched ───────────────────────────────────────────────────────
-  if (matchResult.matched && matchResult.athleteId) {
+  // ── Step 8a: Matched (one or more athletes) ──────────────────────────────
+  if (matchResult.matched && matchResult.athletes.length > 0) {
     const now = new Date().toISOString()
+    let firstSessionId: string | null = null
 
-    // Preserve existing feel/note if session already exists
-    const { data: existing } = await adminClient
-      .from('sessions')
-      .select('id, feel, note')
-      .eq('strava_activity_id', stravaActivityId)
-      .maybeSingle()
+    for (const athleteMatch of matchResult.athletes) {
+      const sessionId = await upsertSessionForAthlete(
+        athleteMatch,
+        activity,
+        stravaActivityId,
+        coachUserId
+      )
 
-    const upsertPayload = {
-      athlete_id: matchResult.athleteId,
-      coach_user_id: coachUserId,
-      strava_activity_id: stravaActivityId,
-      status: 'completed' as const,
-      date: activity.start_date,
-      distance_km: activity.distance / 1000,
-      duration_seconds: activity.moving_time,
-      map_polyline: activity.map.summary_polyline,
-      strava_title: activity.name || null,
-      avg_heart_rate: activity.average_heartrate
-        ? Math.round(activity.average_heartrate)
-        : null,
-      max_heart_rate: activity.max_heartrate
-        ? Math.round(activity.max_heartrate)
-        : null,
-      sync_source: 'strava_webhook' as const,
-      match_method: matchResult.method,
-      match_confidence: matchResult.confidence,
-      feel: existing?.feel ?? null,
-      note: existing?.note ?? null,
-    }
+      if (!firstSessionId) firstSessionId = sessionId
 
-    let sessionId: string
-
-    if (existing) {
-      // Update, preserving feel/note via COALESCE in application logic
-      const { data: updated } = await adminClient
+      // Send feel prompt if this is a new session (no existing feel)
+      const { data: session } = await adminClient
         .from('sessions')
-        .update({
-          athlete_id: upsertPayload.athlete_id,
-          coach_user_id: upsertPayload.coach_user_id,
-          status: upsertPayload.status,
-          date: upsertPayload.date,
-          distance_km: upsertPayload.distance_km,
-          duration_seconds: upsertPayload.duration_seconds,
-          map_polyline: upsertPayload.map_polyline,
-          strava_title: upsertPayload.strava_title,
-          avg_heart_rate: upsertPayload.avg_heart_rate,
-          max_heart_rate: upsertPayload.max_heart_rate,
-          sync_source: upsertPayload.sync_source,
-          match_method: upsertPayload.match_method,
-          match_confidence: upsertPayload.match_confidence,
-          // preserve existing feel/note — do not overwrite
+        .select('feel')
+        .eq('id', sessionId)
+        .single()
+
+      if (session?.feel == null) {
+        await adminClient.from('notifications').insert({
+          user_id: coachUserId,
+          type: 'feel_prompt' as const,
+          channel: 'in_app' as const,
+          payload: {
+            session_id: sessionId,
+            athlete_id: athleteMatch.athleteId,
+            message: `How did the run go? Add a feel score for ${athleteMatch.athleteName}.`,
+          },
+          read: false,
         })
-        .eq('id', existing.id)
-        .select('id')
-        .single()
+      }
 
-      sessionId = updated?.id ?? existing.id
-    } else {
-      const { data: inserted } = await adminClient
-        .from('sessions')
-        .insert(upsertPayload)
-        .select('id')
-        .single()
-
-      sessionId = inserted?.id ?? ''
+      await checkAndAwardMilestones(athleteMatch.athleteId, sessionId, coachUserId)
     }
 
     await adminClient
       .from('strava_sync_log')
       .update({
         status: 'matched' as const,
-        result_session_id: sessionId,
+        result_session_id: firstSessionId,
         processed_at: now,
       })
       .eq('id', logId)
@@ -201,37 +235,56 @@ export async function processStravaActivity(
       })
       .eq('user_id', coachUserId)
 
-    const feelIsNull = existing?.feel == null
-    if (feelIsNull) {
+    // If this was a re-process of a previously unmatched activity, resolve it
+    if (eventType === 'update') {
+      await adminClient
+        .from('strava_unmatched')
+        .update({
+          resolved_at: now,
+          resolved_by: coachUserId,
+          resolved_session_id: firstSessionId,
+        })
+        .eq('strava_activity_id', stravaActivityId)
+        .is('resolved_at', null)
+    }
+
+    // If some identifiers were ambiguous, notify the coach
+    if (matchResult.ambiguousIdentifiers.length > 0) {
+      const names = matchResult.ambiguousIdentifiers.join(', ')
       await adminClient.from('notifications').insert({
         user_id: coachUserId,
-        type: 'feel_prompt' as const,
+        type: 'general' as const,
         channel: 'in_app' as const,
         payload: {
-          session_id: sessionId,
-          athlete_id: matchResult.athleteId,
-          message: 'How did the run go? Add a feel score.',
+          message: `Could not auto-match: "${names}" matched multiple athletes. Use a more specific name.`,
         },
         read: false,
       })
     }
 
-    await checkAndAwardMilestones(matchResult.athleteId, sessionId, coachUserId)
-
     return
   }
 
   // ── Step 8b: Unmatched ─────────────────────────────────────────────────────
-  await adminClient.from('strava_unmatched').insert({
-    coach_user_id: coachUserId,
-    strava_activity_id: stravaActivityId,
-    activity_data: activity as unknown as Json,
-  })
+  const { data: unmatchedRow } = await adminClient
+    .from('strava_unmatched')
+    .insert({
+      coach_user_id: coachUserId,
+      strava_activity_id: stravaActivityId,
+      activity_data: activity as unknown as Json,
+    })
+    .select('id')
+    .single()
 
   await adminClient
     .from('strava_sync_log')
     .update({ status: 'unmatched' as const, processed_at: new Date().toISOString() })
     .eq('id', logId)
+
+  const unmatchedMessage =
+    matchResult.ambiguousIdentifiers.length > 0
+      ? `A run could not be linked: "${matchResult.ambiguousIdentifiers.join(', ')}" matched multiple athletes`
+      : 'A run could not be linked to an athlete'
 
   await adminClient.from('notifications').insert({
     user_id: coachUserId,
@@ -239,7 +292,8 @@ export async function processStravaActivity(
     channel: 'in_app' as const,
     payload: {
       strava_activity_id: stravaActivityId,
-      message: 'A run could not be linked to an athlete',
+      unmatched_id: unmatchedRow?.id ?? null,
+      message: unmatchedMessage,
     },
     read: false,
   })

@@ -77,11 +77,18 @@ export function NotificationList({ variant, userId, notification }: Props) {
   const message = getNotificationMessage(n)
   const icon = getNotificationIcon(n.type)
 
+  // Unmatched run notifications link to the resolution page
+  const unmatchedId = n.type === 'unmatched_run' ? n.payload.unmatched_id : null
+  const handleClick = unmatchedId
+    ? () => router.push(`/notifications/unmatched/${unmatchedId}`)
+    : undefined
+
   return (
     <div
       className={`bg-white rounded-xl border shadow-sm px-4 py-3 flex items-start gap-3 ${
         n.read ? 'border-gray-100 opacity-60' : 'border-teal-200'
-      }`}
+      } ${unmatchedId ? 'cursor-pointer' : ''}`}
+      onClick={handleClick}
     >
       <span className="text-lg mt-0.5 flex-shrink-0">{icon}</span>
       <div className="flex-1 min-w-0">
@@ -89,11 +96,15 @@ export function NotificationList({ variant, userId, notification }: Props) {
           {message}
         </p>
         <p className="text-xs text-gray-400 mt-1">{relativeTime(n.created_at)}</p>
+        {unmatchedId && !n.read && (
+          <p className="text-xs text-teal-600 mt-1">Tap to link to an athlete</p>
+        )}
       </div>
       {!n.read && (
         <button
           className="flex-shrink-0 text-xs text-teal-600 font-medium hover:text-teal-700 mt-0.5"
-          onClick={async () => {
+          onClick={async (e) => {
+            e.stopPropagation()
             await markNotificationRead(n.id)
             router.refresh()
           }}
