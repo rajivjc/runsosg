@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
-import Link from 'next/link'
 import { NotificationList } from './NotificationList'
 
 export default async function NotificationsPage() {
@@ -40,15 +39,7 @@ export default async function NotificationsPage() {
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/feed"
-            className="text-gray-400 hover:text-gray-600 text-sm font-medium"
-          >
-            &larr; Feed
-          </Link>
-          <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
-        </div>
+        <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
         {hasUnread && (
           <NotificationList
             variant="mark-all"

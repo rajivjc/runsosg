@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Users, Settings, User } from 'lucide-react'
+import { Home, Users, Settings, User, Bell } from 'lucide-react'
 
 type Props = {
   isAdmin: boolean
@@ -13,6 +13,7 @@ type Props = {
 const ICONS: Record<string, any> = {
   '/feed': Home,
   '/athletes': Users,
+  '/notifications': Bell,
   '/admin': Settings,
   '/account': User,
 }
@@ -23,6 +24,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
   const tabs = [
     { href: '/feed', label: 'Feed' },
     { href: '/athletes', label: 'Athletes' },
+    ...(!isCaregiver ? [{ href: '/notifications', label: 'Alerts' }] : []),
     ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
     { href: '/account', label: 'Account' },
   ]
@@ -33,15 +35,13 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
       {tabs.map((tab) => {
         const active = pathname === tab.href || pathname.startsWith(tab.href + '/')
         const Icon = ICONS[tab.href] ?? Home
-        const isFeed = tab.href === '/feed'
-        const feedHref = isFeed && unreadCount > 0 ? '/notifications' : tab.href
-        const isNotifications = isFeed && pathname === '/notifications'
+        const isNotifTab = tab.href === '/notifications'
 
         const tabContent = (
           <>
             <span className="relative inline-flex">
-              <Icon size={20} strokeWidth={active || isNotifications ? 2.5 : 2} />
-              {isFeed && unreadCount > 0 && (
+              <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+              {isNotifTab && unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full leading-none">
                   {unreadCount >= 10 ? '9+' : unreadCount}
                 </span>
@@ -52,7 +52,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
         )
 
         const baseClasses = `flex flex-1 flex-col items-center justify-center py-2.5 gap-1 font-medium transition-all rounded-lg mx-0.5 my-1 ${
-          active || isNotifications
+          active
             ? 'text-teal-600 bg-teal-50'
             : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
         }`
@@ -60,7 +60,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
         return (
           <Link
             key={tab.href}
-            href={feedHref}
+            href={tab.href}
             className={baseClasses}
           >
             {tabContent}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import AthleteCard, { type AthleteCardProps } from './AthleteCard'
 
 type AthleteSearchProps = {
@@ -19,13 +20,24 @@ export default function AthleteSearch({ athletes }: AthleteSearchProps) {
 
   return (
     <div>
-      <input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search athletes..."
-        className="block w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-colors mb-4"
-      />
+      <div className="relative mb-4">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search athletes..."
+          className="block w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 pr-10 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-colors [&::-webkit-search-cancel-button]:hidden"
+        />
+        {query && (
+          <button
+            onClick={() => setQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-200 transition-colors"
+            aria-label="Clear search"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
 
       {filtered.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-8">

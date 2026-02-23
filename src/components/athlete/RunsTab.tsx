@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { Plus, ChevronRight } from 'lucide-react'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import type { SessionData, MilestoneData } from './AthleteTabs'
-import { updateManualSession, updateSessionFeel } from '@/app/athletes/[id]/actions'
+import { updateManualSession, updateSessionFeel, deleteManualSession } from '@/app/athletes/[id]/actions'
 
 type RunsTabProps = {
   sessions: SessionData[]
   milestones: MilestoneData[]
   weeklyData: { label: string; km: number; weekStart: string }[]
+  athleteId: string
   isReadOnly?: boolean
   onSessionUpdated?: () => void
   onLogRun?: () => void
@@ -46,6 +47,7 @@ function StravaLogo() {
 
 type SessionCardProps = {
   session: SessionData
+  athleteId: string
   isReadOnly: boolean
   onUpdated?: () => void
   badges?: MilestoneData[]
@@ -83,7 +85,7 @@ function formatPace(distanceKm: number, durationSeconds: number): string {
   return `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} /km`
 }
 
-function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: SessionCardProps) {
+function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = [] }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [feel, setFeel] = useState<Feel | null>(s.feel as Feel | null)
   const [note, setNote] = useState(s.note ?? '')
@@ -91,6 +93,7 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
   const [distanceKm, setDistanceKm] = useState(s.distance_km != null ? String(s.distance_km) : '')
   const [durationMins, setDurationMins] = useState(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '')
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSave() {
@@ -117,6 +120,16 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
       if (error) { setError('Could not save. Please try again.'); return }
     }
     setExpanded(false)
+    onUpdated?.()
+  }
+
+  async function handleDelete() {
+    if (!window.confirm('Delete this run? This cannot be undone.')) return
+    setDeleting(true)
+    setError(null)
+    const { error } = await deleteManualSession(s.id, athleteId)
+    setDeleting(false)
+    if (error) { setError(error); return }
     onUpdated?.()
   }
 
@@ -284,13 +297,22 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none" />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <div className="flex justify-end gap-3">
-            <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? ''); setDate(s.date); setDistanceKm(s.distance_km != null ? String(s.distance_km) : ''); setDurationMins(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '') }}
-              className="text-sm text-gray-500 px-4 py-2 hover:text-gray-700 transition-colors">Cancel</button>
-            <button onClick={handleSave} disabled={saving}
-              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-5 py-2 transition-colors shadow-sm">
-              {saving ? 'Saving…' : 'Save'}
-            </button>
+          <div className="flex items-center justify-between">
+            {s.sync_source === 'manual' && (
+              <button onClick={handleDelete} disabled={deleting || saving}
+                className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50 px-3 py-2 transition-colors font-medium">
+                {deleting ? 'Deleting…' : 'Delete run'}
+              </button>
+            )}
+            {s.sync_source !== 'manual' && <div />}
+            <div className="flex gap-3">
+              <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? ''); setDate(s.date); setDistanceKm(s.distance_km != null ? String(s.distance_km) : ''); setDurationMins(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '') }}
+                className="text-sm text-gray-500 px-4 py-2 hover:text-gray-700 transition-colors">Cancel</button>
+              <button onClick={handleSave} disabled={saving}
+                className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-5 py-2 transition-colors shadow-sm">
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -298,7 +320,7 @@ function SessionCard({ session: s, isReadOnly, onUpdated, badges = [] }: Session
   )
 }
 
-export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
+export default function RunsTab({ sessions, milestones, weeklyData, athleteId, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
   const milestonesBySession: Record<string, MilestoneData[]> = {}
   for (const m of milestones) {
     if (!m.session_id) continue
@@ -360,6 +382,7 @@ export default function RunsTab({ sessions, milestones, weeklyData, isReadOnly =
         <SessionCard
           key={`session-${item.data.id}`}
           session={item.data}
+          athleteId={athleteId}
           isReadOnly={isReadOnly}
           onUpdated={onSessionUpdated}
           badges={milestonesBySession[item.data.id] ?? []}

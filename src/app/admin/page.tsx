@@ -57,9 +57,17 @@ export default async function AdminPage() {
   // Fetch athletes for the invite form caregiver dropdown
   const { data: athletes } = await adminClient
     .from('athletes')
-    .select('id, name')
+    .select('id, name, caregiver_user_id')
     .eq('active', true)
     .order('name', { ascending: true })
+
+  // Build caregiver-to-athlete mapping
+  const caregiverAthleteMap: Record<string, string> = {}
+  for (const a of athletes ?? []) {
+    if (a.caregiver_user_id) {
+      caregiverAthleteMap[a.caregiver_user_id] = a.name
+    }
+  }
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-8 pb-24 space-y-10">
@@ -113,6 +121,7 @@ export default async function AdminPage() {
                 createdAt={u.created_at}
                 isSelf={u.id === currentUserId}
                 athletes={athletes ?? []}
+                linkedAthleteName={caregiverAthleteMap[u.id] ?? null}
               />
             ))}
           </div>

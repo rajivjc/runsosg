@@ -367,3 +367,44 @@ export async function updateManualSession(
   revalidatePath(`/athletes/${updatedSession?.athlete_id ?? ''}`)
   return {}
 }
+
+export async function deleteManualSession(
+  sessionId: string,
+  athleteId: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  // Verify the session exists, is manual, and belongs to this coach
+  const { data: session } = await adminClient
+    .from('sessions')
+    .select('id, sync_source, coach_user_id')
+    .eq('id', sessionId)
+    .single()
+
+  if (!session) return { error: 'Session not found' }
+  if (session.sync_source !== 'manual') return { error: 'Only manual sessions can be deleted' }
+  if (session.coach_user_id !== user.id) {
+    // Allow admins to delete any manual session
+    const { data: callerUser } = await adminClient
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    if (callerUser?.role !== 'admin') {
+      return { error: 'You can only delete sessions you logged' }
+    }
+  }
+
+  // Delete related milestones for this session
+  await adminClient.from('milestones').delete().eq('session_id', sessionId)
+
+  // Delete the session
+  const { error } = await adminClient.from('sessions').delete().eq('id', sessionId)
+  if (error) return { error: `Failed to delete session: ${error.message}` }
+
+  revalidatePath(`/athletes/${athleteId}`)
+  revalidatePath('/feed')
+  return {}
+}
