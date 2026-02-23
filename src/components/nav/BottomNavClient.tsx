@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import NotificationsPanel from '@/components/notifications/NotificationsPanel'
+import { fetchUnreadNotifications } from '@/app/notifications/actions'
 
 type Notification = {
   id: string
@@ -16,14 +17,25 @@ type Notification = {
 type Props = {
   isAdmin: boolean
   isCaregiver?: boolean
-  unreadCount: number
-  notifications: Notification[]
   userId: string
 }
 
-export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCount, notifications, userId }: Props) {
+export default function BottomNavClient({ isAdmin, isCaregiver = false, userId }: Props) {
   const pathname = usePathname()
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const [panelOpen, setPanelOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  async function fetchNotifications() {
+    const result = await fetchUnreadNotifications(userId)
+    setUnreadCount(result.count)
+    setNotifications(result.notifications)
+  }
+
+  useEffect(() => {
+    fetchNotifications()
+  }, [])
 
   const tabs = [
     { href: '/feed', label: 'Feed', emoji: '🏠' },
@@ -52,10 +64,17 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
               {tab.href === '/feed' && unreadCount > 0 && (
                 <button
                   className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-[16px] px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full leading-none"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPanelOpen(true) }}
+                  onClick={async (e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setLoading(true)
+                    await fetchNotifications()
+                    setLoading(false)
+                    setPanelOpen(true)
+                  }}
                   aria-label="Open notifications"
                 >
-                  {unreadCount >= 10 ? '9+' : unreadCount}
+                  {loading ? '...' : (unreadCount >= 10 ? '9+' : unreadCount)}
                 </button>
               )}
             </span>
@@ -68,7 +87,10 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
       <NotificationsPanel
         notifications={notifications}
         userId={userId}
-        onClose={() => setPanelOpen(false)}
+        onClose={() => {
+          setPanelOpen(false)
+          fetchNotifications()
+        }}
       />
     )}
   </>
