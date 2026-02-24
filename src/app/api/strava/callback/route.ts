@@ -1,12 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
-import { exchangeCodeForTokens } from '@/lib/strava/client'
+import { exchangeCodeForTokens, verifyStravaState } from '@/lib/strava/client'
 
 export async function GET(request: NextRequest): Promise<Response> {
   const { searchParams } = request.nextUrl
   const code = searchParams.get('code')
   const error = searchParams.get('error')
+  const state = searchParams.get('state')
 
   if (error) {
     return NextResponse.redirect(
@@ -14,12 +15,28 @@ export async function GET(request: NextRequest): Promise<Response> {
     )
   }
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // The state parameter is always included in our OAuth URLs and contains
+  // an HMAC-signed user ID + timestamp. Verify it as the primary auth check.
+  // This works regardless of whether the callback lands in the browser
+  // (which has cookie auth) or a different context (PWA flow via Strava app).
+  if (!state) {
+    return NextResponse.redirect(
+      new URL('/login', request.nextUrl.origin)
+    )
+  }
 
-  if (!user) {
+  const userId = verifyStravaState(state)
+  if (!userId) {
+    return NextResponse.redirect(
+      new URL('/login', request.nextUrl.origin)
+    )
+  }
+
+  // If cookie-based auth is available, cross-check it matches the state.
+  // Prevents using a state token intended for a different user.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user && user.id !== userId) {
     return NextResponse.redirect(
       new URL('/login', request.nextUrl.origin)
     )
@@ -29,7 +46,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   await adminClient.from('strava_connections').upsert(
     {
-      user_id: user.id,
+      user_id: userId,
       strava_athlete_id: tokens.athlete.id,
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
