@@ -340,6 +340,21 @@ export default async function AccountPage({
         </section>
       )}
 
+      {/* App setup guide */}
+      <section>
+        <Link
+          href="/setup"
+          className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4 hover:border-teal-200 transition-colors text-left w-full"
+        >
+          <span className="text-xl flex-shrink-0">📱</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900">Install app on your device</p>
+            <p className="text-xs text-gray-500">Setup guide for iPhone, Android &amp; desktop</p>
+          </div>
+          <span className="text-gray-300 flex-shrink-0">&#x203A;</span>
+        </Link>
+      </section>
+
       {/* Sign out */}
       <section>
         <SignOutButton />

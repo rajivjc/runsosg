@@ -10,17 +10,51 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISS_KEY = 'sosg-install-dismissed'
 const DISMISS_DURATION_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
+type Platform =
+  | 'ios-safari'
+  | 'ios-other'       // Chrome/Firefox/Edge on iOS — cannot install PWA
+  | 'android-native'  // Chrome/Edge/Samsung Internet — fires beforeinstallprompt
+  | 'android-firefox'
+  | 'desktop-native'  // Chrome/Edge — fires beforeinstallprompt
+  | 'desktop-other'   // Firefox/Safari desktop — no PWA install
+  | 'unknown'
+
 function isStandalone(): boolean {
   if (typeof window === 'undefined') return false
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
-    ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone === true)
+    ('standalone' in window.navigator &&
+      (window.navigator as unknown as { standalone: boolean }).standalone === true)
   )
 }
 
-function isIOS(): boolean {
-  if (typeof window === 'undefined') return false
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+function detectPlatform(): Platform {
+  if (typeof window === 'undefined') return 'unknown'
+  const ua = navigator.userAgent
+
+  // iOS detection (all browsers on iOS use WebKit)
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !('MSStream' in window)
+  if (isIOS) {
+    // Safari check: Safari UA has "Safari" but NOT "CriOS" (Chrome), "FxiOS" (Firefox), "EdgiOS" (Edge)
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)
+    return isSafari ? 'ios-safari' : 'ios-other'
+  }
+
+  // Android detection
+  const isAndroid = /Android/.test(ua)
+  if (isAndroid) {
+    // Firefox on Android doesn't fire beforeinstallprompt
+    if (/Firefox/.test(ua)) return 'android-firefox'
+    return 'android-native' // Chrome, Edge, Samsung Internet
+  }
+
+  // Desktop
+  // Chrome or Edge (Chromium-based) support PWA install
+  const isChromiumDesktop = /Chrome/.test(ua) && !/Edg/.test(ua)
+  const isEdgeDesktop = /Edg/.test(ua)
+  if (isChromiumDesktop || isEdgeDesktop) return 'desktop-native'
+
+  return 'desktop-other'
 }
 
 function wasDismissedRecently(): boolean {
@@ -33,13 +67,16 @@ function wasDismissedRecently(): boolean {
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [showIOSPrompt, setShowIOSPrompt] = useState(false)
+  const [platform, setPlatform] = useState<Platform>('unknown')
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     if (isStandalone() || wasDismissedRecently()) return
 
-    // Android / Chrome: capture the native install prompt
+    const detected = detectPlatform()
+    setPlatform(detected)
+
+    // For platforms that fire beforeinstallprompt, listen for it
     const handler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
@@ -47,9 +84,12 @@ export default function InstallPrompt() {
     }
     window.addEventListener('beforeinstallprompt', handler)
 
-    // iOS Safari: show manual instructions
-    if (isIOS()) {
-      setShowIOSPrompt(true)
+    // For platforms without native prompt, show manual instructions
+    if (
+      detected === 'ios-safari' ||
+      detected === 'ios-other' ||
+      detected === 'android-firefox'
+    ) {
       setVisible(true)
     }
 
@@ -94,25 +134,48 @@ export default function InstallPrompt() {
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
-        {showIOSPrompt ? (
+        {platform === 'ios-safari' && (
           <>
             <p style={{ margin: 0, fontSize: 'var(--type-body-size)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
               Add to Home Screen
             </p>
             <p style={{ margin: '4px 0 0', fontSize: 'var(--type-body-sm-size)', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-              <strong>Step 1:</strong> Tap the share button{' '}
-              <span aria-hidden="true" style={{
+              Tap the{' '}
+              <span aria-label="share" style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                width: 24, height: 24, background: '#007AFF', borderRadius: 6,
+                width: 22, height: 22, background: '#007AFF', borderRadius: 5,
                 verticalAlign: 'middle', marginInline: 2,
               }}>
-                <span style={{ color: '#fff', fontSize: 14, lineHeight: 1 }}>&#x2B06;&#xFE0F;</span>
+                <span style={{ color: '#fff', fontSize: 13, lineHeight: 1 }}>&#x2B06;&#xFE0F;</span>
               </span>{' '}
-              at the bottom of Safari<br />
-              <strong>Step 2:</strong> Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong>
+              share button below, then <strong>&quot;Add to Home Screen&quot;</strong>
             </p>
           </>
-        ) : (
+        )}
+
+        {platform === 'ios-other' && (
+          <>
+            <p style={{ margin: 0, fontSize: 'var(--type-body-size)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+              Open in Safari to install
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 'var(--type-body-sm-size)', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+              To add this app to your home screen, open this page in <strong>Safari</strong>. Then tap Share &#x2192; <strong>&quot;Add to Home Screen&quot;</strong>.
+            </p>
+          </>
+        )}
+
+        {platform === 'android-firefox' && (
+          <>
+            <p style={{ margin: 0, fontSize: 'var(--type-body-size)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+              Install SOSG Run
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 'var(--type-body-sm-size)', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+              Tap the <strong>&#x22EE; menu</strong> (top right), then <strong>&quot;Install&quot;</strong> or <strong>&quot;Add to Home screen&quot;</strong>.
+            </p>
+          </>
+        )}
+
+        {(platform === 'android-native' || platform === 'desktop-native' || platform === 'unknown') && deferredPrompt && (
           <>
             <p style={{ margin: 0, fontSize: 'var(--type-body-size)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
               Install SOSG Run
@@ -140,7 +203,7 @@ export default function InstallPrompt() {
         </button>
       )}
 
-      {showIOSPrompt && !deferredPrompt && (
+      {!deferredPrompt && (platform === 'ios-safari' || platform === 'ios-other' || platform === 'android-firefox') && (
         <button
           onClick={dismiss}
           className="btn-primary"

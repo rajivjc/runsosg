@@ -15,6 +15,7 @@ const PROTECTED_PATHS = [
 const PUBLIC_PATHS = [
   '/login',
   '/auth/callback',
+  '/setup',
   '/strava/connected',
   '/api/strava/webhook',
   '/api/health',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { sendMagicLink, verifyOtpCode } from './actions'
 import { getRedirectPath } from './get-redirect-path'
@@ -8,12 +8,15 @@ import { getRedirectPath } from './get-redirect-path'
 type PageState = 'idle' | 'loading' | 'success' | 'error'
 type OtpState = 'idle' | 'verifying' | 'error'
 
+const RESEND_COOLDOWN_SECONDS = 30
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [pageState, setPageState] = useState<PageState>('idle')
   const [sentEmail, setSentEmail] = useState('')
   const [otpCode, setOtpCode] = useState('')
   const [otpState, setOtpState] = useState<OtpState>('idle')
+  const [resendCooldown, setResendCooldown] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const otpRef = useRef<HTMLInputElement>(null)
   const searchParams = useSearchParams()
@@ -30,6 +33,13 @@ export default function LoginPage() {
     }
   }, [pageState])
 
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const id = setTimeout(() => setResendCooldown((c) => c - 1), 1000)
+    return () => clearTimeout(id)
+  }, [resendCooldown])
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPageState('loading')
@@ -39,8 +49,17 @@ export default function LoginPage() {
     } else {
       setSentEmail(email)
       setPageState('success')
+      setResendCooldown(RESEND_COOLDOWN_SECONDS)
     }
   }
+
+  const handleResend = useCallback(async () => {
+    if (resendCooldown > 0 || !sentEmail) return
+    setResendCooldown(RESEND_COOLDOWN_SECONDS)
+    setOtpCode('')
+    setOtpState('idle')
+    await sendMagicLink(sentEmail)
+  }, [resendCooldown, sentEmail])
 
   async function handleVerifyOtp(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -53,6 +72,14 @@ export default function LoginPage() {
       const path = await getRedirectPath()
       router.push(path)
     }
+  }
+
+  function handleChangeEmail() {
+    setPageState('idle')
+    setSentEmail('')
+    setOtpCode('')
+    setOtpState('idle')
+    setResendCooldown(0)
   }
 
   return (
@@ -70,28 +97,31 @@ export default function LoginPage() {
         <p className="text-sm text-gray-500 text-center mb-6">Sign in to continue</p>
 
         {pageState === 'success' ? (
-          <div className="flex flex-col items-center text-center mt-8 space-y-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-12 w-12 text-green-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
+          <div className="flex flex-col items-center text-center mt-6 space-y-4">
+            <div className="w-14 h-14 rounded-full bg-teal-50 flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-7 w-7 text-teal-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
             <h2 className="text-xl font-semibold text-gray-900">Check your email</h2>
             <p className="text-gray-600 text-sm">
-              We sent a code to <span className="font-medium">{sentEmail}</span>.
+              We sent a 6-digit code to<br />
+              <span className="font-medium">{sentEmail}</span>
             </p>
 
             {/* OTP code input */}
             <form onSubmit={handleVerifyOtp} className="w-full space-y-3 pt-2">
               <div>
                 <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
-                  Enter the 6-digit code
+                  Enter the code from your email
                 </label>
                 <input
                   ref={otpRef}
@@ -139,9 +169,29 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="text-xs text-gray-400 pt-1">
-              Or tap the link in your email to sign in via browser.
-            </p>
+            {/* Resend & help */}
+            <div className="pt-1 space-y-2">
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resendCooldown > 0}
+                className="text-sm text-teal-600 hover:text-teal-700 font-medium disabled:text-gray-400 disabled:cursor-default bg-transparent border-none p-0 min-w-0 min-h-0 w-auto"
+              >
+                {resendCooldown > 0
+                  ? `Resend code in ${resendCooldown}s`
+                  : 'Resend code'}
+              </button>
+              <p className="text-xs text-gray-400">
+                Don&apos;t see it? Check your spam or promotions folder.
+              </p>
+              <button
+                type="button"
+                onClick={handleChangeEmail}
+                className="text-xs text-gray-400 hover:text-gray-600 bg-transparent border-none p-0 min-w-0 min-h-0 w-auto"
+              >
+                Use a different email
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
@@ -198,9 +248,13 @@ export default function LoginPage() {
                   Sending…
                 </>
               ) : (
-                'Send magic link'
+                'Send login code'
               )}
             </button>
+
+            <p className="text-xs text-gray-400 text-center">
+              We&apos;ll email you a 6-digit code to sign in. No password needed.
+            </p>
           </form>
         )}
       </div>
