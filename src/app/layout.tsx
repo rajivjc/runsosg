@@ -1,6 +1,8 @@
 import './globals.css'
 import { Suspense } from 'react'
 import BottomNav from '@/components/nav/BottomNav'
+import ServiceWorkerRegistrar from '@/components/nav/ServiceWorkerRegistrar'
+import InstallPrompt from '@/components/nav/InstallPrompt'
 import type { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
@@ -28,9 +30,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className="h-full pb-16">
+        <ServiceWorkerRegistrar />
         <Suspense fallback={null}>
           <BottomNav />
         </Suspense>
+        <InstallPrompt />
         {children}
       </body>
     </html>

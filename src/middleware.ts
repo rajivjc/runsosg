@@ -58,7 +58,14 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, {
+              ...options,
+              maxAge: 60 * 60 * 24 * 365, // 1 year — fight mobile browser cookie purging (ITP)
+              sameSite: 'lax',
+              secure: true,
+              httpOnly: true,
+              path: '/',
+            })
           )
         },
       },
