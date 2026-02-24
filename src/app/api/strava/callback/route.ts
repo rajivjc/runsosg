@@ -15,22 +15,28 @@ export async function GET(request: NextRequest): Promise<Response> {
     )
   }
 
-  // Resolve user ID: try cookie-based auth first, fall back to signed state.
-  // The state fallback is critical for PWA flow where the Strava app redirects
-  // back to the browser which may not have the user's auth cookies.
-  let userId: string | null = null
+  // The state parameter is always included in our OAuth URLs and contains
+  // an HMAC-signed user ID + timestamp. Verify it as the primary auth check.
+  // This works regardless of whether the callback lands in the browser
+  // (which has cookie auth) or a different context (PWA flow via Strava app).
+  if (!state) {
+    return NextResponse.redirect(
+      new URL('/login', request.nextUrl.origin)
+    )
+  }
 
+  const userId = verifyStravaState(state)
+  if (!userId) {
+    return NextResponse.redirect(
+      new URL('/login', request.nextUrl.origin)
+    )
+  }
+
+  // If cookie-based auth is available, cross-check it matches the state.
+  // Prevents using a state token intended for a different user.
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (user) {
-    userId = user.id
-  }
-
-  if (!userId && state) {
-    userId = verifyStravaState(state)
-  }
-
-  if (!userId) {
+  if (user && user.id !== userId) {
     return NextResponse.redirect(
       new URL('/login', request.nextUrl.origin)
     )
