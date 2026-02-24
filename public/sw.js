@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sosg-v1'
+const CACHE_NAME = 'sosg-v2'
 const SHELL_ASSETS = ['/manifest.json', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', (event) => {

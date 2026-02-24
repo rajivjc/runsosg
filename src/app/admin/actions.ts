@@ -260,6 +260,38 @@ export async function cancelInvitation(invitationId: string): Promise<{ error?: 
   return {}
 }
 
+export async function deleteUser(userId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
+
+  if (userId === user.id) return { error: 'You cannot delete your own account.' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
+
+  // Look up the user's email so we can clean up invitations
+  const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
+  const targetUser = authUsers?.find((u) => u.id === userId)
+  const targetEmail = targetUser?.email
+
+  // Delete matching invitation rows
+  if (targetEmail) {
+    await adminClient.from('invitations').delete().eq('email', targetEmail)
+  }
+
+  // Delete from auth.users — cascades to users table
+  const { error } = await adminClient.auth.admin.deleteUser(userId)
+  if (error) return { error: 'Could not delete the user. Please try again.' }
+
+  revalidatePath('/admin')
+  return {}
+}
+
 export async function deleteAthlete(athleteId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

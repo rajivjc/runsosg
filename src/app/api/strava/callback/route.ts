@@ -10,7 +10,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   if (error) {
     return NextResponse.redirect(
-      new URL('/athletes?error=strava_denied', request.nextUrl.origin)
+      new URL('/strava/connected?error=denied', request.nextUrl.origin)
     )
   }
 
@@ -43,6 +43,6 @@ export async function GET(request: NextRequest): Promise<Response> {
   )
 
   return NextResponse.redirect(
-    new URL('/account?connected=strava', request.nextUrl.origin)
+    new URL('/strava/connected', request.nextUrl.origin)
   )
 }

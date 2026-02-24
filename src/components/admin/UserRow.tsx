@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { toggleUserActive, changeUserRole } from '@/app/admin/actions'
+import { toggleUserActive, changeUserRole, deleteUser } from '@/app/admin/actions'
 
 type AthleteOption = { id: string; name: string }
 
@@ -23,6 +23,7 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
   const [roleChanging, setRoleChanging] = useState(false)
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>('')
   const [showAthleteSelector, setShowAthleteSelector] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   async function handleToggle() {
     if (!active) {
@@ -79,6 +80,17 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
     setError(null)
   }
 
+  async function handleDelete() {
+    if (!window.confirm(`Permanently delete ${email}? This cannot be undone.`)) return
+    setDeleting(true)
+    setError(null)
+    const result = await deleteUser(userId)
+    if (result.error) {
+      setError(result.error)
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className={`px-4 py-3 bg-white ${!active ? 'opacity-50' : ''}`}>
       <div className="flex items-center justify-between">
@@ -117,17 +129,26 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
             {new Date(createdAt).toLocaleDateString('en-SG')}
           </p>
           {!isSelf && (
-            <button
-              onClick={handleToggle}
-              disabled={busy}
-              className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50 ${
-                active
-                  ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                  : 'bg-green-50 text-green-600 hover:bg-green-100'
-              }`}
-            >
-              {busy ? '…' : active ? 'Deactivate' : 'Reactivate'}
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleToggle}
+                disabled={busy || deleting}
+                className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50 ${
+                  active
+                    ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                    : 'bg-green-50 text-green-600 hover:bg-green-100'
+                }`}
+              >
+                {busy ? '…' : active ? 'Deactivate' : 'Reactivate'}
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting || busy}
+                className="text-xs font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+              >
+                {deleting ? '…' : 'Delete'}
+              </button>
+            </div>
           )}
         </div>
       </div>
