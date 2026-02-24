@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { checkAndAwardMilestones } from '@/lib/milestones'
+import { checkAndAwardBadges } from '@/lib/badges'
 
 export async function addCoachNote(athleteId: string, content: string): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -164,6 +165,9 @@ export async function createManualSession(
     }
   }
 
+  // Check for coach badges
+  await checkAndAwardBadges(user.id)
+
   revalidatePath(`/athletes/${athleteId}`)
   return {}
 }
@@ -303,6 +307,9 @@ export async function updateSessionFeel(
     }
   }
 
+  // Check for coach badges (feel rating + notes)
+  await checkAndAwardBadges(user.id)
+
   revalidatePath('/athletes')
   return {}
 }
@@ -374,7 +381,7 @@ export async function updateManualSession(
   return {}
 }
 
-export async function deleteManualSession(
+export async function deleteSession(
   sessionId: string,
   athleteId: string
 ): Promise<{ error?: string }> {
@@ -382,7 +389,7 @@ export async function deleteManualSession(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
-  // Verify the session exists, is manual, and belongs to this coach
+  // Verify the session exists and check ownership
   const { data: session } = await adminClient
     .from('sessions')
     .select('id, sync_source, coach_user_id')
@@ -390,9 +397,8 @@ export async function deleteManualSession(
     .single()
 
   if (!session) return { error: 'Session not found' }
-  if (session.sync_source !== 'manual') return { error: 'Only manual sessions can be deleted' }
   if (session.coach_user_id !== user.id) {
-    // Allow admins to delete any manual session
+    // Allow admins to delete any session
     const { data: callerUser } = await adminClient
       .from('users')
       .select('role')
@@ -405,6 +411,12 @@ export async function deleteManualSession(
 
   // Delete related milestones for this session
   await adminClient.from('milestones').delete().eq('session_id', sessionId)
+
+  // Delete related notifications referencing this session
+  await adminClient
+    .from('notifications')
+    .delete()
+    .contains('payload', { session_id: sessionId })
 
   // Delete the session
   const { error } = await adminClient.from('sessions').delete().eq('id', sessionId)

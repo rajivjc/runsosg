@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Plus, ChevronRight } from 'lucide-react'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import type { SessionData, MilestoneData } from './AthleteTabs'
-import { updateManualSession, updateSessionFeel, deleteManualSession } from '@/app/athletes/[id]/actions'
+import { updateManualSession, updateSessionFeel, deleteSession } from '@/app/athletes/[id]/actions'
+import StravaActivityLink from '@/components/feed/StravaActivityLink'
 
 type RunsTabProps = {
   sessions: SessionData[]
@@ -127,7 +128,7 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
   async function handleDelete() {
     setDeleting(true)
     setError(null)
-    const { error } = await deleteManualSession(s.id, athleteId)
+    const { error } = await deleteSession(s.id, athleteId)
     setDeleting(false)
     setConfirmingDelete(false)
     if (error) { setError(error); return }
@@ -233,11 +234,9 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
                 <span className="text-xs text-gray-400">👟 {s.coach_name}</span>
               )}
               {s.strava_activity_id && (
-                <a href={`https://www.strava.com/activities/${s.strava_activity_id}`}
-                  className="text-xs text-orange-500 hover:text-orange-600 font-medium"
-                  onClick={(e) => e.stopPropagation()}>
-                  View on Strava ↗
-                </a>
+                <span onClick={(e) => e.stopPropagation()}>
+                  <StravaActivityLink activityId={s.strava_activity_id} />
+                </span>
               )}
             </div>
             {!isReadOnly && (
@@ -298,26 +297,32 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex items-center justify-between">
-            {s.sync_source === 'manual' && !confirmingDelete && (
+            {!confirmingDelete && (
               <button onClick={() => setConfirmingDelete(true)} disabled={deleting || saving}
                 className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50 px-3 py-2 transition-colors font-medium">
                 Delete run
               </button>
             )}
-            {s.sync_source === 'manual' && confirmingDelete && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-red-600 font-medium">Delete this run?</span>
-                <button onClick={handleDelete} disabled={deleting}
-                  className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors">
-                  {deleting ? 'Deleting…' : 'Yes, delete'}
-                </button>
-                <button onClick={() => setConfirmingDelete(false)} disabled={deleting}
-                  className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 transition-colors">
-                  Cancel
-                </button>
+            {confirmingDelete && (
+              <div className="flex flex-col gap-1.5">
+                {s.sync_source !== 'manual' && (
+                  <p className="text-[11px] text-red-500 max-w-[260px]">
+                    This run was synced from Strava. Deleting it here won&apos;t affect Strava, but re-syncing this activity may not be possible.
+                  </p>
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-red-600 font-medium">Delete this run?</span>
+                  <button onClick={handleDelete} disabled={deleting}
+                    className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors">
+                    {deleting ? 'Deleting…' : 'Yes, delete'}
+                  </button>
+                  <button onClick={() => setConfirmingDelete(false)} disabled={deleting}
+                    className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 transition-colors">
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
-            {s.sync_source !== 'manual' && <div />}
             <div className="flex gap-3">
               <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? ''); setDate(s.date); setDistanceKm(s.distance_km != null ? String(s.distance_km) : ''); setDurationMins(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '') }}
                 className="text-sm text-gray-500 px-4 py-2 hover:text-gray-700 transition-colors">Cancel</button>

@@ -53,24 +53,56 @@ function getNotificationIcon(type: string): string {
   }
 }
 
+function getClickTarget(n: Notification): string | null {
+  if (n.type === 'unmatched_run' && n.payload.unmatched_id) {
+    return `/notifications/unmatched/${n.payload.unmatched_id}`
+  }
+  if (n.type === 'feel_prompt' && n.payload.athlete_id) {
+    return `/athletes/${n.payload.athlete_id}`
+  }
+  if (n.type === 'low_feel_alert' && n.payload.athlete_id) {
+    return `/athletes/${n.payload.athlete_id}`
+  }
+  if (n.type === 'milestone' && n.payload.athlete_id) {
+    return `/athletes/${n.payload.athlete_id}`
+  }
+  if (n.type === 'strava_disconnected') {
+    return '/account'
+  }
+  return null
+}
+
+function getClickHint(n: Notification): string | null {
+  if (n.type === 'unmatched_run') return 'Tap to link to an athlete'
+  if (n.type === 'feel_prompt') return 'Tap to view athlete and rate the run'
+  if (n.type === 'low_feel_alert') return 'Tap to view athlete'
+  if (n.type === 'milestone') return 'Tap to view athlete'
+  if (n.type === 'strava_disconnected') return 'Tap to reconnect'
+  return null
+}
+
 type Props =
-  | { variant: 'mark-all'; userId: string; notification?: never }
+  | { variant: 'mark-all'; userId?: string; notification?: never }
   | { variant: 'item'; notification: Notification; userId?: never }
 
-export function NotificationList({ variant, userId, notification }: Props) {
+export function NotificationList({ variant, notification }: Props) {
   const router = useRouter()
   const [dismissed, setDismissed] = useState(notification?.read ?? false)
+  const [busy, setBusy] = useState(false)
 
   if (variant === 'mark-all') {
     return (
       <button
-        className="text-xs text-teal-600 font-medium hover:text-teal-700"
+        disabled={busy}
+        className="text-xs text-teal-600 font-medium hover:text-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={async () => {
-          await markAllNotificationsRead(userId!)
+          setBusy(true)
+          await markAllNotificationsRead()
           router.refresh()
+          setBusy(false)
         }}
       >
-        Mark all read
+        {busy ? 'Marking…' : 'Mark all read'}
       </button>
     )
   }
@@ -80,10 +112,17 @@ export function NotificationList({ variant, userId, notification }: Props) {
   const icon = getNotificationIcon(n.type)
   const isRead = n.read || dismissed
 
-  // Unmatched run notifications link to the resolution page
-  const unmatchedId = n.type === 'unmatched_run' ? n.payload.unmatched_id : null
-  const handleClick = unmatchedId
-    ? () => router.push(`/notifications/unmatched/${unmatchedId}`)
+  const clickTarget = getClickTarget(n)
+  const clickHint = getClickHint(n)
+
+  const handleClick = clickTarget
+    ? async () => {
+        if (!isRead) {
+          setDismissed(true)
+          await markNotificationRead(n.id)
+        }
+        router.push(clickTarget)
+      }
     : undefined
 
   return (
@@ -92,7 +131,7 @@ export function NotificationList({ variant, userId, notification }: Props) {
         isRead
           ? 'bg-gray-50 border-gray-200 opacity-60 scale-[0.98]'
           : 'bg-white border-teal-200'
-      } ${unmatchedId ? 'cursor-pointer' : ''}`}
+      } ${clickTarget ? 'cursor-pointer' : ''}`}
       onClick={handleClick}
     >
       <span className={`text-lg mt-0.5 flex-shrink-0 transition-all duration-500 ${isRead ? 'grayscale' : ''}`}>{icon}</span>
@@ -104,8 +143,8 @@ export function NotificationList({ variant, userId, notification }: Props) {
           {relativeTime(n.created_at)}
           {isRead && <span className="ml-2 text-gray-300 italic">dismissed</span>}
         </p>
-        {unmatchedId && !isRead && (
-          <p className="text-xs text-teal-600 mt-1">Tap to link to an athlete</p>
+        {clickTarget && !isRead && clickHint && (
+          <p className="text-xs text-teal-600 mt-1">{clickHint}</p>
         )}
       </div>
       {!isRead && (

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { checkAndAwardBadges } from '@/lib/badges'
 
 export async function toggleKudos(sessionId: string): Promise<{ given: boolean; count: number; error?: string }> {
   const supabase = await createClient()
@@ -35,6 +36,11 @@ export async function toggleKudos(sessionId: string): Promise<{ given: boolean; 
     .from('kudos')
     .select('id', { count: 'exact', head: true })
     .eq('session_id', sessionId)
+
+  // Check for coach badges (cheerleader badge for kudos)
+  if (!existing) {
+    await checkAndAwardBadges(user.id)
+  }
 
   revalidatePath('/feed')
   return { given: !existing, count: count ?? 0 }
