@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { disconnectStrava } from '@/app/account/actions'
 
 type Connection = {
@@ -11,7 +12,24 @@ type Connection = {
   created_at: string | null
 } | null
 
+function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+}
+
 export default function StravaStatus({ connection }: { connection: Connection }) {
+  const [confirming, setConfirming] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    setIsMobile(isMobileDevice())
+  }, [])
+
+  const connectUrl = isMobile
+    ? '/api/strava/connect?mobile=1'
+    : '/api/strava/connect'
+
   if (!connection) {
     return (
       <div className="rounded-xl border border-orange-200 bg-orange-50 p-4">
@@ -20,7 +38,7 @@ export default function StravaStatus({ connection }: { connection: Connection })
           Connect Strava so your runs automatically sync to athlete profiles.
         </p>
         <a
-          href="/api/strava/connect"
+          href={connectUrl}
           className="inline-block bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
         >
           Connect Strava
@@ -51,25 +69,48 @@ export default function StravaStatus({ connection }: { connection: Connection })
         <p className="text-xs text-red-600 mb-3">{connection.last_error}</p>
       )}
 
-      <div className="flex gap-2 mt-3">
-        <a
-          href="/api/strava/connect"
-          className="text-xs font-medium text-gray-600 hover:text-teal-600 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
-        >
-          Reconnect
-        </a>
-        <button
-          type="button"
-          onClick={() => {
-            if (window.confirm('Disconnect Strava? Your runs will no longer sync automatically.')) {
-              disconnectStrava()
-            }
-          }}
-          className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-100 rounded-lg px-3 py-1.5 transition-colors"
-        >
-          Disconnect
-        </button>
-      </div>
+      {confirming ? (
+        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-3">
+          <p className="text-xs font-medium text-red-700 mb-2">
+            Disconnect Strava? Your runs will no longer sync automatically.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                setBusy(true)
+                await disconnectStrava()
+              }}
+              disabled={busy}
+              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors"
+            >
+              {busy ? 'Disconnecting…' : 'Yes, disconnect'}
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              disabled={busy}
+              className="text-xs text-gray-600 hover:text-gray-800 px-2 py-1.5 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex gap-2 mt-3">
+          <a
+            href={connectUrl}
+            className="text-xs font-medium text-gray-600 hover:text-teal-600 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            Reconnect
+          </a>
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-100 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            Disconnect
+          </button>
+        </div>
+      )}
     </div>
   )
 }

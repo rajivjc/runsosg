@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import KudosButton from '@/components/feed/KudosButton'
+import { BADGE_DEFINITIONS } from '@/lib/badges'
 
 const FEEL_EMOJI: Record<number, string> = {
   1: '😰', 2: '😐', 3: '🙂', 4: '😊', 5: '🔥',
@@ -90,7 +91,8 @@ export default async function FeedPage() {
     { data: kudosCounts },
     { data: myKudos },
     { data: myMonthSessions },
-    caregiverData,
+    { data: caregiverData },
+    { data: myBadges },
   ] = await Promise.all([
     athleteIds.length > 0
       ? adminClient.from('athletes').select('id, name').in('id', athleteIds)
@@ -110,6 +112,9 @@ export default async function FeedPage() {
     isReadOnly && user
       ? adminClient.from('athletes').select('id, name').eq('caregiver_user_id', user.id).maybeSingle()
       : Promise.resolve({ data: null }),
+    user && !isReadOnly
+      ? adminClient.from('coach_badges').select('badge_key, earned_at').eq('user_id', user.id).order('earned_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
   ])
 
   const athleteMap = Object.fromEntries((athletes ?? []).map((a: any) => [a.id, a.name]))
@@ -126,14 +131,28 @@ export default async function FeedPage() {
   const groups = groupByDate(feed)
 
   const milestonesBySession: Record<string, { icon: string; label: string }[]> = {}
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const recentMilestones: { id: string; icon: string; label: string; athleteName: string; achievedAt: string; athleteId: string }[] = []
   for (const m of milestones ?? []) {
     const anyM = m as any
-    if (!anyM.session_id) continue
-    if (!milestonesBySession[anyM.session_id]) milestonesBySession[anyM.session_id] = []
-    milestonesBySession[anyM.session_id].push({
-      icon: anyM.milestone_definitions?.icon ?? '',
-      label: anyM.label,
-    })
+    if (anyM.session_id) {
+      if (!milestonesBySession[anyM.session_id]) milestonesBySession[anyM.session_id] = []
+      milestonesBySession[anyM.session_id].push({
+        icon: anyM.milestone_definitions?.icon ?? '',
+        label: anyM.label,
+      })
+    }
+    if (new Date(anyM.achieved_at) >= thirtyDaysAgo) {
+      recentMilestones.push({
+        id: anyM.id,
+        icon: anyM.milestone_definitions?.icon ?? '🏆',
+        label: anyM.label,
+        athleteName: anyM.athletes?.name ?? 'An athlete',
+        achievedAt: anyM.achieved_at,
+        athleteId: anyM.athlete_id,
+      })
+    }
   }
 
   const kudosCountMap: Record<string, number> = {}
@@ -158,18 +177,48 @@ export default async function FeedPage() {
     : { data: [] }
 
   // Caregiver card data
-  const caregiverAthlete = (caregiverData as any) ?? null
+  const caregiverAthlete = caregiverData ?? null
   let caregiverRecentSessions: any[] = []
+  let caregiverMilestones: any[] = []
+  let caregiverRecentNotes: any[] = []
   if (caregiverAthlete) {
-    const { data: recentSessions } = await adminClient
-      .from('sessions')
-      .select('id, date, distance_km, feel')
-      .eq('athlete_id', caregiverAthlete.id)
-      .eq('status', 'completed')
-      .gte('date', monthStart)
-      .order('date', { ascending: false })
+    const [
+      { data: recentSessions },
+      { data: cgMilestones },
+      { data: cgNotes },
+    ] = await Promise.all([
+      adminClient
+        .from('sessions')
+        .select('id, date, distance_km, feel')
+        .eq('athlete_id', caregiverAthlete.id)
+        .eq('status', 'completed')
+        .gte('date', monthStart)
+        .order('date', { ascending: false }),
+      adminClient
+        .from('milestones')
+        .select('id, label, achieved_at, milestone_definitions(icon)')
+        .eq('athlete_id', caregiverAthlete.id)
+        .order('achieved_at', { ascending: false })
+        .limit(5),
+      adminClient
+        .from('coach_notes')
+        .select('content, created_at')
+        .eq('athlete_id', caregiverAthlete.id)
+        .eq('visibility', 'all')
+        .order('created_at', { ascending: false })
+        .limit(3),
+    ])
     caregiverRecentSessions = recentSessions ?? []
+    caregiverMilestones = cgMilestones ?? []
+    caregiverRecentNotes = cgNotes ?? []
   }
+
+  // Recent badge (earned in last 7 days)
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const recentBadge = (myBadges ?? []).find((b: any) => new Date(b.earned_at) >= sevenDaysAgo)
+  const recentBadgeDef = recentBadge ? BADGE_DEFINITIONS.find(d => d.key === recentBadge.badge_key) : null
+  const badgeCount = (myBadges ?? []).length
 
   const hour = now.getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
@@ -225,6 +274,27 @@ export default async function FeedPage() {
               </div>
             </>
           )}
+          {/* Badge celebration + count */}
+          {recentBadgeDef && (
+            <div className="mt-3 bg-white/50 rounded-lg px-3 py-2 flex items-center gap-2">
+              <span className="text-xl">{recentBadgeDef.icon}</span>
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-teal-800">New badge: {recentBadgeDef.label}!</p>
+                <p className="text-[10px] text-teal-600">{recentBadgeDef.description}</p>
+              </div>
+            </div>
+          )}
+          {!recentBadgeDef && badgeCount > 0 && (
+            <div className="mt-3 flex items-center gap-1.5">
+              {(myBadges ?? []).slice(0, 6).map((b: any) => {
+                const def = BADGE_DEFINITIONS.find(d => d.key === b.badge_key)
+                return def ? <span key={b.badge_key} className="text-sm" title={def.label}>{def.icon}</span> : null
+              })}
+              <Link href="/account" className="text-[10px] text-teal-600 hover:text-teal-700 font-medium ml-1">
+                {badgeCount} badge{badgeCount !== 1 ? 's' : ''} earned
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
@@ -235,44 +305,97 @@ export default async function FeedPage() {
             {greeting}, {firstName}
           </p>
           {caregiverAthlete ? (
-            caregiverRecentSessions.length === 0 ? (
-              <p className="text-sm text-amber-700">
-                No runs logged for {caregiverAthlete.name} this month yet — stay tuned!
-              </p>
-            ) : (
-              <>
+            <>
+              {caregiverRecentSessions.length === 0 ? (
                 <p className="text-sm text-amber-700 mb-3">
-                  Here&apos;s how {caregiverAthlete.name} is doing this month
+                  No runs logged for {caregiverAthlete.name} this month yet — stay tuned!
                 </p>
-                <div className="flex items-center gap-4 bg-white/50 rounded-lg px-4 py-3">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">{caregiverRecentSessions.length}</p>
-                    <p className="text-xs text-amber-600 font-medium">run{caregiverRecentSessions.length !== 1 ? 's' : ''}</p>
-                  </div>
-                  <div className="w-px self-stretch bg-amber-200/60" />
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">
-                      {caregiverRecentSessions.reduce((sum: number, s: any) => sum + (s.distance_km ?? 0), 0).toFixed(1)}
-                    </p>
-                    <p className="text-xs text-amber-600 font-medium">km</p>
-                  </div>
-                  <div className="w-px self-stretch bg-amber-200/60" />
-                  <div className="text-center">
-                    <div className="flex items-center gap-0.5 justify-center">
-                      {caregiverRecentSessions.slice(0, 5).map((s: any, i: number) => (
-                        <span key={i} className="text-lg">{s.feel ? FEEL_EMOJI[s.feel] : '—'}</span>
-                      ))}
+              ) : (
+                <>
+                  <p className="text-sm text-amber-700 mb-3">
+                    Here&apos;s how {caregiverAthlete.name} is doing this month
+                  </p>
+                  <div className="flex items-center gap-4 bg-white/50 rounded-lg px-4 py-3 mb-3">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-gray-900">{caregiverRecentSessions.length}</p>
+                      <p className="text-xs text-amber-600 font-medium">run{caregiverRecentSessions.length !== 1 ? 's' : ''}</p>
                     </div>
-                    <p className="text-xs text-amber-600 font-medium">recent feels</p>
+                    <div className="w-px self-stretch bg-amber-200/60" />
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-gray-900">
+                        {caregiverRecentSessions.reduce((sum: number, s: any) => sum + (s.distance_km ?? 0), 0).toFixed(1)}
+                      </p>
+                      <p className="text-xs text-amber-600 font-medium">km</p>
+                    </div>
+                    <div className="w-px self-stretch bg-amber-200/60" />
+                    <div className="text-center">
+                      <div className="flex items-center gap-0.5 justify-center">
+                        {caregiverRecentSessions.slice(0, 5).map((s: any, i: number) => (
+                          <span key={i} className="text-lg">{s.feel ? FEEL_EMOJI[s.feel] : '—'}</span>
+                        ))}
+                      </div>
+                      <p className="text-xs text-amber-600 font-medium">recent feels</p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Milestones earned */}
+              {caregiverMilestones.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2">Milestones</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {caregiverMilestones.map((m: any) => (
+                      <Link key={m.id} href={`/milestone/${m.id}`}>
+                        <span className="inline-flex items-center gap-1 bg-white/70 hover:bg-white border border-amber-200 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full transition-colors">
+                          {(m as any).milestone_definitions?.icon ?? '🏆'} {m.label}
+                        </span>
+                      </Link>
+                    ))}
                   </div>
                 </div>
-              </>
-            )
+              )}
+
+              {/* Recent coach notes (visibility: all) */}
+              {caregiverRecentNotes.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2">Coach notes</p>
+                  <div className="space-y-1.5">
+                    {caregiverRecentNotes.map((n: any, i: number) => (
+                      <p key={i} className="text-xs text-amber-800 bg-white/50 rounded-lg px-3 py-2 italic line-clamp-2">
+                        &ldquo;{n.content}&rdquo;
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <p className="text-sm text-amber-700">
               Welcome to the SOSG Running Club! Your athlete hasn&apos;t been linked yet — please ask a coach.
             </p>
           )}
+        </div>
+      )}
+
+      {/* Recent milestones celebration */}
+      {recentMilestones.length > 0 && (
+        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/60 rounded-2xl px-5 py-4 mb-5 shadow-sm">
+          <p className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-3">Recent milestones</p>
+          <div className="space-y-2">
+            {recentMilestones.slice(0, 5).map((m) => (
+              <Link key={m.id} href={`/milestone/${m.id}`}>
+                <div className="flex items-center gap-3 bg-white/60 rounded-lg px-3 py-2 hover:bg-white/80 transition-colors">
+                  <span className="text-xl flex-shrink-0">{m.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{m.athleteName}</p>
+                    <p className="text-xs text-amber-700">{m.label}</p>
+                  </div>
+                  <p className="text-[10px] text-amber-400 flex-shrink-0">{formatDate(m.achievedAt)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 

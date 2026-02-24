@@ -158,6 +158,12 @@ export interface Database {
         Update: Partial<Kudos>
         Relationships: []
       }
+      coach_badges: {
+        Row: CoachBadge & Record<string, unknown>
+        Insert: Omit<CoachBadge, 'id' | 'earned_at'> & { id?: string; earned_at?: string }
+        Update: Partial<CoachBadge>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -365,4 +371,11 @@ export interface Kudos {
   session_id: string
   user_id: string
   created_at: string
+}
+
+export interface CoachBadge {
+  id: string
+  user_id: string
+  badge_key: string
+  earned_at: string
 }

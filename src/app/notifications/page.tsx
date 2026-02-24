@@ -43,7 +43,6 @@ export default async function NotificationsPage() {
         {hasUnread && (
           <NotificationList
             variant="mark-all"
-            userId={user.id}
           />
         )}
       </div>

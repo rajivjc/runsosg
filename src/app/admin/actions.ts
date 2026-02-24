@@ -200,12 +200,37 @@ export async function cancelInvitation(invitationId: string): Promise<{ error?: 
     .single()
   if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
+  // Fetch the invitation to get the email before deleting
+  const { data: invitation } = await adminClient
+    .from('invitations')
+    .select('email')
+    .eq('id', invitationId)
+    .single()
+
+  if (!invitation) return { error: 'Invitation not found.' }
+
+  // Delete the invitation row
   const { error } = await adminClient
     .from('invitations')
     .delete()
     .eq('id', invitationId)
 
   if (error) return { error: 'Could not cancel the invitation. Please try again.' }
+
+  // Also delete the auth user created by inviteUserByEmail (if they never signed in)
+  try {
+    const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
+    const ghostUser = authUsers?.find(
+      (u) => u.email === invitation.email && u.last_sign_in_at == null
+    )
+    if (ghostUser) {
+      // Also clean up any users table row that may exist
+      await adminClient.from('users').delete().eq('id', ghostUser.id)
+      await adminClient.auth.admin.deleteUser(ghostUser.id)
+    }
+  } catch {
+    // Auth user cleanup is best-effort — the invitation is already deleted
+  }
 
   revalidatePath('/admin')
   return {}

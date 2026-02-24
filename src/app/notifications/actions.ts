@@ -1,25 +1,43 @@
 'use server'
 
 import { adminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function markNotificationRead(notificationId: string): Promise<void> {
-  await adminClient
+export async function markNotificationRead(notificationId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
+
+  const { error } = await adminClient
     .from('notifications')
     .update({ read: true })
     .eq('id', notificationId)
+    .eq('user_id', user.id)
+
+  if (error) return { error: 'Could not dismiss notification.' }
+
   revalidatePath('/notifications')
   revalidatePath('/feed')
+  return {}
 }
 
-export async function markAllNotificationsRead(userId: string): Promise<void> {
-  await adminClient
+export async function markAllNotificationsRead(): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
+
+  const { error } = await adminClient
     .from('notifications')
     .update({ read: true })
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .eq('read', false)
+
+  if (error) return { error: 'Could not mark notifications as read.' }
+
   revalidatePath('/notifications')
   revalidatePath('/feed')
+  return {}
 }
 
 export async function fetchUnreadNotifications(userId: string): Promise<{

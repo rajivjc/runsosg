@@ -28,7 +28,7 @@ export interface StravaActivity {
 
 // ─── Auth URL ──────────────────────────────────────────────────────────────────
 
-export function getStravaAuthUrl(): string {
+export function getStravaAuthUrl(mobile = false): string {
   const clientId = process.env.STRAVA_CLIENT_ID
   const codespaceName = process.env.CODESPACE_NAME
 
@@ -43,7 +43,13 @@ export function getStravaAuthUrl(): string {
     scope: 'activity:read_all',
   })
 
-  return `https://www.strava.com/oauth/authorize?${params.toString()}`
+  // On mobile, use Strava's mobile OAuth endpoint which opens the Strava app
+  // directly (where the user is already logged in) instead of the web browser
+  const base = mobile
+    ? 'https://www.strava.com/oauth/mobile/authorize'
+    : 'https://www.strava.com/oauth/authorize'
+
+  return `${base}?${params.toString()}`
 }
 
 // ─── Token exchange ────────────────────────────────────────────────────────────
