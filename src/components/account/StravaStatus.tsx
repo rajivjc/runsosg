@@ -30,6 +30,20 @@ export default function StravaStatus({ connection }: { connection: Connection })
     ? '/api/strava/connect?mobile=1'
     : '/api/strava/connect'
 
+  async function handleConnect() {
+    // On mobile, fetch the auth URL and navigate client-side so the OS
+    // can intercept with app links / universal links (opens Strava app)
+    try {
+      const res = await fetch(`/api/strava/connect?mobile=1&json=1`)
+      const { url } = await res.json()
+      if (url) {
+        window.location.href = url
+        return
+      }
+    } catch { /* fall through to link navigation */ }
+    window.location.href = connectUrl
+  }
+
   if (!connection) {
     return (
       <div className="rounded-xl border border-orange-200 bg-orange-50 p-4">
@@ -37,12 +51,21 @@ export default function StravaStatus({ connection }: { connection: Connection })
         <p className="text-xs text-orange-700 mb-3">
           Connect Strava so your runs automatically sync to athlete profiles.
         </p>
-        <a
-          href={connectUrl}
-          className="inline-block bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
-        >
-          Connect Strava
-        </a>
+        {isMobile ? (
+          <button
+            onClick={handleConnect}
+            className="inline-block bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
+          >
+            Connect Strava
+          </button>
+        ) : (
+          <a
+            href={connectUrl}
+            className="inline-block bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
+          >
+            Connect Strava
+          </a>
+        )}
       </div>
     )
   }
@@ -96,12 +119,21 @@ export default function StravaStatus({ connection }: { connection: Connection })
         </div>
       ) : (
         <div className="flex gap-2 mt-3">
-          <a
-            href={connectUrl}
-            className="text-xs font-medium text-gray-600 hover:text-teal-600 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
-          >
-            Reconnect
-          </a>
+          {isMobile ? (
+            <button
+              onClick={handleConnect}
+              className="text-xs font-medium text-gray-600 hover:text-teal-600 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+            >
+              Reconnect
+            </button>
+          ) : (
+            <a
+              href={connectUrl}
+              className="text-xs font-medium text-gray-600 hover:text-teal-600 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+            >
+              Reconnect
+            </a>
+          )}
           <button
             type="button"
             onClick={() => setConfirming(true)}

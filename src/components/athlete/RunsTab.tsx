@@ -95,6 +95,7 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
   const [durationMins, setDurationMins] = useState(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleted, setDeleted] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -130,10 +131,12 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
     setError(null)
     const { error } = await deleteSession(s.id, athleteId)
     setDeleting(false)
-    setConfirmingDelete(false)
-    if (error) { setError(error); return }
+    if (error) { setError(error); setConfirmingDelete(false); return }
+    setDeleted(true)
     onUpdated?.()
   }
+
+  if (deleted) return null
 
   const borderColor = feel ? FEEL_COLORS[feel] : 'border-l-gray-200'
   const pace = s.distance_km && s.duration_seconds

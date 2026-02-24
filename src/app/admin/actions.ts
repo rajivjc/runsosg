@@ -169,6 +169,20 @@ export async function changeUserRole(
     .single()
   if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
+  // If changing AWAY from caregiver, clear any existing athlete link
+  const { data: currentUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', userId)
+    .single()
+
+  if (currentUser?.role === 'caregiver' && newRole !== 'caregiver') {
+    await adminClient
+      .from('athletes')
+      .update({ caregiver_user_id: null })
+      .eq('caregiver_user_id', userId)
+  }
+
   const { error } = await adminClient
     .from('users')
     .update({ role: newRole })
@@ -178,13 +192,23 @@ export async function changeUserRole(
 
   // If changing to caregiver and athleteId provided, link them to the athlete
   if (newRole === 'caregiver' && athleteId) {
+    // Clear any previous link this user had to a different athlete
     await adminClient
+      .from('athletes')
+      .update({ caregiver_user_id: null })
+      .eq('caregiver_user_id', userId)
+
+    const { error: linkError } = await adminClient
       .from('athletes')
       .update({ caregiver_user_id: userId })
       .eq('id', athleteId)
+
+    if (linkError) return { error: 'Role updated but could not link to athlete. Please try again.' }
   }
 
   revalidatePath('/admin')
+  revalidatePath('/feed')
+  revalidatePath('/account')
   return { success: 'Role updated' }
 }
 

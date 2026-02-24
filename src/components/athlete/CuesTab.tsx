@@ -51,6 +51,8 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
   })
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [showSaved, setShowSaved] = useState(false)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [undo, setUndo] = useState<UndoState | null>(null)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -62,11 +64,16 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
   }, [])
 
   useEffect(() => {
-    return () => clearUndoTimer()
+    return () => {
+      clearUndoTimer()
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
   }, [clearUndoTimer])
 
   async function handleSave(updated: CuesData) {
     setSaveError(null)
+    setShowSaved(false)
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
     startTransition(async () => {
       const result = await saveCues(athleteId, {
         id: updated.id || undefined,
@@ -80,6 +87,8 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
         setSaveError(result.error)
       } else if (result.data) {
         setCues(result.data as CuesData)
+        setShowSaved(true)
+        savedTimerRef.current = setTimeout(() => setShowSaved(false), 2000)
       }
     })
   }
@@ -130,8 +139,21 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
           {saveError}
         </div>
       )}
-      {isPending && (
-        <p className="text-xs text-gray-400 text-right">Saving…</p>
+      {/* Save status toast — prominent and fixed so it's not missed */}
+      {(isPending || showSaved) && !undo && (
+        <div className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 text-white text-sm rounded-xl shadow-lg px-4 py-3 flex items-center gap-2 animate-[fadeIn_0.2s_ease-out] ${isPending ? 'bg-gray-900' : 'bg-teal-600'}`}>
+          {isPending ? (
+            <>
+              <span className="inline-block w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Saving cues…</span>
+            </>
+          ) : (
+            <>
+              <span>&#x2713;</span>
+              <span>Saved</span>
+            </>
+          )}
+        </div>
       )}
 
       {SECTIONS.map((section) => {
