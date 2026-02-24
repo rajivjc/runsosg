@@ -130,7 +130,7 @@ export default async function FeedPage() {
 
   const groups = groupByDate(feed)
 
-  const milestonesBySession: Record<string, { icon: string; label: string }[]> = {}
+  const milestonesBySession: Record<string, { id: string; icon: string; label: string }[]> = {}
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
   const recentMilestones: { id: string; icon: string; label: string; athleteName: string; achievedAt: string; athleteId: string }[] = []
@@ -139,6 +139,7 @@ export default async function FeedPage() {
     if (anyM.session_id) {
       if (!milestonesBySession[anyM.session_id]) milestonesBySession[anyM.session_id] = []
       milestonesBySession[anyM.session_id].push({
+        id: anyM.id,
         icon: anyM.milestone_definitions?.icon ?? '',
         label: anyM.label,
       })
@@ -501,12 +502,21 @@ export default async function FeedPage() {
                     {s.note && (
                       <p className="text-xs text-gray-500 italic mt-1.5 line-clamp-1">&ldquo;{s.note}&rdquo;</p>
                     )}
-                    {/* Milestone badges — unified amber style */}
+                    {/* Milestone badges — unified amber style with share links */}
                     {badges.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {badges.map((m, i) => (
                           <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded-full">
                             {m.icon || '🏆'} {m.label}
+                            {m.id && (
+                              <Link
+                                href={`/milestone/${m.id}`}
+                                className="ml-0.5 text-amber-400 hover:text-amber-600"
+                                title="Share this milestone"
+                              >
+                                ↗
+                              </Link>
+                            )}
                           </span>
                         ))}
                       </div>

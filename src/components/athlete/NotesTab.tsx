@@ -31,6 +31,7 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(note.content)
   const [saving, setSaving] = useState(false)
+  const [deleted, setDeleted] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -49,10 +50,12 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
     setSaving(true)
     const result = await deleteCoachNote(note.id, athleteId)
     setSaving(false)
-    setConfirmingDelete(false)
-    if (result.error) { setError(result.error); return }
+    if (result.error) { setError(result.error); setConfirmingDelete(false); return }
+    setDeleted(true)
     onChanged?.()
   }
+
+  if (deleted) return null
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm border-l-4 border-l-blue-400">

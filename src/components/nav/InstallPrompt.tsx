@@ -99,8 +99,17 @@ export default function InstallPrompt() {
             <p style={{ margin: 0, fontSize: 'var(--type-body-size)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
               Add to Home Screen
             </p>
-            <p style={{ margin: '4px 0 0', fontSize: 'var(--type-body-sm-size)', color: 'var(--color-text-secondary)' }}>
-              Tap the share button <span aria-hidden="true" style={{ fontSize: 16, verticalAlign: 'middle' }}>&#x2B06;&#xFE0F;</span> then &quot;Add to Home Screen&quot; for the best experience.
+            <p style={{ margin: '4px 0 0', fontSize: 'var(--type-body-sm-size)', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+              <strong>Step 1:</strong> Tap the share button{' '}
+              <span aria-hidden="true" style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 24, height: 24, background: '#007AFF', borderRadius: 6,
+                verticalAlign: 'middle', marginInline: 2,
+              }}>
+                <span style={{ color: '#fff', fontSize: 14, lineHeight: 1 }}>&#x2B06;&#xFE0F;</span>
+              </span>{' '}
+              at the bottom of Safari<br />
+              <strong>Step 2:</strong> Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong>
             </p>
           </>
         ) : (
@@ -128,6 +137,22 @@ export default function InstallPrompt() {
           }}
         >
           Install
+        </button>
+      )}
+
+      {showIOSPrompt && !deferredPrompt && (
+        <button
+          onClick={dismiss}
+          className="btn-primary"
+          style={{
+            width: 'auto',
+            padding: '8px 16px',
+            fontSize: 'var(--type-body-sm-size)',
+            minHeight: 36,
+            flexShrink: 0,
+          }}
+        >
+          Got it
         </button>
       )}
 
