@@ -4,6 +4,7 @@ import { ChevronLeft, Pencil } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import AthleteTabs from '@/components/athlete/AthleteTabs'
+import StickyHeader from '@/components/athlete/StickyHeader'
 import { addCoachNote } from './actions'
 
 interface PageProps {
@@ -123,6 +124,14 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
+      <StickyHeader
+        athleteName={athlete.name}
+        athleteId={id}
+        backHref="/athletes"
+        backLabel="Athletes"
+        showEdit={!isReadOnly}
+      />
+
       <Link
         href="/athletes"
         className="inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700 transition-colors mb-4"

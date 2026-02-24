@@ -28,6 +28,14 @@ function getInitials(name: string): string {
   )
 }
 
+function isInactive(lastSessionDate: string | null): boolean {
+  if (!lastSessionDate) return true
+  const last = new Date(lastSessionDate)
+  const twoWeeksAgo = new Date()
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+  return last < twoWeeksAgo
+}
+
 export default function AthleteCard({
   id,
   name,
@@ -36,10 +44,16 @@ export default function AthleteCard({
   lastSessionDate,
   recentFeels,
 }: AthleteCardProps) {
+  const needsAttention = isInactive(lastSessionDate)
+
   return (
     <Link
       href={`/athletes/${id}`}
-      className="flex items-center gap-4 bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-gray-200 transition-all"
+      className={`flex items-center gap-4 rounded-xl shadow-sm p-4 hover:shadow-md transition-all ${
+        needsAttention
+          ? 'bg-amber-50/60 border border-amber-200/80 hover:border-amber-300'
+          : 'bg-white border border-gray-100 hover:border-gray-200'
+      }`}
     >
       {/* Avatar */}
       {photoUrl ? (
@@ -49,7 +63,9 @@ export default function AthleteCard({
           className="rounded-full w-12 h-12 object-cover flex-shrink-0"
         />
       ) : (
-        <div className="rounded-full w-12 h-12 bg-teal-50 flex items-center justify-center text-teal-600 font-semibold text-base flex-shrink-0">
+        <div className={`rounded-full w-12 h-12 flex items-center justify-center font-semibold text-base flex-shrink-0 ${
+          needsAttention ? 'bg-amber-100 text-amber-700' : 'bg-teal-50 text-teal-600'
+        }`}>
           {getInitials(name)}
         </div>
       )}
@@ -59,10 +75,17 @@ export default function AthleteCard({
         <p className="font-semibold text-gray-900 truncate">{name}</p>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-sm text-gray-500">{totalSessions} run{totalSessions !== 1 ? 's' : ''}</span>
-          {lastSessionDate && (
+          {lastSessionDate ? (
             <>
               <span className="text-gray-300">·</span>
-              <span className="text-sm text-gray-400">Last run {formatDate(lastSessionDate)}</span>
+              <span className={`text-sm ${needsAttention ? 'text-amber-600 font-medium' : 'text-gray-400'}`}>
+                Last run {formatDate(lastSessionDate)}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-gray-300">·</span>
+              <span className="text-sm text-amber-600 font-medium">No runs yet</span>
             </>
           )}
         </div>

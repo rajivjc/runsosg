@@ -299,20 +299,20 @@ export default async function FeedPage() {
           <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Club stats — all time</p>
           <div className="grid grid-cols-4 gap-2">
             <div className="text-center">
-              <p className="text-xl font-bold text-gray-900">{totalSessionCount}</p>
-              <p className="text-[10px] text-gray-500 font-medium">runs</p>
+              <p className="text-2xl font-extrabold text-gray-900">{totalSessionCount}</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5">runs</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-gray-900">{totalKm.toFixed(1)}</p>
-              <p className="text-[10px] text-gray-500 font-medium">km</p>
+              <p className="text-2xl font-extrabold text-gray-900">{totalKm.toFixed(1)}</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5">km</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-gray-900">{totalAthleteCount ?? 0}</p>
-              <p className="text-[10px] text-gray-500 font-medium">athletes</p>
+              <p className="text-2xl font-extrabold text-gray-900">{totalAthleteCount ?? 0}</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5">athletes</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-gray-900">{totalMilestoneCount ?? 0}</p>
-              <p className="text-[10px] text-gray-500 font-medium">milestones</p>
+              <p className="text-2xl font-extrabold text-gray-900">{totalMilestoneCount ?? 0}</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5">milestones</p>
             </div>
           </div>
         </div>

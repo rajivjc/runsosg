@@ -17,7 +17,7 @@ export default async function NewAthletePage() {
   if (callerUser?.role !== 'admin') redirect('/athletes')
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
+    <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
       <Link
         href="/athletes"
         className="inline-flex items-center gap-1 text-sm text-teal-600 mb-6"

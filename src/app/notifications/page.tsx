@@ -37,9 +37,9 @@ export default async function NotificationsPage() {
   const hasUnread = notifications.some((n) => !n.read)
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
+    <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
         {hasUnread && (
           <NotificationList
             variant="mark-all"

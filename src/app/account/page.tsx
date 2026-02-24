@@ -41,7 +41,7 @@ export default async function AccountPage({
   const thisMonth = (statsData ?? []).filter((s: any) => s.date >= monthStart).length
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8 pb-24 space-y-8">
+    <main className="max-w-2xl mx-auto px-4 py-6 pb-28 space-y-8">
       <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
 
       {/* Email */}

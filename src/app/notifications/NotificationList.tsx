@@ -90,7 +90,7 @@ export function NotificationList({ variant, userId, notification }: Props) {
     <div
       className={`rounded-xl border shadow-sm px-4 py-3 flex items-start gap-3 transition-all duration-500 ease-in-out ${
         isRead
-          ? 'bg-gray-50 border-gray-200 opacity-40 scale-[0.98]'
+          ? 'bg-gray-50 border-gray-200 opacity-60 scale-[0.98]'
           : 'bg-white border-teal-200'
       } ${unmatchedId ? 'cursor-pointer' : ''}`}
       onClick={handleClick}
