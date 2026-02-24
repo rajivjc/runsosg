@@ -15,7 +15,8 @@ function StravaConnectedContent() {
       (navigator as unknown as { standalone?: boolean }).standalone === true
     setIsStandalone(standalone)
 
-    // If already in standalone PWA, redirect to account directly
+    // If running inside the PWA (rare — usually this page opens in the browser),
+    // redirect to account directly.
     if (standalone && !isDenied) {
       window.location.href = '/account?connected=strava'
     }
@@ -30,12 +31,9 @@ function StravaConnectedContent() {
           <p className="text-sm text-gray-600">
             You chose not to connect your Strava account. You can try again anytime from the app.
           </p>
-          <a
-            href="/account"
-            className="inline-block rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
-          >
-            Continue in browser
-          </a>
+          <p className="text-xs text-gray-400">
+            You can close this window and go back to the app.
+          </p>
         </div>
       </main>
     )
@@ -65,12 +63,15 @@ function StravaConnectedContent() {
         {!isStandalone && (
           <div className="pt-2 space-y-3">
             <div className="rounded-lg bg-teal-50 border border-teal-200 px-4 py-3">
-              <p className="text-sm font-medium text-teal-800">
-                Switch back to the SOSG Run app on your home screen to continue.
+              <p className="text-sm font-medium text-teal-800 mb-1">
+                Go back to the SOSG Run app
+              </p>
+              <p className="text-xs text-teal-600">
+                Tap your SOSG Run icon on the home screen. You can close this browser tab.
               </p>
             </div>
             <a
-              href="/account"
+              href="/account?connected=strava"
               className="inline-block text-sm text-gray-500 hover:text-teal-600 transition-colors"
             >
               Or continue in browser

@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 // Strava API types
 
 export interface StravaTokenResponse {
@@ -26,9 +28,52 @@ export interface StravaActivity {
   max_heartrate?: number
 }
 
+// ─── OAuth state (signed user ID so callback works without browser cookies) ───
+
+const STATE_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'fallback'
+const STATE_MAX_AGE_SECONDS = 600 // 10 minutes
+
+export function createStravaState(userId: string): string {
+  const ts = Math.floor(Date.now() / 1000)
+  const payload = `${userId}.${ts}`
+  const sig = crypto
+    .createHmac('sha256', STATE_SECRET)
+    .update(payload)
+    .digest('hex')
+    .slice(0, 16)
+  return Buffer.from(`${payload}.${sig}`).toString('base64url')
+}
+
+export function verifyStravaState(state: string): string | null {
+  try {
+    const decoded = Buffer.from(state, 'base64url').toString()
+    const parts = decoded.split('.')
+    if (parts.length !== 3) return null
+    const [userId, tsStr, sig] = parts
+    const ts = parseInt(tsStr, 10)
+    if (!Number.isFinite(ts)) return null
+
+    // Check not expired
+    if (Math.floor(Date.now() / 1000) - ts > STATE_MAX_AGE_SECONDS) return null
+
+    // Verify HMAC
+    const payload = `${userId}.${tsStr}`
+    const expected = crypto
+      .createHmac('sha256', STATE_SECRET)
+      .update(payload)
+      .digest('hex')
+      .slice(0, 16)
+    if (sig !== expected) return null
+
+    return userId
+  } catch {
+    return null
+  }
+}
+
 // ─── Auth URL ──────────────────────────────────────────────────────────────────
 
-export function getStravaAuthUrl(mobile = false): string {
+export function getStravaAuthUrl(userId: string, pwa = false): string {
   const clientId = process.env.STRAVA_CLIENT_ID
   const codespaceName = process.env.CODESPACE_NAME
 
@@ -41,11 +86,12 @@ export function getStravaAuthUrl(mobile = false): string {
     redirect_uri: redirectUri,
     response_type: 'code',
     scope: 'activity:read_all',
+    state: createStravaState(userId),
   })
 
-  // On mobile, use Strava's mobile OAuth endpoint which opens the Strava app
-  // directly (where the user is already logged in) instead of the web browser
-  const base = mobile
+  // Only use Strava's mobile OAuth endpoint for PWA installs.
+  // Mobile browsers should use the regular web endpoint (stays in same tab).
+  const base = pwa
     ? 'https://www.strava.com/oauth/mobile/authorize'
     : 'https://www.strava.com/oauth/authorize'
 
