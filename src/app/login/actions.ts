@@ -2,7 +2,9 @@
 
 import { createClient } from '@/lib/supabase/client'
 
-export async function sendMagicLink(email: string): Promise<{ error: string | null }> {
+export async function sendMagicLink(
+  email: string
+): Promise<{ error: string | null; rateLimited?: boolean }> {
   const supabase = createClient()
 
   const redirectTo = `${window.location.origin}/auth/callback`
@@ -12,7 +14,16 @@ export async function sendMagicLink(email: string): Promise<{ error: string | nu
     options: { emailRedirectTo: redirectTo },
   })
 
-  return { error: error ? 'Something went wrong. Please try again.' : null }
+  if (!error) return { error: null }
+
+  if (error.status === 429 || error.message?.toLowerCase().includes('rate limit')) {
+    return {
+      error: 'Too many requests. Please wait a few minutes before trying again.',
+      rateLimited: true,
+    }
+  }
+
+  return { error: 'Something went wrong. Please try again.' }
 }
 
 export async function verifyOtpCode(

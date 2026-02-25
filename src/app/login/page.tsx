@@ -5,10 +5,11 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { sendMagicLink, verifyOtpCode } from './actions'
 import { getRedirectPath } from './get-redirect-path'
 
-type PageState = 'idle' | 'loading' | 'success' | 'error'
+type PageState = 'idle' | 'loading' | 'success' | 'error' | 'rate_limited'
 type OtpState = 'idle' | 'verifying' | 'error'
 
-const RESEND_COOLDOWN_SECONDS = 30
+const INITIAL_COOLDOWN_SECONDS = 60
+const RATE_LIMITED_COOLDOWN_SECONDS = 120
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [otpCode, setOtpCode] = useState('')
   const [otpState, setOtpState] = useState<OtpState>('idle')
   const [resendCooldown, setResendCooldown] = useState(0)
+  const [resendCount, setResendCount] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const otpRef = useRef<HTMLInputElement>(null)
   const searchParams = useSearchParams()
@@ -43,23 +45,34 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPageState('loading')
-    const { error } = await sendMagicLink(email)
+    const { error, rateLimited } = await sendMagicLink(email)
     if (error) {
-      setPageState('error')
+      if (rateLimited) {
+        setPageState('rate_limited')
+      } else {
+        setPageState('error')
+      }
     } else {
       setSentEmail(email)
       setPageState('success')
-      setResendCooldown(RESEND_COOLDOWN_SECONDS)
+      setResendCooldown(INITIAL_COOLDOWN_SECONDS)
     }
   }
 
   const handleResend = useCallback(async () => {
     if (resendCooldown > 0 || !sentEmail) return
-    setResendCooldown(RESEND_COOLDOWN_SECONDS)
+    const nextCount = resendCount + 1
+    setResendCount(nextCount)
+    // Exponential backoff: 60s, 120s, 240s, capped at 300s
+    const cooldown = Math.min(INITIAL_COOLDOWN_SECONDS * Math.pow(2, nextCount - 1), 300)
+    setResendCooldown(cooldown)
     setOtpCode('')
     setOtpState('idle')
-    await sendMagicLink(sentEmail)
-  }, [resendCooldown, sentEmail])
+    const { rateLimited } = await sendMagicLink(sentEmail)
+    if (rateLimited) {
+      setResendCooldown(RATE_LIMITED_COOLDOWN_SECONDS)
+    }
+  }, [resendCooldown, sentEmail, resendCount])
 
   async function handleVerifyOtp(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -80,6 +93,7 @@ export default function LoginPage() {
     setOtpCode('')
     setOtpState('idle')
     setResendCooldown(0)
+    setResendCount(0)
   }
 
   return (
@@ -215,11 +229,16 @@ export default function LoginPage() {
                   Something went wrong. Please try again.
                 </p>
               )}
+              {pageState === 'rate_limited' && (
+                <p className="mt-1 text-sm text-amber-600" role="alert">
+                  Too many sign-in attempts. Please wait a few minutes before trying again.
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={pageState === 'loading'}
+              disabled={pageState === 'loading' || pageState === 'rate_limited'}
               className="flex w-full items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {pageState === 'loading' ? (
