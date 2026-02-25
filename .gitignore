@@ -19,5 +19,6 @@ Thumbs.db
 
 # Environment variables
 .env.local
+.env.test
 supabase/.temp
 tsconfig.tsbuildinfo
