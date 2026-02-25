@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { sendMagicLink } from './actions'
 import { verifyOtpAndRedirect } from './get-redirect-path'
 
-type PageState = 'idle' | 'loading' | 'success' | 'error' | 'rate_limited'
+type PageState = 'idle' | 'loading' | 'success' | 'error' | 'rate_limited' | 'not_found'
 type OtpState = 'idle' | 'verifying' | 'error'
 
 const INITIAL_COOLDOWN_SECONDS = 60
@@ -45,9 +45,11 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPageState('loading')
-    const { error, rateLimited } = await sendMagicLink(email, window.location.origin)
+    const { error, rateLimited, notFound } = await sendMagicLink(email, window.location.origin)
     if (error) {
-      if (rateLimited) {
+      if (notFound) {
+        setPageState('not_found')
+      } else if (rateLimited) {
         setPageState('rate_limited')
       } else {
         setPageState('error')
@@ -226,6 +228,11 @@ export default function LoginPage() {
               {pageState === 'error' && (
                 <p className="mt-1 text-sm text-red-600" role="alert">
                   Something went wrong. Please try again.
+                </p>
+              )}
+              {pageState === 'not_found' && (
+                <p className="mt-1 text-sm text-red-600" role="alert">
+                  No account found for this email. Please contact your administrator to get an invitation.
                 </p>
               )}
               {pageState === 'rate_limited' && (
