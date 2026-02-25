@@ -18,9 +18,15 @@ export async function GET(request: NextRequest) {
       if (user) {
         const { data: userRow } = await adminClient
           .from('users')
-          .select('role, name')
+          .select('role, name, active')
           .eq('id', user.id)
           .single()
+
+        // Block login for deactivated or unknown users
+        if (!userRow || userRow.active === false) {
+          await supabase.auth.signOut()
+          return NextResponse.redirect(`${baseUrl}/login?error=revoked`)
+        }
 
         const role = userRow?.role
 

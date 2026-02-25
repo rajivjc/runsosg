@@ -45,7 +45,7 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPageState('loading')
-    const { error, rateLimited } = await sendMagicLink(email)
+    const { error, rateLimited } = await sendMagicLink(email, window.location.origin)
     if (error) {
       if (rateLimited) {
         setPageState('rate_limited')
@@ -68,7 +68,7 @@ export default function LoginPage() {
     setResendCooldown(cooldown)
     setOtpCode('')
     setOtpState('idle')
-    const { rateLimited } = await sendMagicLink(sentEmail)
+    const { rateLimited } = await sendMagicLink(sentEmail, window.location.origin)
     if (rateLimited) {
       setResendCooldown(RATE_LIMITED_COOLDOWN_SECONDS)
     }
