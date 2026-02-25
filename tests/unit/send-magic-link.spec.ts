@@ -2,11 +2,12 @@
  * Unit tests for the sendMagicLink server action.
  *
  * Tests that the login OTP flow:
- * 1. Blocks deleted users (no auth user) silently
- * 2. Blocks deactivated users (active=false) silently
- * 3. Uses shouldCreateUser:false to prevent auto-signup
- * 4. Handles rate limiting correctly
- * 5. Swallows "signups not allowed" errors to avoid leaking account existence
+ * 1. Returns notFound error for nonexistent users
+ * 2. Returns notFound error for deactivated users (active=false)
+ * 3. Returns notFound error for ghost users (auth exists, no users row)
+ * 4. Uses shouldCreateUser:false to prevent auto-signup
+ * 5. Handles rate limiting correctly
+ * 6. Returns notFound error for "signups not allowed" / "user not found" OTP errors
  */
 
 // ── Mocks (must be before imports) ───────────────────────────────────────────
@@ -79,19 +80,20 @@ beforeEach(() => {
 describe('sendMagicLink', () => {
   const origin = 'https://app.example.com'
 
-  it('returns silent success when email has no auth user (deleted user)', async () => {
+  it('returns notFound error when email has no auth user (nonexistent account)', async () => {
     mockListUsers.mockResolvedValue({
       data: { users: [] },
     })
 
-    const result = await sendMagicLink('deleted@email.com', origin)
+    const result = await sendMagicLink('nobody@email.com', origin)
 
-    expect(result.error).toBeNull()
+    expect(result.error).toMatch(/no account found/i)
+    expect(result.notFound).toBe(true)
     // Should NOT call signInWithOtp at all
     expect(mockSignInWithOtp).not.toHaveBeenCalled()
   })
 
-  it('returns silent success when user is deactivated (active=false)', async () => {
+  it('returns notFound error when user is deactivated (active=false)', async () => {
     mockListUsers.mockResolvedValue({
       data: {
         users: [{ id: 'user-1', email: 'deactivated@email.com' }],
@@ -104,7 +106,8 @@ describe('sendMagicLink', () => {
 
     const result = await sendMagicLink('deactivated@email.com', origin)
 
-    expect(result.error).toBeNull()
+    expect(result.error).toMatch(/no account found/i)
+    expect(result.notFound).toBe(true)
     // Should NOT call signInWithOtp
     expect(mockSignInWithOtp).not.toHaveBeenCalled()
   })
@@ -155,7 +158,7 @@ describe('sendMagicLink', () => {
     expect(result.rateLimited).toBe(true)
   })
 
-  it('swallows "signups not allowed" error silently', async () => {
+  it('returns notFound error on "signups not allowed" OTP error', async () => {
     mockListUsers.mockResolvedValue({
       data: {
         users: [{ id: 'user-1', email: 'user@email.com' }],
@@ -172,11 +175,11 @@ describe('sendMagicLink', () => {
 
     const result = await sendMagicLink('user@email.com', origin)
 
-    // Should not reveal that the user doesn't exist
-    expect(result.error).toBeNull()
+    expect(result.error).toMatch(/no account found/i)
+    expect(result.notFound).toBe(true)
   })
 
-  it('swallows "user not found" error silently', async () => {
+  it('returns notFound error on "user not found" OTP error', async () => {
     mockListUsers.mockResolvedValue({
       data: {
         users: [{ id: 'user-1', email: 'user@email.com' }],
@@ -193,7 +196,8 @@ describe('sendMagicLink', () => {
 
     const result = await sendMagicLink('user@email.com', origin)
 
-    expect(result.error).toBeNull()
+    expect(result.error).toMatch(/no account found/i)
+    expect(result.notFound).toBe(true)
   })
 
   it('returns generic error for unexpected failures', async () => {
@@ -235,7 +239,7 @@ describe('sendMagicLink', () => {
     expect(mockSignInWithOtp).toHaveBeenCalled()
   })
 
-  it('returns silent success when auth user exists but no users table row (ghost user)', async () => {
+  it('returns notFound error when auth user exists but no users table row (ghost user)', async () => {
     mockListUsers.mockResolvedValue({
       data: {
         users: [{ id: 'user-1', email: 'ghost@email.com' }],
@@ -249,8 +253,45 @@ describe('sendMagicLink', () => {
 
     const result = await sendMagicLink('ghost@email.com', origin)
 
+    expect(result.error).toMatch(/no account found/i)
+    expect(result.notFound).toBe(true)
     // Should NOT send OTP — no users row means deleted/ghost user
-    expect(result.error).toBeNull()
     expect(mockSignInWithOtp).not.toHaveBeenCalled()
+  })
+
+  it('does not transition to OTP page for nonexistent email (notFound flag is set)', async () => {
+    // This test ensures the notFound flag is always set for non-existent accounts
+    // so the UI can differentiate from a generic error and show the right message
+    mockListUsers.mockResolvedValue({
+      data: { users: [] },
+    })
+
+    const result = await sendMagicLink('stranger@email.com', origin)
+
+    // The UI checks notFound to decide whether to show OTP page or error
+    expect(result.notFound).toBe(true)
+    expect(result.error).not.toBeNull()
+    expect(result.error).toContain('contact your administrator')
+    expect(mockSignInWithOtp).not.toHaveBeenCalled()
+  })
+
+  it('error message suggests contacting administrator for all not-found scenarios', async () => {
+    // Nonexistent user
+    mockListUsers.mockResolvedValue({ data: { users: [] } })
+    const result1 = await sendMagicLink('no-one@email.com', origin)
+    expect(result1.error).toContain('contact your administrator')
+    expect(result1.notFound).toBe(true)
+
+    // Deactivated user
+    jest.clearAllMocks()
+    mockListUsers.mockResolvedValue({
+      data: { users: [{ id: 'user-1', email: 'inactive@email.com' }] },
+    })
+    const mock = createQueueMock()
+    mock.enqueue('users', { data: { active: false } })
+    mockFrom.mockImplementation(mock.impl)
+    const result2 = await sendMagicLink('inactive@email.com', origin)
+    expect(result2.error).toContain('contact your administrator')
+    expect(result2.notFound).toBe(true)
   })
 })

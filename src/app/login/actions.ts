@@ -6,7 +6,7 @@ import { adminClient } from '@/lib/supabase/admin'
 export async function sendMagicLink(
   email: string,
   origin: string
-): Promise<{ error: string | null; rateLimited?: boolean }> {
+): Promise<{ error: string | null; rateLimited?: boolean; notFound?: boolean }> {
   // Check if user exists and is active before sending OTP
   const { data: authUsers } = await adminClient.auth.admin.listUsers()
   const authUser = authUsers?.users?.find(
@@ -14,8 +14,10 @@ export async function sendMagicLink(
   )
 
   if (!authUser) {
-    // Don't reveal whether the email exists — show generic success
-    return { error: null }
+    return {
+      error: 'No account found for this email. Please contact your administrator to get an invitation.',
+      notFound: true,
+    }
   }
 
   // Check active flag in our users table
@@ -26,8 +28,10 @@ export async function sendMagicLink(
     .single()
 
   if (!userRow || userRow.active === false) {
-    // Don't reveal the account is deactivated/deleted — show generic success
-    return { error: null }
+    return {
+      error: 'No account found for this email. Please contact your administrator to get an invitation.',
+      notFound: true,
+    }
   }
 
   const supabase = await createClient()
@@ -51,11 +55,14 @@ export async function sendMagicLink(
     }
   }
 
-  // signInWithOtp with shouldCreateUser:false returns an error if user doesn't exist.
-  // Swallow it silently so we don't reveal account existence.
+  // signInWithOtp with shouldCreateUser:false returns an error if user doesn't exist
+  // in Supabase auth. Show the same not-found message for consistency.
   if (error.message?.toLowerCase().includes('signups not allowed') ||
       error.message?.toLowerCase().includes('user not found')) {
-    return { error: null }
+    return {
+      error: 'No account found for this email. Please contact your administrator to get an invitation.',
+      notFound: true,
+    }
   }
 
   return { error: 'Something went wrong. Please try again.' }
