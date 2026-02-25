@@ -58,7 +58,7 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
   if (deleted) return null
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm border-l-4 border-l-blue-400">
+    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm border-l-[5px] border-l-blue-400">
       {editing ? (
         <div className="space-y-3">
           <textarea

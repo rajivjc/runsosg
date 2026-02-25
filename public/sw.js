@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sosg-v2'
+const CACHE_NAME = 'sosg-v3'
 const SHELL_ASSETS = ['/manifest.json', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', (event) => {
@@ -20,13 +20,23 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
-  // Network-first for navigation requests only
-  // Keeps app functional; falls back to cache if offline
   if (event.request.mode === 'navigate') {
+    // Network-first for navigation, cache the response for faster PWA launches
     event.respondWith(
-      fetch(event.request).catch(() =>
-        caches.match(event.request).then((cached) => cached || caches.match('/'))
-      )
+      fetch(event.request)
+        .then((response) => {
+          // Cache a copy of successful navigation responses
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, clone)
+            })
+          }
+          return response
+        })
+        .catch(() =>
+          caches.match(event.request).then((cached) => cached || caches.match('/'))
+        )
     )
   }
 })

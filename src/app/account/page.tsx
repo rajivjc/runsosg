@@ -165,48 +165,57 @@ export default async function AccountPage({
 
       {/* Coaching stats — only for coaches and admins */}
       {!isCaregiver && (
-        <div className="mb-6">
-          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your coaching stats</p>
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4">
-            <div className="grid grid-cols-3 divide-x divide-gray-100">
-              <div className="flex flex-col items-center px-2">
+        <section>
+          <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">Your coaching stats</p>
+          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl border border-teal-100 shadow-sm px-4 py-5 border-t-4 border-t-teal-500">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col items-center text-center">
+                <span className="text-lg mb-1">🏃</span>
                 <span className="text-2xl font-bold text-gray-900">{totalSessions}</span>
-                <span className="text-xs text-gray-400 mt-1 text-center">sessions</span>
+                <span className="text-[11px] text-teal-700 font-medium mt-0.5">sessions</span>
               </div>
-              <div className="flex flex-col items-center px-2">
+              <div className="flex flex-col items-center text-center">
+                <span className="text-lg mb-1">👥</span>
                 <span className="text-2xl font-bold text-gray-900">{totalAthletes}</span>
-                <span className="text-xs text-gray-400 mt-1 text-center">athletes</span>
+                <span className="text-[11px] text-teal-700 font-medium mt-0.5">athletes</span>
               </div>
-              <div className="flex flex-col items-center px-2">
+              <div className="flex flex-col items-center text-center">
+                <span className="text-lg mb-1">📅</span>
                 <span className="text-2xl font-bold text-teal-600">{coachThisMonth}</span>
-                <span className="text-xs text-gray-400 mt-1 text-center">this month</span>
+                <span className="text-[11px] text-teal-700 font-medium mt-0.5">this month</span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
 
       {/* Coach badges */}
       {!isCaregiver && (
         <section>
-          <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">
+          <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-1">
             Your badges ({earnedBadgeKeys.size}/{BADGE_DEFINITIONS.length})
           </p>
-          <div className="grid grid-cols-3 gap-2">
+          <p className="text-[11px] text-gray-400 mb-3">
+            Earn badges by coaching sessions and engaging with athletes
+          </p>
+          <div className="grid grid-cols-3 gap-3">
             {BADGE_DEFINITIONS.map((badge) => {
               const earned = earnedBadgeKeys.has(badge.key)
               return (
                 <div
                   key={badge.key}
-                  className={`rounded-xl border px-3 py-3 text-center transition-all ${
+                  className={`relative rounded-xl border px-3 py-3.5 text-center transition-all ${
                     earned
-                      ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-sm'
-                      : 'bg-gray-50 border-gray-100 opacity-40'
+                      ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-md ring-1 ring-amber-200/50'
+                      : 'bg-gray-50/80 border-gray-100'
                   }`}
                 >
-                  <span className={`text-2xl block mb-1 ${earned ? '' : 'grayscale'}`}>{badge.icon}</span>
-                  <p className={`text-xs font-semibold ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{badge.label}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{badge.description}</p>
+                  <span className={`text-3xl block mb-1.5 ${earned ? '' : 'grayscale opacity-30'}`}>{badge.icon}</span>
+                  <p className={`text-xs font-semibold ${earned ? 'text-gray-900' : 'text-gray-300'}`}>{badge.label}</p>
+                  <p className={`text-[10px] mt-0.5 line-clamp-1 ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{badge.description}</p>
+                  {!earned && (
+                    <span className="absolute top-1.5 right-1.5 text-[10px] opacity-40">🔒</span>
+                  )}
                 </div>
               )
             })}

@@ -464,7 +464,7 @@ export default async function FeedPage() {
                 const badges = milestonesBySession[s.id] ?? []
                 const cardBg = hasMilestone ? 'bg-amber-50/40' : 'bg-white'
                 const card = (
-                  <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-3.5 py-3 border-l-4 ${feelColor} hover:shadow-md transition-shadow`}>
+                  <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-3.5 py-3 border-l-[5px] ${feelColor} hover:shadow-md transition-shadow`}>
                     {/* Strava title — shown when present (e.g. race name) */}
                     {s.strava_title && (
                       <p className="text-xs font-semibold text-orange-600 mb-1 truncate">{s.strava_title}</p>

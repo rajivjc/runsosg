@@ -144,7 +144,7 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
     : null
 
   return (
-    <div className={`bg-white rounded-xl border border-gray-100 border-l-4 ${borderColor} shadow-sm overflow-hidden transition-shadow hover:shadow-md`}>
+    <div className={`bg-white rounded-xl border border-gray-100 border-l-[5px] ${borderColor} shadow-sm overflow-hidden transition-shadow hover:shadow-md`}>
       <button
         className="w-full text-left"
         onClick={() => !isReadOnly && setExpanded((v) => !v)}

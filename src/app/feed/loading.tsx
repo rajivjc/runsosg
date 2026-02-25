@@ -26,7 +26,7 @@ export default function FeedLoading() {
       {/* Session card skeletons */}
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-4 border-l-gray-100 animate-pulse">
+          <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4 border-l-[5px] border-l-gray-100 animate-pulse">
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="h-3 bg-gray-100 rounded-md w-24 mb-2" />
