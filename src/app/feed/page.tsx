@@ -71,7 +71,7 @@ export default async function FeedPage() {
       : Promise.resolve({ data: null }),
     adminClient
       .from('sessions')
-      .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, avg_heart_rate, max_heart_rate')
+      .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title')
       .eq('status', 'completed')
       .order('date', { ascending: false })
       .limit(30),
@@ -122,7 +122,7 @@ export default async function FeedPage() {
       ? adminClient.from('kudos').select('session_id').in('session_id', sessionIds).eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
     user && !isReadOnly
-      ? adminClient.from('sessions').select('id, athlete_id, feel, date').eq('coach_user_id', user.id).gte('date', monthStart).eq('status', 'completed')
+      ? adminClient.from('sessions').select('athlete_id').eq('coach_user_id', user.id).gte('date', monthStart).eq('status', 'completed')
       : Promise.resolve({ data: [] }),
     isReadOnly && user
       ? adminClient.from('athletes').select('id, name').eq('caregiver_user_id', user.id).maybeSingle()
@@ -156,7 +156,7 @@ export default async function FeedPage() {
   const milestonesBySession: Record<string, { id: string; icon: string; label: string }[]> = {}
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-  const recentMilestones: { id: string; icon: string; label: string; athleteName: string; achievedAt: string; athleteId: string }[] = []
+  const recentMilestoneDates: { achievedAt: string }[] = []
   for (const m of milestones ?? []) {
     const anyM = m as any
     if (anyM.session_id) {
@@ -168,14 +168,7 @@ export default async function FeedPage() {
       })
     }
     if (new Date(anyM.achieved_at) >= thirtyDaysAgo) {
-      recentMilestones.push({
-        id: anyM.id,
-        icon: anyM.milestone_definitions?.icon ?? '🏆',
-        label: anyM.label,
-        athleteName: anyM.athletes?.name ?? 'An athlete',
-        achievedAt: anyM.achieved_at,
-        athleteId: anyM.athlete_id,
-      })
+      recentMilestoneDates.push({ achievedAt: anyM.achieved_at })
     }
   }
 
@@ -200,15 +193,13 @@ export default async function FeedPage() {
   weekAgo.setHours(0, 0, 0, 0)
   const weeklyRecap = computeWeeklyRecap(
     thisWeek.map(s => ({ athlete_id: s.athlete_id, athlete_name: s.athlete_name, distance_km: s.distance_km, feel: s.feel })),
-    recentMilestones.map(m => ({ achievedAt: m.achievedAt })),
+    recentMilestoneDates,
     weekAgo
   )
 
-  // Phase 3: Fetch remaining role-specific data that depends on previous results
-  const myAthleteIds = [...new Set((myMonthSessions ?? []).map((s: any) => s.athlete_id))]
-  const { data: myAthletes } = myAthleteIds.length > 0
-    ? await adminClient.from('athletes').select('id, name').in('id', myAthleteIds)
-    : { data: [] }
+  // Derive coach greeting counts from myMonthSessions
+  const myMonthSessionCount = (myMonthSessions ?? []).length
+  const myMonthAthleteCount = new Set((myMonthSessions ?? []).map((s: any) => s.athlete_id)).size
 
   // Caregiver card data
   const caregiverAthlete = caregiverData ?? null
@@ -298,47 +289,14 @@ export default async function FeedPage() {
               )}
             </div>
           )}
-          {myMonthSessions?.length === 0 ? (
+          {myMonthSessionCount === 0 ? (
             <p className="text-sm text-teal-700">
               No sessions this month yet — let&apos;s get out there!
             </p>
           ) : (
-            <>
-              <p className="text-sm text-teal-700 mb-3">
-                {myMonthSessions?.length} session{myMonthSessions?.length !== 1 ? 's' : ''} coached this month with {myAthletes?.length} athlete{myAthletes?.length !== 1 ? 's' : ''}
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between px-3 mb-1">
-                  <span className="text-[10px] font-semibold text-teal-600/70 uppercase tracking-wider">Athlete</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-semibold text-teal-600/70 uppercase tracking-wider">Runs</span>
-                    <span className="text-[10px] font-semibold text-teal-600/70 uppercase tracking-wider w-16 text-right">Recent feel</span>
-                  </div>
-                </div>
-                {myAthletes?.map((a: any) => {
-                  const athleteSessions = (myMonthSessions ?? [])
-                    .filter((s: any) => s.athlete_id === a.id)
-                    .sort((x: any, y: any) => y.date.localeCompare(x.date))
-                  const sessionCount = athleteSessions.length
-                  const lastFeels = athleteSessions.slice(0, 3).map((s: any) => s.feel ? FEEL_EMOJI[s.feel] : '—')
-                  return (
-                    <div key={a.id} className="flex items-center justify-between bg-white/50 rounded-lg px-3 py-2">
-                      <span className="text-sm font-medium text-gray-800">{a.name}</span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-teal-600 font-medium">{sessionCount}</span>
-                        <div className="flex items-center gap-0.5 w-16 justify-end">
-                          {lastFeels.map((emoji, i) => (
-                            <span key={i} className="text-sm" title={`Feel score from recent run ${i + 1}`}>
-                              {emoji}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </>
+            <p className="text-sm text-teal-700">
+              {myMonthSessionCount} session{myMonthSessionCount !== 1 ? 's' : ''} coached this month with {myMonthAthleteCount} athlete{myMonthAthleteCount !== 1 ? 's' : ''}
+            </p>
           )}
           {/* Badge celebration + count */}
           {recentBadgeDef && (
@@ -562,27 +520,6 @@ export default async function FeedPage() {
         </div>
       )}
 
-      {/* Recent milestones celebration */}
-      {recentMilestones.length > 0 && (
-        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/60 rounded-2xl px-5 py-4 mb-5 shadow-sm">
-          <p className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-3">Recent milestones</p>
-          <div className="space-y-2">
-            {recentMilestones.slice(0, 5).map((m) => (
-              <Link key={m.id} href={`/milestone/${m.id}`}>
-                <div className="flex items-center gap-3 bg-white/60 rounded-lg px-3 py-2 hover:bg-white/80 transition-colors">
-                  <span className="text-xl flex-shrink-0">{m.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{m.athleteName}</p>
-                    <p className="text-xs text-amber-700">{m.label}</p>
-                  </div>
-                  <p className="text-[10px] text-amber-400 flex-shrink-0">{formatDate(m.achievedAt)}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Weekly club summary */}
       {thisWeek.length > 0 && (
         <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
@@ -689,11 +626,6 @@ export default async function FeedPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       {s.duration_seconds != null && (
                         <span className="text-xs text-gray-500 font-medium">{formatDuration(s.duration_seconds)}</span>
-                      )}
-                      {s.avg_heart_rate != null && (
-                        <span className="text-xs font-medium text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">
-                          {s.avg_heart_rate} bpm{s.max_heart_rate != null ? ` / ${s.max_heart_rate} max` : ''}
-                        </span>
                       )}
                       <p className="text-xs text-gray-400">{formatDate(s.date)}</p>
                     </div>
