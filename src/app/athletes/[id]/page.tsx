@@ -6,6 +6,8 @@ import { adminClient } from '@/lib/supabase/admin'
 import AthleteTabs from '@/components/athlete/AthleteTabs'
 import StickyHeader from '@/components/athlete/StickyHeader'
 import { formatDate } from '@/lib/utils/dates'
+import { calculateGoalProgress } from '@/lib/goals'
+import type { GoalType } from '@/lib/goals'
 import { addCoachNote } from './actions'
 
 interface PageProps {
@@ -34,7 +36,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
   ] = await Promise.all([
     adminClient
       .from('athletes')
-      .select('id, name, photo_url, active, date_of_birth, running_goal, communication_notes, medical_notes, emergency_contact')
+      .select('id, name, photo_url, active, date_of_birth, running_goal, goal_type, goal_target, communication_notes, medical_notes, emergency_contact')
       .eq('id', id)
       .single(),
 
@@ -131,6 +133,15 @@ export default async function AthleteHubPage({ params }: PageProps) {
     notFound()
   }
 
+  // Goal progress (no new query — uses already-fetched sessions)
+  const goalProgress = athlete.goal_type && athlete.goal_target
+    ? calculateGoalProgress(
+        athlete.goal_type as GoalType,
+        Number(athlete.goal_target),
+        (sessions ?? []).filter((s: any) => s.date) // completed sessions already filtered by athlete
+      )
+    : null
+
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
       <StickyHeader
@@ -186,6 +197,30 @@ export default async function AthleteHubPage({ params }: PageProps) {
           )}
           {athlete.communication_notes && (
             <p className="text-sm text-gray-500 line-clamp-2">💬 {athlete.communication_notes}</p>
+          )}
+        </div>
+      )}
+
+      {/* Goal progress */}
+      {goalProgress && (
+        <div className="mb-6 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-semibold text-teal-800">🎯 {goalProgress.label}</span>
+            <span className="text-[10px] text-teal-600 font-medium">
+              {goalProgress.current} / {goalProgress.target} {goalProgress.unit}
+            </span>
+          </div>
+          <div className="w-full bg-teal-100 rounded-full h-2">
+            <div
+              className="bg-teal-500 h-2 rounded-full transition-all"
+              style={{ width: `${goalProgress.pct}%` }}
+            />
+          </div>
+          {goalProgress.pct >= 100 && (
+            <p className="text-[10px] text-teal-600 mt-1 font-medium">Goal achieved! 🎉</p>
+          )}
+          {goalProgress.pct >= 75 && goalProgress.pct < 100 && (
+            <p className="text-[10px] text-teal-600 mt-1">Almost there!</p>
           )}
         </div>
       )}

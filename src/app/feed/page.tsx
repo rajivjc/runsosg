@@ -7,6 +7,7 @@ import { BADGE_DEFINITIONS } from '@/lib/badges'
 import { getCoachFocusData, getCaregiverFocusData } from '@/lib/feed/today-focus'
 import type { CoachFocusData, CaregiverFocusData } from '@/lib/feed/today-focus'
 import CheerBox from '@/components/feed/CheerBox'
+import { computeWeeklyRecap } from '@/lib/feed/weekly-recap'
 
 const FEEL_EMOJI: Record<number, string> = {
   1: '😰', 2: '😐', 3: '🙂', 4: '😊', 5: '🔥',
@@ -191,6 +192,16 @@ export default async function FeedPage() {
   })
   const weeklyKm = thisWeek.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
   const weeklyAthletes = new Set(thisWeek.map(s => s.athlete_id)).size
+
+  // Compute weekly recap from already-fetched data (no new queries)
+  const weekAgo = new Date()
+  weekAgo.setDate(weekAgo.getDate() - 7)
+  weekAgo.setHours(0, 0, 0, 0)
+  const weeklyRecap = computeWeeklyRecap(
+    thisWeek.map(s => ({ athlete_id: s.athlete_id, athlete_name: s.athlete_name, distance_km: s.distance_km, feel: s.feel })),
+    recentMilestones.map(m => ({ achievedAt: m.achievedAt })),
+    weekAgo
+  )
 
   // Phase 3: Fetch remaining role-specific data that depends on previous results
   const myAthleteIds = [...new Set((myMonthSessions ?? []).map((s: any) => s.athlete_id))]
@@ -538,18 +549,34 @@ export default async function FeedPage() {
 
       {/* Weekly club summary */}
       {thisWeek.length > 0 && (
-        <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 mb-5 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
-            <span className="text-lg">🏃</span>
+        <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
+              <span className="text-lg">🏃</span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">
+                {thisWeek.length} run{thisWeek.length !== 1 ? 's' : ''} this week
+              </p>
+              <p className="text-xs text-gray-500">
+                {weeklyKm.toFixed(1)} km across {weeklyAthletes} athlete{weeklyAthletes !== 1 ? 's' : ''} — growing together
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900">
-              {thisWeek.length} run{thisWeek.length !== 1 ? 's' : ''} this week
-            </p>
-            <p className="text-xs text-gray-500">
-              {weeklyKm.toFixed(1)} km across {weeklyAthletes} athlete{weeklyAthletes !== 1 ? 's' : ''} — growing together
-            </p>
-          </div>
+          {(weeklyRecap.starMoment || weeklyRecap.milestonesEarned > 0) && (
+            <div className="mt-2 pt-2 border-t border-gray-50 space-y-1">
+              {weeklyRecap.starMoment && (
+                <p className="text-xs text-teal-600">
+                  ⭐ {weeklyRecap.starMoment.athleteName} {weeklyRecap.starMoment.value}
+                </p>
+              )}
+              {weeklyRecap.milestonesEarned > 0 && (
+                <p className="text-xs text-amber-600">
+                  🏆 {weeklyRecap.milestonesEarned} milestone{weeklyRecap.milestonesEarned !== 1 ? 's' : ''} earned this week
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
 

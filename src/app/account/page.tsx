@@ -7,6 +7,8 @@ import StravaStatus from '@/components/account/StravaStatus'
 import DisplayNameForm from '@/components/account/DisplayNameForm'
 import { formatDate, formatDistance } from '@/lib/utils/dates'
 import { BADGE_DEFINITIONS } from '@/lib/badges'
+import { calculateGoalProgress } from '@/lib/goals'
+import type { GoalType } from '@/lib/goals'
 
 const FEEL_EMOJI: Record<number, string> = {
   1: '😰', 2: '😐', 3: '🙂', 4: '😊', 5: '🔥',
@@ -67,7 +69,7 @@ export default async function AccountPage({
   if (isCaregiver) {
     const { data: athlete } = await adminClient
       .from('athletes')
-      .select('id, name, running_goal, photo_url')
+      .select('id, name, running_goal, goal_type, goal_target, photo_url')
       .eq('caregiver_user_id', user.id)
       .maybeSingle()
 
@@ -123,6 +125,15 @@ export default async function AccountPage({
   const thisMonthRuns = thisMonthSessions.length
   const runsTrend = thisMonthRuns - lastMonthRuns
   const latestSession = athleteSessions[0] ?? null
+
+  // Goal progress (no new query — uses already-fetched sessions)
+  const goalProgress = caregiverAthlete?.goal_type && caregiverAthlete?.goal_target
+    ? calculateGoalProgress(
+        caregiverAthlete.goal_type as GoalType,
+        Number(caregiverAthlete.goal_target),
+        athleteSessions
+      )
+    : null
 
   // Motivational message for caregiver
   function getMotivation() {
@@ -275,6 +286,30 @@ export default async function AccountPage({
                 </div>
               </div>
             </div>
+
+            {/* Goal progress */}
+            {goalProgress && (
+              <div className="bg-white/60 rounded-xl px-4 py-3 mb-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-semibold text-amber-800">🎯 {goalProgress.label}</span>
+                  <span className="text-[10px] text-amber-600 font-medium">
+                    {goalProgress.current} / {goalProgress.target} {goalProgress.unit}
+                  </span>
+                </div>
+                <div className="w-full bg-amber-100 rounded-full h-2">
+                  <div
+                    className="bg-amber-500 h-2 rounded-full transition-all"
+                    style={{ width: `${goalProgress.pct}%` }}
+                  />
+                </div>
+                {goalProgress.pct >= 100 && (
+                  <p className="text-[10px] text-amber-600 mt-1 font-medium">Goal achieved! 🎉</p>
+                )}
+                {goalProgress.pct >= 75 && goalProgress.pct < 100 && (
+                  <p className="text-[10px] text-amber-600 mt-1">Almost there!</p>
+                )}
+              </div>
+            )}
 
             {/* Coaches */}
             {athleteCoachNames.length > 0 && (

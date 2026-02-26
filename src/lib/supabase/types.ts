@@ -23,7 +23,7 @@ export interface Database {
       }
       athletes: {
         Row: Athlete & Record<string, unknown>
-        Insert: Omit<Athlete, 'id' | 'created_at' | 'updated_at' | 'updated_by'> & { id?: string; created_at?: string | null; updated_at?: string | null; updated_by?: string | null }
+        Insert: Omit<Athlete, 'id' | 'created_at' | 'updated_at' | 'updated_by' | 'goal_type' | 'goal_target'> & { id?: string; created_at?: string | null; updated_at?: string | null; updated_by?: string | null; goal_type?: Athlete['goal_type']; goal_target?: number | null }
         Update: Partial<Athlete>
         Relationships: []
       }
@@ -213,6 +213,8 @@ export interface Athlete {
   date_of_birth: string | null
   joined_at: string | null
   running_goal: string | null
+  goal_type: 'distance_total' | 'distance_single' | 'session_count' | null
+  goal_target: number | null
   communication_notes: string | null
   medical_notes: string | null
   emergency_contact: string | null
