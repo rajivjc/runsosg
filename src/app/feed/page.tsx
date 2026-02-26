@@ -7,6 +7,7 @@ import { BADGE_DEFINITIONS } from '@/lib/badges'
 import { getCoachFocusData, getCaregiverFocusData } from '@/lib/feed/today-focus'
 import type { CoachFocusData, CaregiverFocusData } from '@/lib/feed/today-focus'
 import CheerBox from '@/components/feed/CheerBox'
+import CheerViewTracker from '@/components/feed/CheerViewTracker'
 import { computeWeeklyRecap } from '@/lib/feed/weekly-recap'
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -132,7 +133,7 @@ export default async function FeedPage() {
     user && !isReadOnly
       ? adminClient
           .from('cheers')
-          .select('id, athlete_id, message, created_at')
+          .select('id, athlete_id, message, created_at, viewed_at')
           .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
           .order('created_at', { ascending: false })
           .limit(10)
@@ -218,6 +219,7 @@ export default async function FeedPage() {
   let caregiverMilestones: any[] = []
   let caregiverRecentNotes: any[] = []
   let cheerSentToday = false
+  let caregiverSentCheers: any[] = []
   if (caregiverAthlete) {
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
@@ -226,6 +228,7 @@ export default async function FeedPage() {
       { data: cgMilestones },
       { data: cgNotes },
       { count: cheerTodayCount },
+      { data: sentCheers },
     ] = await Promise.all([
       adminClient
         .from('sessions')
@@ -250,11 +253,15 @@ export default async function FeedPage() {
       user
         ? adminClient.from('cheers').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', todayStart.toISOString())
         : Promise.resolve({ count: 0 }),
+      user
+        ? adminClient.from('cheers').select('id, message, created_at, viewed_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5)
+        : Promise.resolve({ data: [] }),
     ])
     caregiverRecentSessions = recentSessions ?? []
     caregiverMilestones = cgMilestones ?? []
     caregiverRecentNotes = cgNotes ?? []
     cheerSentToday = (cheerTodayCount ?? 0) > 0
+    caregiverSentCheers = sentCheers ?? []
   }
 
   // Recent badge (earned in last 7 days)
@@ -475,6 +482,32 @@ export default async function FeedPage() {
                   alreadySentToday={cheerSentToday}
                 />
               </div>
+
+              {/* Sent cheers with read status */}
+              {caregiverSentCheers.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-amber-200/40">
+                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2">Your cheers</p>
+                  <div className="space-y-1.5">
+                    {caregiverSentCheers.map((c: any) => (
+                      <div key={c.id} className="bg-white/50 rounded-lg px-3 py-2 flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-amber-800 truncate">&ldquo;{c.message}&rdquo;</p>
+                          <p className="text-[10px] text-amber-400">{formatDate(c.created_at)}</p>
+                        </div>
+                        {c.viewed_at ? (
+                          <span className="text-[10px] text-teal-600 font-medium flex-shrink-0 ml-2">
+                            Seen &#10003;
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-amber-400 flex-shrink-0 ml-2">
+                            Sent
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <p className="text-sm text-amber-700">
@@ -487,6 +520,9 @@ export default async function FeedPage() {
       {/* Cheers from home — coaches see recent cheers from caregivers */}
       {!isReadOnly && (recentCheers ?? []).length > 0 && (
         <div className="bg-amber-50/40 border border-amber-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
+          <CheerViewTracker
+            unviewedCheerIds={(recentCheers ?? []).filter((c: any) => !c.viewed_at).map((c: any) => c.id)}
+          />
           <p className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2.5">Cheers from home 📣</p>
           <div className="space-y-2">
             {(recentCheers ?? []).map((c: any) => (

@@ -8,6 +8,7 @@ import StickyHeader from '@/components/athlete/StickyHeader'
 import { formatDate } from '@/lib/utils/dates'
 import { calculateGoalProgress } from '@/lib/goals'
 import type { GoalType } from '@/lib/goals'
+import CheerViewTracker from '@/components/feed/CheerViewTracker'
 import { addCoachNote } from './actions'
 
 interface PageProps {
@@ -67,7 +68,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
       .order('achieved_at', { ascending: false }),
     adminClient
       .from('cheers')
-      .select('id, message, created_at')
+      .select('id, message, created_at, viewed_at')
       .eq('athlete_id', id)
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false })
@@ -228,6 +229,11 @@ export default async function AthleteHubPage({ params }: PageProps) {
       {/* Cheers from home */}
       {(cheers ?? []).length > 0 && (
         <div className="mb-6">
+          {!isReadOnly && (
+            <CheerViewTracker
+              unviewedCheerIds={(cheers ?? []).filter((c: any) => !c.viewed_at).map((c: any) => c.id)}
+            />
+          )}
           <p className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2">Cheers from home 📣</p>
           <div className="space-y-1.5">
             {(cheers ?? []).map((c: any) => (

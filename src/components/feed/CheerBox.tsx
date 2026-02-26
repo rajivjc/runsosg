@@ -40,7 +40,7 @@ export default function CheerBox({ athleteId, athleteFirstName, alreadySentToday
   if (sent) {
     return (
       <div className="bg-white/50 rounded-lg px-3 py-2.5 text-center">
-        <p className="text-xs text-amber-700 font-medium">🎉 Cheer sent! Your coach will share it.</p>
+        <p className="text-xs text-amber-700 font-medium">🎉 Cheer sent! You&apos;ll see a &#10003; when your coach has seen it.</p>
       </div>
     )
   }

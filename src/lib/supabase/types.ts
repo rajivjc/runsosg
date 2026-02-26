@@ -166,7 +166,7 @@ export interface Database {
       }
       cheers: {
         Row: Cheer & Record<string, unknown>
-        Insert: Omit<Cheer, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Insert: Omit<Cheer, 'id' | 'created_at' | 'viewed_at'> & { id?: string; created_at?: string; viewed_at?: string | null }
         Update: Partial<Cheer>
         Relationships: []
       }
@@ -393,5 +393,6 @@ export interface Cheer {
   athlete_id: string
   user_id: string
   message: string
+  viewed_at: string | null
   created_at: string
 }

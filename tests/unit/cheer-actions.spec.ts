@@ -27,7 +27,7 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }))
 
-import { sendCheer } from '@/app/feed/cheer-actions'
+import { sendCheer, markCheersViewed } from '@/app/feed/cheer-actions'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -126,5 +126,81 @@ describe('sendCheer', () => {
     setupMocks({ cheerCount: 0 })
     const result = await sendCheer('a1', 'Go Ali! 🎉')
     expect(result.success).toBe('Cheer sent!')
+  })
+})
+
+// ── markCheersViewed Tests ──────────────────────────────────────────────────
+
+function setupViewedMocks(overrides: {
+  user?: { id: string } | null
+  role?: string
+  updateError?: unknown
+} = {}) {
+  const {
+    user = { id: 'coach1' },
+    role = 'coach',
+    updateError = null,
+  } = overrides
+
+  mockGetUser.mockResolvedValue({ data: { user } })
+
+  mockFrom.mockImplementation((table: string) => {
+    const obj: Record<string, unknown> = {}
+    const handler: ProxyHandler<Record<string, unknown>> = {
+      get(_target, prop) {
+        if (prop === 'then') {
+          if (table === 'users') {
+            return (resolve: (v: unknown) => void) => resolve({ data: { role }, error: null })
+          }
+          if (table === 'cheers') {
+            return (resolve: (v: unknown) => void) => resolve({ data: null, error: updateError })
+          }
+          return (resolve: (v: unknown) => void) => resolve({ data: null, error: null })
+        }
+        return (..._args: unknown[]) => new Proxy(obj, handler)
+      },
+    }
+    return new Proxy(obj, handler)
+  })
+}
+
+describe('markCheersViewed', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns empty result for empty array', async () => {
+    const result = await markCheersViewed([])
+    expect(result).toEqual({})
+  })
+
+  it('rejects unauthenticated users', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } })
+    const result = await markCheersViewed(['c1'])
+    expect(result.error).toBe('Not authenticated')
+  })
+
+  it('rejects caregiver role', async () => {
+    setupViewedMocks({ role: 'caregiver' })
+    const result = await markCheersViewed(['c1'])
+    expect(result.error).toBe('Only coaches can mark cheers as viewed')
+  })
+
+  it('succeeds for coach role', async () => {
+    setupViewedMocks({ role: 'coach' })
+    const result = await markCheersViewed(['c1', 'c2'])
+    expect(result).toEqual({})
+  })
+
+  it('succeeds for admin role', async () => {
+    setupViewedMocks({ role: 'admin' })
+    const result = await markCheersViewed(['c1'])
+    expect(result).toEqual({})
+  })
+
+  it('returns error when update fails', async () => {
+    setupViewedMocks({ updateError: { message: 'db error' } })
+    const result = await markCheersViewed(['c1'])
+    expect(result.error).toBe('Could not mark cheers as viewed')
   })
 })

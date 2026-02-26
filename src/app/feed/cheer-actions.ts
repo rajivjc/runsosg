@@ -65,3 +65,38 @@ export async function sendCheer(
   revalidatePath(`/athletes/${athleteId}`)
   return { success: 'Cheer sent!' }
 }
+
+export async function markCheersViewed(
+  cheerIds: string[]
+): Promise<{ error?: string }> {
+  if (cheerIds.length === 0) return {}
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  // Only coaches/admins can mark cheers as viewed
+  const { data: userRow } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!userRow || !['admin', 'coach'].includes(userRow.role)) {
+    return { error: 'Only coaches can mark cheers as viewed' }
+  }
+
+  const { error } = await adminClient
+    .from('cheers')
+    .update({ viewed_at: new Date().toISOString() })
+    .in('id', cheerIds)
+    .is('viewed_at', null)
+
+  if (error) {
+    console.error('Failed to mark cheers as viewed:', error)
+    return { error: 'Could not mark cheers as viewed' }
+  }
+
+  revalidatePath('/feed')
+  return {}
+}
