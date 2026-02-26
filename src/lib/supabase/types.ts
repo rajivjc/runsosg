@@ -164,6 +164,12 @@ export interface Database {
         Update: Partial<CoachBadge>
         Relationships: []
       }
+      cheers: {
+        Row: Cheer & Record<string, unknown>
+        Insert: Omit<Cheer, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<Cheer>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -378,4 +384,12 @@ export interface CoachBadge {
   user_id: string
   badge_key: string
   earned_at: string
+}
+
+export interface Cheer {
+  id: string
+  athlete_id: string
+  user_id: string
+  message: string
+  created_at: string
 }

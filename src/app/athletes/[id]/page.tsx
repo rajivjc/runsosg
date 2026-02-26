@@ -1,10 +1,11 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Pencil } from 'lucide-react'
+import { ChevronLeft, Pencil, Share2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import AthleteTabs from '@/components/athlete/AthleteTabs'
 import StickyHeader from '@/components/athlete/StickyHeader'
+import { formatDate } from '@/lib/utils/dates'
 import { addCoachNote } from './actions'
 
 interface PageProps {
@@ -29,6 +30,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
     { data: cues },
     { data: notes },
     { data: milestones },
+    { data: cheers },
   ] = await Promise.all([
     adminClient
       .from('athletes')
@@ -61,6 +63,13 @@ export default async function AthleteHubPage({ params }: PageProps) {
       .select('id, label, achieved_at, session_id, milestone_definitions(icon)')
       .eq('athlete_id', id)
       .order('achieved_at', { ascending: false }),
+    adminClient
+      .from('cheers')
+      .select('id, message, created_at')
+      .eq('athlete_id', id)
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5),
   ])
 
   const flatNotes = (notes ?? []).map((n: any) => ({
@@ -142,15 +151,25 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold text-gray-900">{athlete.name}</h1>
-        {!isReadOnly && (
+        <div className="flex items-center gap-1">
           <Link
-            href={`/athletes/${id}/edit`}
+            href={`/story/${id}`}
             className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
-            aria-label="Edit athlete profile"
+            aria-label="View journey story"
+            title="Journey story"
           >
-            <Pencil size={18} />
+            <Share2 size={18} />
           </Link>
-        )}
+          {!isReadOnly && (
+            <Link
+              href={`/athletes/${id}/edit`}
+              className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+              aria-label="Edit athlete profile"
+            >
+              <Pencil size={18} />
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Profile strip */}
@@ -168,6 +187,21 @@ export default async function AthleteHubPage({ params }: PageProps) {
           {athlete.communication_notes && (
             <p className="text-sm text-gray-500 line-clamp-2">💬 {athlete.communication_notes}</p>
           )}
+        </div>
+      )}
+
+      {/* Cheers from home */}
+      {(cheers ?? []).length > 0 && (
+        <div className="mb-6">
+          <p className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2">Cheers from home 📣</p>
+          <div className="space-y-1.5">
+            {(cheers ?? []).map((c: any) => (
+              <div key={c.id} className="bg-amber-50/50 border border-amber-100 rounded-lg px-3 py-2">
+                <p className="text-sm text-amber-800">&ldquo;{c.message}&rdquo;</p>
+                <p className="text-[10px] text-amber-400 mt-0.5">{formatDate(c.created_at)}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

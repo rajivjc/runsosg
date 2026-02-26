@@ -6,6 +6,7 @@ import KudosButton from '@/components/feed/KudosButton'
 import { BADGE_DEFINITIONS } from '@/lib/badges'
 import { getCoachFocusData, getCaregiverFocusData } from '@/lib/feed/today-focus'
 import type { CoachFocusData, CaregiverFocusData } from '@/lib/feed/today-focus'
+import CheerBox from '@/components/feed/CheerBox'
 
 const FEEL_EMOJI: Record<number, string> = {
   1: '😰', 2: '😐', 3: '🙂', 4: '😊', 5: '🔥',
@@ -104,6 +105,7 @@ export default async function FeedPage() {
     { data: myMonthSessions },
     { data: caregiverData },
     { data: myBadges },
+    { data: recentCheers },
   ] = await Promise.all([
     athleteIds.length > 0
       ? adminClient.from('athletes').select('id, name').in('id', athleteIds)
@@ -125,6 +127,14 @@ export default async function FeedPage() {
       : Promise.resolve({ data: null }),
     user && !isReadOnly
       ? adminClient.from('coach_badges').select('badge_key, earned_at').eq('user_id', user.id).order('earned_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+    user && !isReadOnly
+      ? adminClient
+          .from('cheers')
+          .select('id, athlete_id, message, created_at')
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false })
+          .limit(10)
       : Promise.resolve({ data: [] }),
   ])
 
@@ -196,11 +206,15 @@ export default async function FeedPage() {
   let caregiverRecentSessions: any[] = []
   let caregiverMilestones: any[] = []
   let caregiverRecentNotes: any[] = []
+  let cheerSentToday = false
   if (caregiverAthlete) {
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
     const [
       { data: recentSessions },
       { data: cgMilestones },
       { data: cgNotes },
+      { count: cheerTodayCount },
     ] = await Promise.all([
       adminClient
         .from('sessions')
@@ -222,10 +236,14 @@ export default async function FeedPage() {
         .eq('visibility', 'all')
         .order('created_at', { ascending: false })
         .limit(3),
+      user
+        ? adminClient.from('cheers').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', todayStart.toISOString())
+        : Promise.resolve({ count: 0 }),
     ])
     caregiverRecentSessions = recentSessions ?? []
     caregiverMilestones = cgMilestones ?? []
     caregiverRecentNotes = cgNotes ?? []
+    cheerSentToday = (cheerTodayCount ?? 0) > 0
   }
 
   // Recent badge (earned in last 7 days)
@@ -427,12 +445,52 @@ export default async function FeedPage() {
                   </div>
                 </div>
               )}
+
+              {/* Journey story link */}
+              <div className="mt-3 text-center">
+                <Link
+                  href={`/story/${caregiverAthlete.id}`}
+                  className="text-xs text-amber-600 hover:text-amber-800 font-medium transition-colors"
+                >
+                  View {caregiverAthlete.name?.split(' ')[0]}&apos;s journey story &rarr;
+                </Link>
+              </div>
+
+              {/* Send a cheer */}
+              <div className="mt-3 pt-3 border-t border-amber-200/40">
+                <CheerBox
+                  athleteId={caregiverAthlete.id}
+                  athleteFirstName={caregiverAthlete.name?.split(' ')[0] ?? 'your athlete'}
+                  alreadySentToday={cheerSentToday}
+                />
+              </div>
             </>
           ) : (
             <p className="text-sm text-amber-700">
               Welcome to the SOSG Running Club! Your athlete hasn&apos;t been linked yet — please ask a coach.
             </p>
           )}
+        </div>
+      )}
+
+      {/* Cheers from home — coaches see recent cheers from caregivers */}
+      {!isReadOnly && (recentCheers ?? []).length > 0 && (
+        <div className="bg-amber-50/40 border border-amber-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
+          <p className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2.5">Cheers from home 📣</p>
+          <div className="space-y-2">
+            {(recentCheers ?? []).map((c: any) => (
+              <Link key={c.id} href={`/athletes/${c.athlete_id}`}>
+                <div className="flex items-start gap-2 rounded-lg px-2 py-1.5 hover:bg-amber-50 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm text-amber-800">&ldquo;{c.message}&rdquo;</p>
+                    <p className="text-[10px] text-amber-400">
+                      for {athleteMap[c.athlete_id] ?? 'an athlete'} · {formatDate(c.created_at)}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 
