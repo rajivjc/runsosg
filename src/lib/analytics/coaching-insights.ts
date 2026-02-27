@@ -223,7 +223,7 @@ export function computeProgressComparison(
 // --- Helper ---
 
 function getISOWeekKey(dateStr: string): string {
-  const d = new Date(dateStr + 'T12:00:00+08:00')
+  const d = new Date(dateStr.split('T')[0] + 'T12:00:00+08:00')
   const day = d.getDay()
   const diff = d.getDate() - day + (day === 0 ? -6 : 1)
   const monday = new Date(d.getFullYear(), d.getMonth(), diff)

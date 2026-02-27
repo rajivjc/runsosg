@@ -7,6 +7,15 @@
 
 const SGT = 'Asia/Singapore'
 
+/**
+ * Extract the YYYY-MM-DD portion from a date string that may be
+ * a full ISO timestamp (e.g. "2024-02-15T08:30:00.000Z") or
+ * already a plain date ("2024-02-15").
+ */
+function toDateOnly(dateStr: string): string {
+  return dateStr.split('T')[0]
+}
+
 export interface SessionForTrends {
   date: string
   distance_km: number | null
@@ -33,7 +42,7 @@ export interface WeeklyVolume {
  * Get the Monday (ISO week start) of a given date string.
  */
 function getMonday(dateStr: string): Date {
-  const d = new Date(dateStr + 'T12:00:00+08:00') // SGT noon to avoid DST issues
+  const d = new Date(toDateOnly(dateStr) + 'T12:00:00+08:00') // SGT noon to avoid DST issues
   const day = d.getDay()
   const diff = d.getDate() - day + (day === 0 ? -6 : 1)
   return new Date(d.getFullYear(), d.getMonth(), diff)
@@ -48,6 +57,7 @@ function formatWeekLabel(monday: Date): string {
 }
 
 function toISODate(d: Date): string {
+  if (isNaN(d.getTime())) return ''
   return d.toISOString().split('T')[0]
 }
 
@@ -106,7 +116,7 @@ export function computeFeelTrend(sessions: SessionForTrends[]): FeelPoint[] {
     .filter(s => s.date && !isNaN(new Date(s.date).getTime()) && s.feel != null)
     .map(s => ({
       date: s.date,
-      dateLabel: new Date(s.date + 'T12:00:00+08:00').toLocaleDateString('en-SG', {
+      dateLabel: new Date(toDateOnly(s.date) + 'T12:00:00+08:00').toLocaleDateString('en-SG', {
         day: 'numeric',
         month: 'short',
         timeZone: SGT,
@@ -137,7 +147,7 @@ export function computeDistanceTimeline(
     cumulative += s.distance_km ?? 0
     return {
       date: s.date,
-      dateLabel: new Date(s.date + 'T12:00:00+08:00').toLocaleDateString('en-SG', {
+      dateLabel: new Date(toDateOnly(s.date) + 'T12:00:00+08:00').toLocaleDateString('en-SG', {
         day: 'numeric',
         month: 'short',
         timeZone: SGT,
