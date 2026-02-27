@@ -1,15 +1,21 @@
 const SGT = 'Asia/Singapore'
 
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return '—'
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     timeZone: SGT,
-  }).format(new Date(dateStr))
+  }).format(d)
 }
 
-export function formatDateTime(dateStr: string): string {
+export function formatDateTime(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return '—'
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'short',
@@ -17,7 +23,7 @@ export function formatDateTime(dateStr: string): string {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: SGT,
-  }).format(new Date(dateStr))
+  }).format(d)
 }
 
 export function formatDuration(seconds: number): string {

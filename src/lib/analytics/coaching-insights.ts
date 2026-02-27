@@ -83,10 +83,10 @@ export function detectRecentPersonalBest(
 ): PersonalBestInsight | null {
   if (sessions.length < 2) return null
 
-  const withDistance = sessions.filter(s => s.distance_km != null && s.distance_km > 0)
+  const withDistance = sessions.filter(s => s.date != null && s.date !== '' && s.distance_km != null && s.distance_km > 0)
   if (withDistance.length < 2) return null
 
-  const sorted = [...withDistance].sort((a, b) => b.date.localeCompare(a.date))
+  const sorted = [...withDistance].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
   const latest = sorted[0]
   const rest = sorted.slice(1)
 
@@ -172,10 +172,10 @@ export interface ProgressComparison {
 export function computeProgressComparison(
   sessions: SessionForInsights[]
 ): ProgressComparison | null {
-  const withDistance = sessions.filter(s => s.distance_km != null && s.distance_km > 0)
+  const withDistance = sessions.filter(s => s.date != null && s.date !== '' && s.distance_km != null && s.distance_km > 0)
   if (withDistance.length < 4) return null
 
-  const sorted = [...withDistance].sort((a, b) => a.date.localeCompare(b.date))
+  const sorted = [...withDistance].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''))
   const firstDate = new Date(sorted[0].date)
   const lastDate = new Date(sorted[sorted.length - 1].date)
 

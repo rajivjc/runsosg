@@ -49,8 +49,8 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
     return { streak: { current: 0, activeThisWeek: false }, items: [] }
   }
 
-  // 2. Calculate streak
-  const streak = calculateWeeklyStreak(coachSessions.map(s => s.date))
+  // 2. Calculate streak (filter out sessions with null/empty dates)
+  const streak = calculateWeeklyStreak(coachSessions.map(s => s.date).filter((d): d is string => d != null && d !== ''))
 
   // 3. Unique athlete IDs this coach has worked with
   const athleteIds = [...new Set(coachSessions.map(s => s.athlete_id))]
@@ -86,6 +86,7 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
   // Per-athlete: last session date (first occurrence per athlete since sorted desc)
   const lastDateMap: Record<string, string> = {}
   for (const s of latestPerAthlete ?? []) {
+    if (!s.date) continue
     if (!lastDateMap[s.athlete_id]) {
       lastDateMap[s.athlete_id] = s.date
     }
@@ -155,6 +156,7 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
   const sessionsByAthlete: Record<string, SessionForInsights[]> = {}
   for (const s of latestPerAthlete ?? []) {
     if (!activeAthleteIds.has(s.athlete_id)) continue
+    if (!s.date) continue
     if (!sessionsByAthlete[s.athlete_id]) sessionsByAthlete[s.athlete_id] = []
     sessionsByAthlete[s.athlete_id].push({
       date: s.date,
