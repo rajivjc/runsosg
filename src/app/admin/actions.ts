@@ -3,6 +3,7 @@
 import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { parseValidDate } from '@/lib/utils/dates'
 
 export type InviteFormState = {
   error?: string
@@ -114,7 +115,9 @@ export async function createAthlete(
   const name = (formData.get('name') as string ?? '').trim()
   if (!name) return { error: 'Name is required' }
 
-  const date_of_birth = (formData.get('date_of_birth') as string ?? '').trim() || null
+  const dobRaw = (formData.get('date_of_birth') as string ?? '').trim()
+  const date_of_birth = dobRaw ? parseValidDate(dobRaw) : null
+  if (dobRaw && !date_of_birth) return { error: 'Date of birth must be a valid date (YYYY-MM-DD)' }
   const running_goal = (formData.get('running_goal') as string ?? '').trim() || null
   const communication_notes = (formData.get('communication_notes') as string ?? '').trim() || null
   const medical_notes = (formData.get('medical_notes') as string ?? '').trim() || null

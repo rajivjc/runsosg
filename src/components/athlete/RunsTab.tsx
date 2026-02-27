@@ -271,6 +271,8 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
               <div className="col-span-2">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Date</p>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  onKeyDown={(e) => e.preventDefault()}
                   className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none w-full" />
               </div>
               <div>
