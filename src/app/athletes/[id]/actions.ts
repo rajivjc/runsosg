@@ -95,7 +95,9 @@ export async function createManualSession(
 
   const title = (formData.get('title') as string ?? '').trim() || null
   const distanceKm = parseFloat(formData.get('distance_km') as string ?? '')
+  if (isNaN(distanceKm) || distanceKm <= 0) return { error: 'Distance is required' }
   const durationMinutes = parseInt(formData.get('duration_minutes') as string ?? '')
+  if (isNaN(durationMinutes) || durationMinutes <= 0) return { error: 'Duration is required' }
   const feel = parseInt(formData.get('feel') as string ?? '') || null
   const note = (formData.get('note') as string ?? '').trim() || null
   const avgHr = parseInt(formData.get('avg_heart_rate') as string ?? '')
@@ -107,8 +109,8 @@ export async function createManualSession(
       athlete_id: athleteId,
       coach_user_id: user.id,
       date,
-      distance_km: isNaN(distanceKm) ? null : distanceKm,
-      duration_seconds: isNaN(durationMinutes) ? null : durationMinutes * 60,
+      distance_km: distanceKm,
+      duration_seconds: durationMinutes * 60,
       feel: (feel !== null && feel >= 1 && feel <= 5) ? (feel as 1 | 2 | 3 | 4 | 5) : null,
       note,
       strava_title: title,
