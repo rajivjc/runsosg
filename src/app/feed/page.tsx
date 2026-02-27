@@ -8,7 +8,10 @@ import { getCoachFocusData, getCaregiverFocusData } from '@/lib/feed/today-focus
 import type { CoachFocusData, CaregiverFocusData } from '@/lib/feed/today-focus'
 import CheerBox from '@/components/feed/CheerBox'
 import CheerViewTracker from '@/components/feed/CheerViewTracker'
+import MilestoneDetector from '@/components/milestone/MilestoneDetector'
+import OnboardingCard from '@/components/feed/OnboardingCard'
 import { computeWeeklyRecap } from '@/lib/feed/weekly-recap'
+import { computeOnboardingState } from '@/lib/onboarding'
 
 const FEEL_EMOJI: Record<number, string> = {
   1: '😰', 2: '😐', 3: '🙂', 4: '😊', 5: '🔥',
@@ -108,6 +111,7 @@ export default async function FeedPage() {
     { data: caregiverData },
     { data: myBadges },
     { data: recentCheers },
+    { data: stravaConnection },
   ] = await Promise.all([
     athleteIds.length > 0
       ? adminClient.from('athletes').select('id, name').in('id', athleteIds)
@@ -138,6 +142,9 @@ export default async function FeedPage() {
           .order('created_at', { ascending: false })
           .limit(10)
       : Promise.resolve({ data: [] }),
+    user && !isReadOnly
+      ? adminClient.from('strava_connections').select('user_id').eq('user_id', user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
 
   const athleteMap = Object.fromEntries((athletes ?? []).map((a: any) => [a.id, a.name]))
@@ -171,6 +178,19 @@ export default async function FeedPage() {
       recentMilestoneDates.push({ achievedAt: anyM.achieved_at })
     }
   }
+
+  // Milestones from last 24h for celebration overlay
+  const oneDayAgo = new Date()
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+  const celebrationMilestones = (milestones ?? [])
+    .filter((m: any) => new Date(m.achieved_at) >= oneDayAgo)
+    .map((m: any) => ({
+      id: m.id,
+      label: m.label,
+      icon: m.milestone_definitions?.icon ?? '🏆',
+      athleteName: m.athletes?.name ?? 'An athlete',
+      achievedAt: m.achieved_at,
+    }))
 
   const kudosCountMap: Record<string, number> = {}
   for (const k of kudosCounts ?? []) {
@@ -266,14 +286,38 @@ export default async function FeedPage() {
   const coachFocus = await coachFocusPromise
   const caregiverFocus = await caregiverFocusPromise
 
+  // Onboarding state for new coaches
+  const onboardingState = !isReadOnly ? computeOnboardingState({
+    userName: (userRow as any)?.name ?? null,
+    totalSessionsCoached: myMonthSessionCount, // Proxy: any sessions this month
+    hasStravaConnection: !!stravaConnection,
+    athleteCount: (totalAthleteCount ?? 0),
+  }) : null
+  const showOnboarding = onboardingState?.isNewUser && myMonthSessionCount === 0
+
   const hour = now.getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const firstName = (userRow as any)?.name?.split(' ')[0] ?? (isReadOnly ? 'there' : 'Coach')
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
-      {/* Coach greeting card */}
-      {!isReadOnly && (
+      {/* Milestone celebration overlay */}
+      {celebrationMilestones.length > 0 && (
+        <MilestoneDetector recentMilestones={celebrationMilestones} />
+      )}
+
+      {/* Onboarding checklist for new coaches */}
+      {showOnboarding && onboardingState && (
+        <OnboardingCard
+          firstName={firstName}
+          steps={onboardingState.steps}
+          completedCount={onboardingState.completedCount}
+          totalCount={onboardingState.totalCount}
+        />
+      )}
+
+      {/* Coach greeting card — hidden during onboarding */}
+      {!isReadOnly && !showOnboarding && (
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200/60 rounded-2xl px-5 py-5 mb-5 shadow-sm">
           <p className="text-lg font-bold text-gray-900 mb-1">
             {greeting}, {firstName}
@@ -504,18 +548,23 @@ export default async function FeedPage() {
         <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
           <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">Today&apos;s focus</p>
           <div className="space-y-2">
-            {coachFocus.items.map((item, i) => (
-              <Link key={i} href={`/athletes/${item.athleteId}`}>
-                <div className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">
-                  <span className="text-base flex-shrink-0">{item.type === 'approaching_milestone' ? '⭐' : item.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                    <p className="text-xs text-gray-500">{item.subtitle}</p>
+            {coachFocus.items.map((item, i) => {
+              const bgClass = item.type === 'feel_declining' ? 'hover:bg-orange-50 bg-orange-50/40'
+                : item.type === 'personal_best' || item.type === 'best_week_ever' ? 'hover:bg-teal-50 bg-teal-50/40'
+                : 'hover:bg-gray-50'
+              return (
+                <Link key={i} href={`/athletes/${item.athleteId}`}>
+                  <div className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${bgClass}`}>
+                    <span className="text-base flex-shrink-0">{item.type === 'approaching_milestone' ? '⭐' : item.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                      <p className="text-xs text-gray-500">{item.subtitle}</p>
+                    </div>
+                    <span className="text-gray-300 flex-shrink-0 text-sm">&#x203A;</span>
                   </div>
-                  <span className="text-gray-300 flex-shrink-0 text-sm">&#x203A;</span>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              )
+            })}
           </div>
         </div>
       )}

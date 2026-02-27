@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import AdminInviteForm from '@/components/admin/AdminInviteForm'
 import UserRow from '@/components/admin/UserRow'
 import CancelInviteButton from '@/components/admin/CancelInviteButton'
@@ -72,6 +73,28 @@ export default async function AdminPage() {
   return (
     <main className="max-w-3xl mx-auto px-4 py-6 pb-28 space-y-10">
       <h1 className="text-2xl font-bold text-gray-900">Admin</h1>
+
+      {/* Quick links */}
+      <section>
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            href="/admin/milestones"
+            className="bg-white border border-gray-200 rounded-xl px-4 py-4 hover:border-teal-200 hover:bg-teal-50/30 transition-colors"
+          >
+            <span className="text-2xl">🏆</span>
+            <p className="text-sm font-semibold text-gray-900 mt-2">Milestones</p>
+            <p className="text-xs text-gray-500 mt-0.5">Create and manage milestone definitions</p>
+          </Link>
+          <Link
+            href="/admin/settings"
+            className="bg-white border border-gray-200 rounded-xl px-4 py-4 hover:border-teal-200 hover:bg-teal-50/30 transition-colors"
+          >
+            <span className="text-2xl">⚙️</span>
+            <p className="text-sm font-semibold text-gray-900 mt-2">Settings</p>
+            <p className="text-xs text-gray-500 mt-0.5">Club name, location, session schedule</p>
+          </Link>
+        </div>
+      </section>
 
       {/* Invite form */}
       <section>

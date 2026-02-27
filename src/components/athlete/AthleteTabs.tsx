@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Json } from '@/lib/supabase/types'
+import type { WeeklyVolume, FeelPoint, DistancePoint, MilestonePin } from '@/lib/analytics/session-trends'
 import dynamic from 'next/dynamic'
 import RunsTab from './RunsTab'
 import { createManualSession } from '@/app/athletes/[id]/actions'
@@ -73,6 +74,10 @@ type AthleteTabsProps = {
   notes: NoteData[]
   milestones: MilestoneData[]
   weeklyData: { label: string; km: number; weekStart: string }[]
+  weeklyVolume?: WeeklyVolume[]
+  feelTrend?: FeelPoint[]
+  distanceTimeline?: DistancePoint[]
+  milestonePins?: MilestonePin[]
   addCoachNote: (athleteId: string, content: string) => Promise<{ error?: string }>
   isReadOnly?: boolean
   currentUserId?: string
@@ -85,6 +90,10 @@ export default function AthleteTabs({
   notes,
   milestones,
   weeklyData,
+  weeklyVolume,
+  feelTrend,
+  distanceTimeline,
+  milestonePins,
   addCoachNote,
   isReadOnly = false,
   currentUserId,
@@ -143,6 +152,10 @@ export default function AthleteTabs({
           sessions={sessions}
           milestones={milestones}
           weeklyData={weeklyData}
+          weeklyVolume={weeklyVolume}
+          feelTrend={feelTrend}
+          distanceTimeline={distanceTimeline}
+          milestonePins={milestonePins}
           athleteId={athlete.id}
           isReadOnly={isReadOnly}
           onSessionUpdated={() => router.refresh()}

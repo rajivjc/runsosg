@@ -1,16 +1,27 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Plus, ChevronRight } from 'lucide-react'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import type { SessionData, MilestoneData } from './AthleteTabs'
+import type { WeeklyVolume, FeelPoint, DistancePoint, MilestonePin } from '@/lib/analytics/session-trends'
 import { updateManualSession, updateSessionFeel, deleteSession } from '@/app/athletes/[id]/actions'
 import StravaActivityLink from '@/components/feed/StravaActivityLink'
+
+const ProgressChart = dynamic(() => import('@/components/charts/ProgressChart'), {
+  loading: () => <div className="h-[200px] animate-pulse bg-gray-100 rounded-xl" />,
+  ssr: false,
+})
 
 type RunsTabProps = {
   sessions: SessionData[]
   milestones: MilestoneData[]
   weeklyData: { label: string; km: number; weekStart: string }[]
+  weeklyVolume?: WeeklyVolume[]
+  feelTrend?: FeelPoint[]
+  distanceTimeline?: DistancePoint[]
+  milestonePins?: MilestonePin[]
   athleteId: string
   isReadOnly?: boolean
   onSessionUpdated?: () => void
@@ -341,7 +352,7 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
   )
 }
 
-export default function RunsTab({ sessions, milestones, weeklyData, athleteId, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
+export default function RunsTab({ sessions, milestones, weeklyData, weeklyVolume, feelTrend, distanceTimeline, milestonePins, athleteId, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
   const milestonesBySession: Record<string, MilestoneData[]> = {}
   for (const m of milestones) {
     if (!m.session_id) continue
@@ -366,30 +377,14 @@ export default function RunsTab({ sessions, milestones, weeklyData, athleteId, i
         </button>
       )}
 
-      {/* Weekly distance bar chart — coaches only, min 2 weeks */}
-      {!isReadOnly && weeklyData.length >= 2 && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 mb-2">
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Weekly distance</p>
-          <div className="flex items-end gap-2" style={{ height: '80px' }}>
-            {(() => {
-              const maxKm = Math.max(...weeklyData.map(w => w.km), 0.1)
-              return weeklyData.map((w, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <span className="text-xs text-gray-500 font-medium leading-none">
-                    {w.km > 0 ? `${w.km}` : ''}
-                  </span>
-                  <div className="w-full flex items-end flex-1">
-                    <div
-                      className="w-full bg-teal-400 rounded-t-sm hover:bg-teal-500 transition-colors"
-                      style={{ height: `${Math.max((w.km / maxKm) * 48, 3)}px` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-gray-400 whitespace-nowrap leading-none">{w.label}</span>
-                </div>
-              ))
-            })()}
-          </div>
-        </div>
+      {/* Progress charts — visible to everyone, min 2 weeks of data */}
+      {weeklyVolume && feelTrend && distanceTimeline && weeklyVolume.some(w => w.totalKm > 0) && (
+        <ProgressChart
+          weeklyVolume={weeklyVolume}
+          feelTrend={feelTrend}
+          distanceTimeline={distanceTimeline}
+          milestonePins={milestonePins}
+        />
       )}
 
       {feedItems.length === 0 && (

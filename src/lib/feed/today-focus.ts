@@ -1,8 +1,14 @@
 import { adminClient } from '@/lib/supabase/admin'
 import { calculateWeeklyStreak } from '@/lib/streaks'
+import {
+  detectFeelDecline,
+  detectRecentPersonalBest,
+  detectBestWeekEver,
+  type SessionForInsights,
+} from '@/lib/analytics/coaching-insights'
 
 export interface FocusItem {
-  type: 'approaching_milestone' | 'not_seen_recently'
+  type: 'approaching_milestone' | 'not_seen_recently' | 'feel_declining' | 'personal_best' | 'best_week_ever'
   athleteId: string
   athleteName: string
   icon: string
@@ -64,8 +70,8 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
     adminClient.from('sessions').select('athlete_id').in('athlete_id', athleteIds).eq('status', 'completed'),
     adminClient.from('milestone_definitions').select('id, label, icon, condition').eq('active', true).eq('type', 'automatic'),
     adminClient.from('milestones').select('athlete_id, milestone_definition_id').in('athlete_id', athleteIds),
-    // Last session date per athlete — fetch recent sessions, we only need the latest per athlete
-    adminClient.from('sessions').select('athlete_id, date').in('athlete_id', athleteIds).eq('status', 'completed').order('date', { ascending: false }),
+    // Sessions per athlete — for last date, insights (feel trends, PBs)
+    adminClient.from('sessions').select('athlete_id, date, distance_km, feel').in('athlete_id', athleteIds).eq('status', 'completed').order('date', { ascending: false }),
   ])
 
   const nameMap = Object.fromEntries((athleteRows ?? []).map(a => [a.id, a.name]))
@@ -144,13 +150,76 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
     }
   }
 
-  // Sort: approaching milestones first (fewest left first), then not seen (most days first)
-  items.sort((a, b) => {
-    if (a.type !== b.type) return a.type === 'approaching_milestone' ? -1 : 1
-    return 0
-  })
+  // 9. Coaching insights — feel declines, personal bests, best weeks
+  //    Group sessions by athlete for insight detection
+  const sessionsByAthlete: Record<string, SessionForInsights[]> = {}
+  for (const s of latestPerAthlete ?? []) {
+    if (!activeAthleteIds.has(s.athlete_id)) continue
+    if (!sessionsByAthlete[s.athlete_id]) sessionsByAthlete[s.athlete_id] = []
+    sessionsByAthlete[s.athlete_id].push({
+      date: s.date,
+      distance_km: (s as any).distance_km ?? null,
+      feel: (s as any).feel ?? null,
+      athlete_id: s.athlete_id,
+    })
+  }
 
-  return { streak, items: items.slice(0, 3) }
+  for (const athleteId of Object.keys(sessionsByAthlete)) {
+    const athleteSessions = sessionsByAthlete[athleteId]
+    const name = nameMap[athleteId]
+    if (!name) continue
+
+    // Feel decline
+    const decline = detectFeelDecline(athleteSessions)
+    if (decline) {
+      items.push({
+        type: 'feel_declining',
+        athleteId,
+        athleteName: name,
+        icon: '📉',
+        title: `${name}'s mood is dipping`,
+        subtitle: `Avg feel ${decline.avgPrior} → ${decline.avgRecent}`,
+      })
+    }
+
+    // Personal best
+    const pb = detectRecentPersonalBest(athleteSessions)
+    if (pb) {
+      items.push({
+        type: 'personal_best',
+        athleteId,
+        athleteName: name,
+        icon: '🏅',
+        title: `${name} set a new PB!`,
+        subtitle: `${pb.distanceKm} km${pb.previousBestKm ? ` (was ${pb.previousBestKm} km)` : ''}`,
+      })
+    }
+
+    // Best week ever
+    const bestWeek = detectBestWeekEver(athleteSessions)
+    if (bestWeek) {
+      items.push({
+        type: 'best_week_ever',
+        athleteId,
+        athleteName: name,
+        icon: '🌟',
+        title: `${name}'s best week ever!`,
+        subtitle: `${bestWeek.thisWeekKm} km (previous best: ${bestWeek.previousBestWeekKm} km)`,
+      })
+    }
+  }
+
+  // Sort by priority: warnings first, then milestones, then celebrations, then info
+  const priorityOrder: Record<string, number> = {
+    feel_declining: 0,
+    approaching_milestone: 1,
+    personal_best: 2,
+    best_week_ever: 3,
+    not_seen_recently: 4,
+  }
+  items.sort((a, b) => (priorityOrder[a.type] ?? 5) - (priorityOrder[b.type] ?? 5))
+
+  return { streak, items: items.slice(0, 5) }
 }
 
 /**

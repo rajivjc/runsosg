@@ -8,6 +8,8 @@ import StickyHeader from '@/components/athlete/StickyHeader'
 import { formatDate } from '@/lib/utils/dates'
 import { calculateGoalProgress } from '@/lib/goals'
 import type { GoalType } from '@/lib/goals'
+import { computeWeeklyVolume, computeFeelTrend, computeDistanceTimeline } from '@/lib/analytics/session-trends'
+import type { MilestonePin } from '@/lib/analytics/session-trends'
 import CheerViewTracker from '@/components/feed/CheerViewTracker'
 import { addCoachNote } from './actions'
 
@@ -102,33 +104,29 @@ export default async function AthleteHubPage({ params }: PageProps) {
     icon: (m.milestone_definitions as any)?.icon ?? undefined,
   }))
 
-  // Weekly distance chart data — last 8 weeks
-  const eightWeeksAgo = new Date()
-  eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56)
-  const eightWeeksAgoStr = eightWeeksAgo.toISOString().split('T')[0]
+  // Chart data — computed from already-fetched sessions (no new queries)
+  const chartSessions = (sessions ?? []).map((s: any) => ({
+    date: s.date as string,
+    distance_km: s.distance_km as number | null,
+    duration_seconds: s.duration_seconds as number | null,
+    feel: s.feel as number | null,
+  }))
 
-  function getISOWeekLabel(dateStr: string): string {
-    const d = new Date(dateStr)
-    const day = d.getDay()
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-    const monday = new Date(d.setDate(diff))
-    return monday.toISOString().split('T')[0]
-  }
+  const weeklyVolume = computeWeeklyVolume(chartSessions, 12)
+  const feelTrend = computeFeelTrend(chartSessions)
+  const distanceTimeline = computeDistanceTimeline(chartSessions)
+  const milestonePins: MilestonePin[] = flatMilestones.map(m => ({
+    date: m.achieved_at.split('T')[0],
+    label: m.label,
+    icon: m.icon ?? '🏆',
+  }))
 
-  const weeklyMap: Record<string, number> = {}
-  for (const s of (sessions ?? []).filter((s: any) => s.date >= eightWeeksAgoStr)) {
-    const weekKey = getISOWeekLabel(s.date)
-    weeklyMap[weekKey] = (weeklyMap[weekKey] ?? 0) + (s.distance_km ?? 0)
-  }
-
-  const weeklyData = Object.entries(weeklyMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([week]) => {
-      const d = new Date(week)
-      const label = d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })
-      const km = Math.round(weeklyMap[week] * 10) / 10
-      return { label, km, weekStart: week }
-    })
+  // Backward-compatible weeklyData for RunsTab (still used for the legacy bar chart)
+  const weeklyData = weeklyVolume.map(w => ({
+    label: w.weekLabel,
+    km: w.totalKm,
+    weekStart: w.weekStart,
+  }))
 
   if (!athlete) {
     notFound()
@@ -253,8 +251,14 @@ export default async function AthleteHubPage({ params }: PageProps) {
         notes={flatNotes}
         milestones={flatMilestones}
         weeklyData={weeklyData}
+        weeklyVolume={weeklyVolume}
+        feelTrend={feelTrend}
+        distanceTimeline={distanceTimeline}
+        milestonePins={milestonePins}
         addCoachNote={addCoachNote}
-        isReadOnly={isReadOnly}        currentUserId={user?.id}      />
+        isReadOnly={isReadOnly}
+        currentUserId={user?.id}
+      />
     </main>
   )
 }
