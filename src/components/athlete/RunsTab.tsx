@@ -363,8 +363,9 @@ export default function RunsTab({ sessions, milestones, weeklyData, weeklyVolume
   }
 
   const feedItems: FeedItem[] = sessions
+    .filter((s) => s.date != null && s.date !== '')
     .map((s) => ({ type: 'session' as const, sortKey: s.date, data: s }))
-    .sort((a, b) => b.sortKey.localeCompare(a.sortKey))
+    .sort((a, b) => (b.sortKey ?? '').localeCompare(a.sortKey ?? ''))
 
   return (
     <div className="space-y-3">

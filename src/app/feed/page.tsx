@@ -96,7 +96,7 @@ export default async function FeedPage() {
 
   // Kick off focus data (runs concurrently with Phase 2+3)
   if (user && !isReadOnly) {
-    coachFocusPromise = getCoachFocusData(user.id)
+    coachFocusPromise = getCoachFocusData(user.id).catch(() => null)
   }
 
   // Phase 2: Fetch athlete/coach names, kudos, and role-specific data in parallel
@@ -228,7 +228,7 @@ export default async function FeedPage() {
   // Caregiver card data
   const caregiverAthlete = caregiverData ?? null
   if (caregiverAthlete) {
-    caregiverFocusPromise = getCaregiverFocusData(caregiverAthlete.id)
+    caregiverFocusPromise = getCaregiverFocusData(caregiverAthlete.id).catch(() => null)
   }
   let caregiverRecentSessions: any[] = []
   let caregiverMilestones: any[] = []

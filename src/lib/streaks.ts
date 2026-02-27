@@ -32,9 +32,10 @@ export function calculateWeeklyStreak(sessionDates: string[]): {
   current: number
   activeThisWeek: boolean
 } {
-  if (sessionDates.length === 0) return { current: 0, activeThisWeek: false }
+  const validDates = sessionDates.filter(d => d != null && d !== '')
+  if (validDates.length === 0) return { current: 0, activeThisWeek: false }
 
-  const activeWeeks = new Set(sessionDates.map(getMondayUTC))
+  const activeWeeks = new Set(validDates.map(getMondayUTC))
   const currentMonday = getMondayUTC(getTodaySGT())
   const activeThisWeek = activeWeeks.has(currentMonday)
 
