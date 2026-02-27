@@ -55,6 +55,7 @@ export function computeWeeklyVolume(
   sessions: SessionForTrends[],
   weekCount = 12
 ): WeeklyVolume[] {
+  const valid = sessions.filter(s => s.date && !isNaN(new Date(s.date).getTime()))
   const now = new Date()
   const currentMonday = getMonday(toISODate(now))
 
@@ -73,7 +74,7 @@ export function computeWeeklyVolume(
 
   const cutoff = weeks[0].weekStart
 
-  for (const s of sessions) {
+  for (const s of valid) {
     if (s.date < cutoff) continue
     const monday = getMonday(s.date)
     const weekKey = toISODate(monday)
@@ -102,7 +103,7 @@ export interface FeelPoint {
 
 export function computeFeelTrend(sessions: SessionForTrends[]): FeelPoint[] {
   return sessions
-    .filter(s => s.feel != null)
+    .filter(s => s.date && !isNaN(new Date(s.date).getTime()) && s.feel != null)
     .map(s => ({
       date: s.date,
       dateLabel: new Date(s.date + 'T12:00:00+08:00').toLocaleDateString('en-SG', {
@@ -128,7 +129,7 @@ export function computeDistanceTimeline(
   sessions: SessionForTrends[]
 ): DistancePoint[] {
   const sorted = [...sessions]
-    .filter(s => s.distance_km != null && s.distance_km > 0)
+    .filter(s => s.date && !isNaN(new Date(s.date).getTime()) && s.distance_km != null && s.distance_km > 0)
     .sort((a, b) => a.date.localeCompare(b.date))
 
   let cumulative = 0
