@@ -101,6 +101,8 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                 name="date"
                 required
                 defaultValue={today}
+                max={today}
+                onKeyDown={(e) => e.preventDefault()}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
@@ -116,6 +118,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                   name="distance_km"
                   min="0"
                   step="0.01"
+                  required
                   placeholder="e.g. 3.5"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
@@ -128,6 +131,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                   type="number"
                   name="duration_minutes"
                   min="0"
+                  required
                   placeholder="e.g. 30"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />

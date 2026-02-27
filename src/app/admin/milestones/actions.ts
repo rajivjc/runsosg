@@ -38,10 +38,10 @@ export async function createMilestoneDefinition(
   let condition = null
   if (type === 'automatic') {
     if (!metric || !thresholdStr) return { error: 'Automatic milestones require a metric and threshold.' }
-    const threshold = parseInt(thresholdStr, 10)
+    const threshold = parseFloat(thresholdStr)
     if (isNaN(threshold) || threshold <= 0) return { error: 'Threshold must be a positive number.' }
     if (!['session_count', 'distance_km', 'longest_run'].includes(metric)) return { error: 'Invalid metric.' }
-    condition = { metric, threshold }
+    condition = { metric, threshold: Math.round(threshold * 100) / 100 }
   }
 
   // Get next display_order
@@ -90,10 +90,17 @@ export async function toggleMilestoneDefinitionActive(
 
 export async function updateMilestoneDefinition(
   definitionId: string,
-  data: { label?: string; icon?: string; display_order?: number }
+  data: { label?: string; icon?: string; display_order?: number; condition?: { metric: string; threshold: number } }
 ): Promise<{ error?: string }> {
   const auth = await verifyAdmin()
   if ('error' in auth) return { error: auth.error }
+
+  if (data.condition) {
+    const { metric, threshold } = data.condition
+    if (!['session_count', 'distance_km', 'longest_run'].includes(metric)) return { error: 'Invalid metric.' }
+    if (isNaN(threshold) || threshold <= 0) return { error: 'Threshold must be a positive number.' }
+    data.condition = { metric, threshold: Math.round(threshold * 100) / 100 }
+  }
 
   const { error } = await adminClient
     .from('milestone_definitions')

@@ -105,17 +105,22 @@ export default async function AthleteHubPage({ params }: PageProps) {
   }))
 
   // Chart data — computed from already-fetched sessions (no new queries)
-  const chartSessions = (sessions ?? []).map((s: any) => ({
-    date: s.date as string,
-    distance_km: s.distance_km as number | null,
-    duration_seconds: s.duration_seconds as number | null,
-    feel: s.feel as number | null,
-  }))
+  // Filter out sessions with missing dates to avoid Invalid Date errors
+  const chartSessions = (sessions ?? [])
+    .filter((s: any) => s.date != null && s.date !== '')
+    .map((s: any) => ({
+      date: s.date as string,
+      distance_km: s.distance_km as number | null,
+      duration_seconds: s.duration_seconds as number | null,
+      feel: s.feel as number | null,
+    }))
 
   const weeklyVolume = computeWeeklyVolume(chartSessions, 12)
   const feelTrend = computeFeelTrend(chartSessions)
   const distanceTimeline = computeDistanceTimeline(chartSessions)
-  const milestonePins: MilestonePin[] = flatMilestones.map(m => ({
+  const milestonePins: MilestonePin[] = flatMilestones
+    .filter(m => m.achieved_at != null)
+    .map(m => ({
     date: m.achieved_at.split('T')[0],
     label: m.label,
     icon: m.icon ?? '🏆',

@@ -38,7 +38,9 @@ function groupByDate(sessions: any[]) {
   }
 
   for (const s of sessions) {
+    if (!s.date) continue
     const d = new Date(s.date)
+    if (isNaN(d.getTime())) continue
     d.setHours(0, 0, 0, 0)
     if (d.getTime() === today.getTime()) groups['Today'].push(s)
     else if (d.getTime() === yesterday.getTime()) groups['Yesterday'].push(s)
@@ -174,7 +176,7 @@ export default async function FeedPage() {
         label: anyM.label,
       })
     }
-    if (new Date(anyM.achieved_at) >= thirtyDaysAgo) {
+    if (anyM.achieved_at && new Date(anyM.achieved_at) >= thirtyDaysAgo) {
       recentMilestoneDates.push({ achievedAt: anyM.achieved_at })
     }
   }
@@ -183,7 +185,7 @@ export default async function FeedPage() {
   const oneDayAgo = new Date()
   oneDayAgo.setDate(oneDayAgo.getDate() - 1)
   const celebrationMilestones = (milestones ?? [])
-    .filter((m: any) => new Date(m.achieved_at) >= oneDayAgo)
+    .filter((m: any) => m.achieved_at && new Date(m.achieved_at) >= oneDayAgo)
     .map((m: any) => ({
       id: m.id,
       label: m.label,
@@ -199,7 +201,9 @@ export default async function FeedPage() {
   const myKudosSet = new Set((myKudos ?? []).map((k: any) => k.session_id))
 
   const thisWeek = feed.filter(s => {
+    if (!s.date) return false
     const d = new Date(s.date)
+    if (isNaN(d.getTime())) return false
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)
     return d >= weekAgo
@@ -278,7 +282,7 @@ export default async function FeedPage() {
   // Recent badge (earned in last 7 days)
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const recentBadge = (myBadges ?? []).find((b: any) => new Date(b.earned_at) >= sevenDaysAgo)
+  const recentBadge = (myBadges ?? []).find((b: any) => b.earned_at && new Date(b.earned_at) >= sevenDaysAgo)
   const recentBadgeDef = recentBadge ? BADGE_DEFINITIONS.find(d => d.key === recentBadge.badge_key) : null
   const badgeCount = (myBadges ?? []).length
 

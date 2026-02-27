@@ -70,6 +70,8 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
           type="date"
           name="date_of_birth"
           defaultValue={athlete.date_of_birth ?? ''}
+          max={new Date().toISOString().split('T')[0]}
+          onKeyDown={(e) => e.preventDefault()}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
         />
       </div>

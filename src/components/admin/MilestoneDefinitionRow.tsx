@@ -33,6 +33,8 @@ export default function MilestoneDefinitionRow({
   const [editing, setEditing] = useState(false)
   const [editLabel, setEditLabel] = useState(label)
   const [editIcon, setEditIcon] = useState(icon ?? '')
+  const [editMetric, setEditMetric] = useState(condition?.metric ?? '')
+  const [editThreshold, setEditThreshold] = useState(condition?.threshold?.toString() ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -49,10 +51,17 @@ export default function MilestoneDefinitionRow({
     if (!editLabel.trim()) { setError('Label is required.'); return }
     setSaving(true)
     setError(null)
-    const { error } = await updateMilestoneDefinition(id, {
+    const updates: { label: string; icon?: string; condition?: { metric: string; threshold: number } } = {
       label: editLabel.trim(),
       icon: editIcon.trim() || undefined,
-    })
+    }
+    if (type === 'automatic' && editMetric && editThreshold) {
+      const threshold = parseFloat(editThreshold)
+      if (isNaN(threshold) || threshold <= 0) { setSaving(false); setError('Threshold must be a positive number.'); return }
+      if (!['session_count', 'distance_km', 'longest_run'].includes(editMetric)) { setSaving(false); setError('Invalid metric.'); return }
+      updates.condition = { metric: editMetric, threshold: Math.round(threshold * 100) / 100 }
+    }
+    const { error } = await updateMilestoneDefinition(id, updates)
     setSaving(false)
     if (error) { setError(error); return }
     setEditing(false)
@@ -119,6 +128,34 @@ export default function MilestoneDefinitionRow({
               />
             </div>
           </div>
+          {type === 'automatic' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Metric</label>
+                <select
+                  value={editMetric}
+                  onChange={(e) => setEditMetric(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+                >
+                  <option value="session_count">Session count</option>
+                  <option value="distance_km">Single-run distance (km)</option>
+                  <option value="longest_run">Longest run (km)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Threshold</label>
+                <input
+                  type="number"
+                  value={editThreshold}
+                  onChange={(e) => setEditThreshold(e.target.value)}
+                  min="0.01"
+                  step={editMetric === 'session_count' ? '1' : '0.01'}
+                  placeholder="e.g. 10"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+                />
+              </div>
+            </div>
+          )}
           {error && <p className="text-xs text-red-600">{error}</p>}
           <div className="flex gap-2">
             <button
@@ -129,7 +166,7 @@ export default function MilestoneDefinitionRow({
               {saving ? 'Saving...' : 'Save'}
             </button>
             <button
-              onClick={() => { setEditing(false); setEditLabel(label); setEditIcon(icon ?? ''); setError(null) }}
+              onClick={() => { setEditing(false); setEditLabel(label); setEditIcon(icon ?? ''); setEditMetric(condition?.metric ?? ''); setEditThreshold(condition?.threshold?.toString() ?? ''); setError(null) }}
               className="text-xs text-gray-500 hover:text-gray-700 px-3 py-2 transition-colors"
             >
               Cancel

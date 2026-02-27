@@ -5,6 +5,7 @@ import { adminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { checkAndAwardMilestones } from '@/lib/milestones'
 import { syncBadges } from '@/lib/badges'
+import { parseValidDate } from '@/lib/utils/dates'
 
 export async function addCoachNote(athleteId: string, content: string): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -51,7 +52,9 @@ export async function updateAthlete(
   const name = (formData.get('name') as string ?? '').trim()
   if (!name) return { error: 'Name is required' }
 
-  const date_of_birth = (formData.get('date_of_birth') as string ?? '').trim() || null
+  const dobRaw = (formData.get('date_of_birth') as string ?? '').trim()
+  const date_of_birth = dobRaw ? parseValidDate(dobRaw) : null
+  if (dobRaw && !date_of_birth) return { error: 'Date of birth must be a valid date (YYYY-MM-DD)' }
   const running_goal = (formData.get('running_goal') as string ?? '').trim() || null
   const goal_type = (formData.get('goal_type') as string ?? '').trim() || null
   const goal_target_raw = (formData.get('goal_target') as string ?? '').trim()
@@ -90,12 +93,14 @@ export async function createManualSession(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
-  const date = (formData.get('date') as string ?? '').trim()
-  if (!date) return { error: 'Date is required' }
+  const date = parseValidDate(formData.get('date') as string)
+  if (!date) return { error: 'A valid date is required (YYYY-MM-DD)' }
 
   const title = (formData.get('title') as string ?? '').trim() || null
   const distanceKm = parseFloat(formData.get('distance_km') as string ?? '')
+  if (isNaN(distanceKm) || distanceKm <= 0) return { error: 'Distance is required' }
   const durationMinutes = parseInt(formData.get('duration_minutes') as string ?? '')
+  if (isNaN(durationMinutes) || durationMinutes <= 0) return { error: 'Duration is required' }
   const feel = parseInt(formData.get('feel') as string ?? '') || null
   const note = (formData.get('note') as string ?? '').trim() || null
   const avgHr = parseInt(formData.get('avg_heart_rate') as string ?? '')
@@ -107,8 +112,8 @@ export async function createManualSession(
       athlete_id: athleteId,
       coach_user_id: user.id,
       date,
-      distance_km: isNaN(distanceKm) ? null : distanceKm,
-      duration_seconds: isNaN(durationMinutes) ? null : durationMinutes * 60,
+      distance_km: distanceKm,
+      duration_seconds: durationMinutes * 60,
       feel: (feel !== null && feel >= 1 && feel <= 5) ? (feel as 1 | 2 | 3 | 4 | 5) : null,
       note,
       strava_title: title,
@@ -333,10 +338,13 @@ export async function updateManualSession(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
+  const validDate = parseValidDate(data.date)
+  if (!validDate) return { error: 'A valid date is required (YYYY-MM-DD)' }
+
   const { error } = await adminClient
     .from('sessions')
     .update({
-      date: data.date,
+      date: validDate,
       distance_km: data.distance_km,
       duration_seconds: data.duration_seconds,
       feel: data.feel as 1 | 2 | 3 | 4 | 5 | null,

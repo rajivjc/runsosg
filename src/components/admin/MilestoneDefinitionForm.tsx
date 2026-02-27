@@ -20,6 +20,7 @@ function SubmitButton() {
 export default function MilestoneDefinitionForm() {
   const [state, formAction] = useFormState(createMilestoneDefinition, {})
   const [type, setType] = useState<'automatic' | 'manual'>('automatic')
+  const [metric, setMetric] = useState('session_count')
 
   return (
     <form action={formAction} className="space-y-4">
@@ -77,6 +78,8 @@ export default function MilestoneDefinitionForm() {
             <select
               id="metric"
               name="metric"
+              value={metric}
+              onChange={(e) => setMetric(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
             >
               <option value="session_count">Session count</option>
@@ -92,9 +95,9 @@ export default function MilestoneDefinitionForm() {
               id="threshold"
               name="threshold"
               type="number"
-              min="1"
-              step="1"
-              placeholder="e.g. 10"
+              min="0.01"
+              step={metric === 'session_count' ? '1' : '0.01'}
+              placeholder={metric === 'session_count' ? 'e.g. 10' : 'e.g. 21.1'}
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
             />
           </div>
