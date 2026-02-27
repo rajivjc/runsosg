@@ -148,7 +148,7 @@ export default function ProgressChart({
             Weekly distance
           </p>
           <ResponsiveContainer width="100%" height={height}>
-            <BarChart data={weeklyVolume} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+            <BarChart data={weeklyVolume} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
               <XAxis
                 dataKey="weekLabel"
@@ -178,7 +178,7 @@ export default function ProgressChart({
             How runs felt
           </p>
           <ResponsiveContainer width="100%" height={height}>
-            <LineChart data={feelTrend} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+            <LineChart data={feelTrend} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
               <XAxis
                 dataKey="dateLabel"
@@ -217,7 +217,7 @@ export default function ProgressChart({
             Distance progress
           </p>
           <ResponsiveContainer width="100%" height={height}>
-            <AreaChart data={distanceTimeline} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+            <AreaChart data={distanceTimeline} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="tealGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.2} />
