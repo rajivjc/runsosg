@@ -114,6 +114,7 @@ export default async function FeedPage() {
     { data: myBadges },
     { data: recentCheers },
     { data: stravaConnection },
+    { count: myTotalSessionCount },
   ] = await Promise.all([
     athleteIds.length > 0
       ? adminClient.from('athletes').select('id, name').in('id', athleteIds)
@@ -147,6 +148,9 @@ export default async function FeedPage() {
     user && !isReadOnly
       ? adminClient.from('strava_connections').select('user_id').eq('user_id', user.id).maybeSingle()
       : Promise.resolve({ data: null }),
+    user && !isReadOnly
+      ? adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('coach_user_id', user.id).eq('status', 'completed')
+      : Promise.resolve({ count: 0 }),
   ])
 
   const athleteMap = Object.fromEntries((athletes ?? []).map((a: any) => [a.id, a.name]))
@@ -293,11 +297,11 @@ export default async function FeedPage() {
   // Onboarding state for new coaches
   const onboardingState = !isReadOnly ? computeOnboardingState({
     userName: (userRow as any)?.name ?? null,
-    totalSessionsCoached: myMonthSessionCount, // Proxy: any sessions this month
+    totalSessionsCoached: myTotalSessionCount ?? 0,
     hasStravaConnection: !!stravaConnection,
     athleteCount: (totalAthleteCount ?? 0),
   }) : null
-  const showOnboarding = onboardingState?.isNewUser && myMonthSessionCount === 0
+  const showOnboarding = onboardingState?.isNewUser === true
 
   const hour = now.getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
