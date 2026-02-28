@@ -27,7 +27,7 @@ export default async function AthletesPage({
         .from('strava_connections')
         .select('user_id')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
     : { data: null }
 
   const { data: userRow } = user

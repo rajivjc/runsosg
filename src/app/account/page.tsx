@@ -35,7 +35,7 @@ export default async function AccountPage({
     .from('strava_connections')
     .select('strava_athlete_id, token_expires_at, last_sync_at, last_sync_status, last_error, created_at')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]

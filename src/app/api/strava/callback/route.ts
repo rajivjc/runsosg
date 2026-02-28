@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { exchangeCodeForTokens, verifyStravaState } from '@/lib/strava/client'
@@ -58,6 +59,11 @@ export async function GET(request: NextRequest): Promise<Response> {
     },
     { onConflict: 'user_id' }
   )
+
+  // Invalidate cached pages that display Strava connection status
+  revalidatePath('/account')
+  revalidatePath('/athletes')
+  revalidatePath('/feed')
 
   return NextResponse.redirect(
     new URL('/strava/connected', request.nextUrl.origin)

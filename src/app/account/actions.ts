@@ -21,6 +21,9 @@ export async function disconnectStrava() {
     .delete()
     .eq('user_id', user.id)
 
+  revalidatePath('/account')
+  revalidatePath('/athletes')
+  revalidatePath('/feed')
   redirect('/account')
 }
 

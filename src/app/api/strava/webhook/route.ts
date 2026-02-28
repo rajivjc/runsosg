@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { adminClient } from '@/lib/supabase/admin'
 import { processStravaActivity } from '@/lib/strava/sync'
 
@@ -70,6 +71,13 @@ export async function POST(request: NextRequest): Promise<Response> {
       aspect_type as 'create' | 'update' | 'delete',
       body as object
     )
+
+    // Invalidate cached pages so new sessions, notifications, and
+    // badge counts appear without a manual refresh
+    revalidatePath('/feed')
+    revalidatePath('/notifications')
+    revalidatePath('/athletes')
+    revalidatePath('/account')
   } catch (err: unknown) {
     console.error('Sync error:', err instanceof Error ? err.message : err)
   }
