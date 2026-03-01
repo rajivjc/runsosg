@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { checkAndAwardMilestones } from '@/lib/milestones'
 import { syncBadges } from '@/lib/badges'
 import { parseValidDate } from '@/lib/utils/dates'
+import { getAthletePhotosPaginated, withSignedUrls } from '@/lib/media'
 
 export async function addCoachNote(athleteId: string, content: string): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -480,4 +481,33 @@ export async function deleteSession(
   revalidatePath(`/athletes/${athleteId}`)
   revalidatePath('/feed')
   return {}
+}
+
+/**
+ * Load more photos for infinite scroll in the Photos tab.
+ */
+export async function loadMorePhotos(
+  athleteId: string,
+  cursor: string
+): Promise<{
+  photos: { id: string; session_id: string | null; signed_url: string; caption: string | null; created_at: string }[]
+  nextCursor: string | null
+}> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { photos: [], nextCursor: null }
+
+  const { photos: rawPhotos, nextCursor } = await getAthletePhotosPaginated(athleteId, 24, cursor)
+  const enriched = await withSignedUrls(rawPhotos)
+
+  return {
+    photos: enriched.map(p => ({
+      id: p.id,
+      session_id: p.session_id,
+      signed_url: p.signed_url,
+      caption: p.caption,
+      created_at: p.created_at,
+    })),
+    nextCursor,
+  }
 }

@@ -8,6 +8,7 @@ import type { SessionData, MilestoneData, PhotoData } from './AthleteTabs'
 import type { WeeklyVolume, FeelPoint, DistancePoint, MilestonePin } from '@/lib/analytics/session-trends'
 import { updateManualSession, updateSessionFeel, deleteSession } from '@/app/athletes/[id]/actions'
 import StravaActivityLink from '@/components/feed/StravaActivityLink'
+import PhotoLightbox from './PhotoLightbox'
 
 const ProgressChart = dynamic(() => import('@/components/charts/ProgressChart'), {
   loading: () => <div className="h-[200px] animate-pulse bg-gray-100 rounded-xl" />,
@@ -24,6 +25,7 @@ type RunsTabProps = {
   distanceTimeline?: DistancePoint[]
   milestonePins?: MilestonePin[]
   athleteId: string
+  athleteName: string
   isReadOnly?: boolean
   onSessionUpdated?: () => void
   onLogRun?: () => void
@@ -61,6 +63,7 @@ function StravaLogo() {
 type SessionCardProps = {
   session: SessionData
   athleteId: string
+  athleteName: string
   isReadOnly: boolean
   onUpdated?: () => void
   badges?: MilestoneData[]
@@ -99,7 +102,7 @@ function formatPace(distanceKm: number, durationSeconds: number): string {
   return `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} /km`
 }
 
-function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = [], photos = [] }: SessionCardProps) {
+function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated, badges = [], photos = [] }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [feel, setFeel] = useState<Feel | null>(s.feel as Feel | null)
   const [note, setNote] = useState(s.note ?? '')
@@ -111,6 +114,7 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
   const [deleted, setDeleted] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   async function handleSave() {
     setSaving(true)
@@ -220,19 +224,32 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
             <p className="text-sm text-gray-600 mt-2 line-clamp-2 italic">&ldquo;{note}&rdquo;</p>
           )}
 
-          {/* Session photos */}
+          {/* Session photos — clickable to open lightbox */}
           {photos.length > 0 && (
-            <div className="flex gap-1.5 mt-2">
-              {photos.map((photo) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+            <div className="flex gap-1.5 mt-2" onClick={e => e.stopPropagation()}>
+              {photos.map((photo, idx) => (
+                <button
                   key={photo.id}
-                  src={photo.signed_url}
-                  alt={photo.caption ?? 'Session photo'}
-                  loading="lazy"
-                  className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                />
+                  onClick={() => setLightboxIndex(idx)}
+                  className="relative group focus:ring-2 focus:ring-teal-500 focus:outline-none rounded-lg overflow-hidden flex-shrink-0"
+                  aria-label={`View photo ${idx + 1}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.signed_url}
+                    alt={photo.caption ?? 'Session photo'}
+                    loading="lazy"
+                    className="w-14 h-14 rounded-lg object-cover group-hover:scale-105 transition-transform"
+                  />
+                  {/* Hover hint */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg" />
+                </button>
               ))}
+              {photos.length > 0 && (
+                <span className="flex items-center text-[10px] text-gray-400 pl-1">
+                  Tap to view
+                </span>
+              )}
             </div>
           )}
 
@@ -368,11 +385,21 @@ function SessionCard({ session: s, athleteId, isReadOnly, onUpdated, badges = []
           </div>
         </div>
       )}
+
+      {/* Photo lightbox */}
+      {lightboxIndex !== null && photos.length > 0 && (
+        <PhotoLightbox
+          photos={photos}
+          initialIndex={lightboxIndex}
+          athleteName={athleteName}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
     </div>
   )
 }
 
-export default function RunsTab({ sessions, milestones, photosBySession, weeklyData, weeklyVolume, feelTrend, distanceTimeline, milestonePins, athleteId, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
+export default function RunsTab({ sessions, milestones, photosBySession, weeklyData, weeklyVolume, feelTrend, distanceTimeline, milestonePins, athleteId, athleteName, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
   const milestonesBySession: Record<string, MilestoneData[]> = {}
   for (const m of milestones) {
     if (!m.session_id) continue
@@ -420,6 +447,7 @@ export default function RunsTab({ sessions, milestones, photosBySession, weeklyD
           key={`session-${item.data.id}`}
           session={item.data}
           athleteId={athleteId}
+          athleteName={athleteName}
           isReadOnly={isReadOnly}
           onUpdated={onSessionUpdated}
           badges={milestonesBySession[item.data.id] ?? []}

@@ -91,6 +91,48 @@ export async function getAthletePhotos(athleteId: string, limit = 50): Promise<M
 }
 
 /**
+ * Get paginated photos for an athlete (cursor-based, for infinite scroll).
+ * Returns photos older than the cursor (created_at).
+ */
+export async function getAthletePhotosPaginated(
+  athleteId: string,
+  pageSize = 24,
+  cursor?: string
+): Promise<{ photos: MediaRow[]; nextCursor: string | null }> {
+  let query = adminClient
+    .from('media')
+    .select('id, athlete_id, session_id, url, caption, created_at, source, storage_path')
+    .eq('athlete_id', athleteId)
+    .order('created_at', { ascending: false })
+    .limit(pageSize + 1) // fetch one extra to know if there are more
+
+  if (cursor) {
+    query = query.lt('created_at', cursor)
+  }
+
+  const { data } = await query
+  const rows = (data ?? []) as MediaRow[]
+
+  const hasMore = rows.length > pageSize
+  const photos = hasMore ? rows.slice(0, pageSize) : rows
+  const nextCursor = hasMore ? photos[photos.length - 1].created_at : null
+
+  return { photos, nextCursor }
+}
+
+/**
+ * Get total photo count for an athlete (for display purposes).
+ */
+export async function getAthletePhotoCount(athleteId: string): Promise<number> {
+  const { count } = await adminClient
+    .from('media')
+    .select('id', { count: 'exact', head: true })
+    .eq('athlete_id', athleteId)
+
+  return count ?? 0
+}
+
+/**
  * Get the best hero photo for an athlete (most recent session with feel >= 4, or just most recent).
  */
 export async function getHeroPhoto(athleteId: string): Promise<MediaRow | null> {

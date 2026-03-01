@@ -6,7 +6,7 @@ import type { Json } from '@/lib/supabase/types'
 import type { WeeklyVolume, FeelPoint, DistancePoint, MilestonePin } from '@/lib/analytics/session-trends'
 import dynamic from 'next/dynamic'
 import RunsTab from './RunsTab'
-import { createManualSession } from '@/app/athletes/[id]/actions'
+import { createManualSession, loadMorePhotos } from '@/app/athletes/[id]/actions'
 
 const CuesTab = dynamic(() => import('./CuesTab'))
 const NotesTab = dynamic(() => import('./NotesTab'))
@@ -84,6 +84,8 @@ type AthleteTabsProps = {
   milestones: MilestoneData[]
   photos: PhotoData[]
   photosBySession: Record<string, PhotoData[]>
+  photoCursor: string | null
+  photoCount: number
   weeklyData: { label: string; km: number; weekStart: string }[]
   weeklyVolume?: WeeklyVolume[]
   feelTrend?: FeelPoint[]
@@ -102,6 +104,8 @@ export default function AthleteTabs({
   milestones,
   photos,
   photosBySession,
+  photoCursor,
+  photoCount,
   weeklyData,
   weeklyVolume,
   feelTrend,
@@ -122,7 +126,7 @@ export default function AthleteTabs({
     { key: 'feed', label: 'Runs' },
     ...(!isReadOnly ? [{ key: 'cues' as Tab, label: 'Cues' }] : []),
     ...(!isReadOnly ? [{ key: 'notes' as Tab, label: 'Notes' }] : []),
-    ...(photos.length > 0 ? [{ key: 'photos' as Tab, label: `Photos (${photos.length})` }] : []),
+    ...(photoCount > 0 ? [{ key: 'photos' as Tab, label: `Photos (${photoCount})` }] : []),
   ]
 
   async function handleSaveNote() {
@@ -172,6 +176,7 @@ export default function AthleteTabs({
           distanceTimeline={distanceTimeline}
           milestonePins={milestonePins}
           athleteId={athlete.id}
+          athleteName={athlete.name}
           isReadOnly={isReadOnly}
           onSessionUpdated={() => router.refresh()}
           onLogRun={() => setLogRunOpen(true)}
@@ -181,7 +186,14 @@ export default function AthleteTabs({
         <CuesTab athleteId={athlete.id} initialCues={cues} />
       )}
       {activeTab === 'photos' && (
-        <PhotosTab photos={photos} athleteName={athlete.name} />
+        <PhotosTab
+          photos={photos}
+          athleteName={athlete.name}
+          athleteId={athlete.id}
+          initialCursor={photoCursor}
+          totalCount={photoCount}
+          loadMore={loadMorePhotos}
+        />
       )}
       {activeTab === 'notes' && (
         <NotesTab
