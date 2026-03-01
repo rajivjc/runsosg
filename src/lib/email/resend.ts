@@ -14,7 +14,7 @@ export function getResend(): Resend | null {
   return resendClient
 }
 
-const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL ?? 'SOSG Running Club <noreply@runsosg.com>'
+const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL ?? 'SOSG Running Club <noreply@sosg.run>'
 
 type SendEmailParams = {
   to: string | string[]
