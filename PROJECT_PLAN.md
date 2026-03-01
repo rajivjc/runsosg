@@ -1,394 +1,368 @@
-# SOSG Running Club Hub — Project Plan
+# SOSG Running Club — Product Improvement Plan (Updated March 2026)
 
-> **Guiding principles:** Community, Friendship, Growing Together, Special Needs, Empathy
->
-> **Design philosophy:** The app should make coaches feel like they're part of something meaningful — not filling out forms. Every interaction should celebrate the athletes and the community. Connection over competition. Progress over perfection.
+> This plan supersedes the previous version. It is grounded in a full audit of the current codebase, acknowledges what has already been shipped (badges, kudos, cheers, PWA, Resend emails, coaching insights, photo gallery, celebrations), and focuses on the gaps that matter most.
 
----
+## Prioritization Framework
 
-## Phase 1: Foundation — Bug Fixes & Code Quality
-**Priority: CRITICAL | Effort: Small | Impact: Stability**
+Every item is scored on two axes:
 
-These are blocking issues that undermine trust in the app and should be fixed before any feature work.
+- **Impact**: How much does this move the needle on daily usage, emotional engagement, or operational necessity? (1-5)
+- **Effort**: How many days of focused dev work? (S = 1-2 days, M = 3-5 days, L = 1-2 weeks, XL = 2-4 weeks)
 
-### 1.1 Fix `revalidatePath` bugs
-- `updateCoachNote` in `src/app/athletes/[id]/actions.ts` revalidates `/athletes` instead of `/athletes/${athleteId}` — edits don't refresh the page the user is on
-- `updateManualSession` has the same bug — coaches edit a session and see stale data
-- **Fix:** Change both to revalidate the specific athlete path
-
-### 1.2 Fix notification type hack
-- `low_feel_alert` uses `as unknown as 'feel_prompt'` double cast to bypass the type system
-- The DB `CHECK` constraint on `notifications.type` may not include `low_feel_alert`, risking runtime INSERT failures
-- **Fix:** Add `low_feel_alert` to the TypeScript types and verify the DB constraint includes it
-
-### 1.3 Remove dead code
-- `QuickLogSheet.tsx` — fully implemented but imported nowhere
-- `FeedTab.tsx` — exists as a component file but never rendered
-- `zustand` dependency — legacy, not actively used
-- **Fix:** Remove all three; removes confusion and reduces bundle
-
-### 1.4 Add role checks to unprotected server actions
-- `addCoachNote` does not verify the caller's role — a caregiver could call it directly
-- **Fix:** Add `role !== 'caregiver'` guard at the top of the action
-
-### 1.5 Add missing error boundaries and loading states
-- No `error.tsx` anywhere — unhandled errors show Next.js default error page
-- No `loading.tsx` for `/feed`, `/admin`, `/account`, `/milestone/[id]`
-- No custom `not-found.tsx`
-- **Fix:** Add `error.tsx` at root + key route segments, `loading.tsx` skeletons for all pages, and a custom 404 page
-
-### 1.6 Fix TypeScript prop mismatches
-- `AdminPage` — `UserRow` props type error, implicit `any` in `.map()` callbacks
-- `NotesTab` — `NoteCard` `onChanged` prop signature mismatch
-- `RunsTab` — `SessionCard` prop type mismatch
-- `AthleteSearch` — `AthleteCard` receives extra props via spread
-- **Fix:** Correct all prop types and add explicit type annotations to callbacks
+Items are grouped into 4 phases. Each phase builds on the previous one and can be shipped independently.
 
 ---
 
-## Phase 2: UI/UX Overhaul — From Prototype to Professional
-**Priority: HIGH | Effort: Large | Impact: Perception + Engagement**
+## PHASE 1: "Make It Sticky" (Weeks 1-3)
+*Goal: Give coaches a reason to open the app every day.*
 
-The feedback is clear: the app looks like a prototype. The goal is to match the quality feel of Nike Run Club / Strava while maintaining the warmth and accessibility that makes SOSG special.
+### 1.1 Pre-Session Prep Screen
+**Impact: 5 | Effort: M (3-4 days)**
 
-### 2.1 Design system consolidation
-**Problem:** 150+ CSS tokens defined in `tokens.css` but almost never used — inline Tailwind overrides them everywhere, creating inconsistency.
+The single highest-leverage feature. When a coach opens the app on a session day, show a focused prep view:
 
-**Actions:**
-- Create a Tailwind theme extension that maps to CSS custom property values so tokens and Tailwind work together (not against each other)
-- Audit all pages and replace hardcoded Tailwind classes with token-based utilities
-- Fix color deviation: bottom nav uses `text-blue-600` instead of the teal accent
-- Remove unused `.card-*`, `.btn-*`, `.auth-*` CSS rules that nothing references
+- Pull `club_settings.session_day` and `session_time` (already stored, currently unused)
+- On session day, replace the greeting card with a prep card per athlete:
+  - Last session summary (date, distance, feel)
+  - Current cues (4 categories, pulled from existing cues table)
+  - Next milestone approaching (already calculated in `today-focus.ts`)
+  - Any declining feel alerts (already calculated in `coaching-insights.ts`)
+- Add a "Ready to coach" → "Log run" quick flow
 
-### 2.2 Warm color palette evolution
-**Problem:** Current palette reads as generic SaaS — cool grays, clinical feel.
+**What already exists:** `club_settings` has `session_day`/`session_time`. `today-focus.ts` already computes approaching milestones and feel declines. Cues data is fully stored. This is primarily a UI assembly task.
 
-| Token | Current | New | Rationale |
-|-------|---------|-----|-----------|
-| `--color-bg` | `#F8F9FB` (cool gray) | `#FBF9F7` (warm off-white) | Warmer base, less clinical |
-| `--color-brand` | `#111111` (near-black) | `#1A1A2E` (warm dark blue) | Softer, more approachable |
-| `--color-accent` | `#0D9488` (teal) | Keep | Teal = growth, health, trust |
-| NEW `--color-celebrate` | — | `#F59E0B` (warm amber) | For milestones and streaks |
-| NEW `--color-warmth` | — | `#FEF3C7` (light amber) | Celebration backgrounds |
-
-### 2.3 Typography refinement
-- Increase `--type-body-size` from 14px to 15px for better readability (special-needs context)
-- Increase `--type-h1-weight` from 650 to 700 for stronger headlines
-- Add responsive typography scaling between mobile/tablet breakpoints
-- Standardize all inline `text-xs`, `text-sm`, etc. to reference type tokens
-
-### 2.4 Card and component redesign
-**Feed cards:**
-- Add subtle gradient backgrounds for milestone-earning sessions (warm amber tint)
-- Improve feel indicator visibility — larger dots, clearer color coding
-- Add athlete initials/avatar to each card for quick visual scanning
-- Improve section headers — current `text-gray-300` is too light on light backgrounds
-
-**Athlete cards:**
-- Larger feel-dot indicators (currently `w-2.5 h-2.5` — too small)
-- Progress indicator showing distance to next milestone
-- Last-run recency indicator ("Ran 2 days ago" vs "Last run 3 weeks ago")
-
-**Session cards (RunsTab):**
-- Hero metric layout: distance as large display number (like Nike/Strava)
-- Better visual hierarchy between primary data (distance, duration) and secondary (pace, date)
-- Improved feel selector with larger touch targets and clearer labels
-
-### 2.5 Empty states and micro-copy
-Replace all generic empty states with warm, encouraging messages:
-- "No sessions yet" → "Ready for the first run? Let's go!"
-- "No notes" → "Notes help track what works — add the first one"
-- Feed empty → "The club is quiet today. Be the first to log a run!"
-- Error states → "Something went wrong — let's try again" (not just "Error")
-
-### 2.6 Micro-interactions and animations
-- **Session logged:** Gentle checkmark animation (Lottie, 300ms)
-- **Milestone earned:** Confetti burst + badge reveal (Lottie, 500ms)
-- **List items:** Subtle stagger-in animation on page load
-- **Tab switching:** Smooth crossfade between tab content
-- **All animations respect `prefers-reduced-motion`** — fall back to instant static display
-- Add `lottie-react` dependency for animation playback
-
-### 2.7 Motivational UX copy throughout
-Every text string should reflect SOSG's values:
-- Button labels: "Log a Run" → "Let's Log a Run!"
-- After save: "Session saved" → "Great run with {athlete}! That's their {nth} this month."
-- Coach greeting: Show warmth — "{name}, you've coached {n} athletes this week. Keep going!"
-- Milestone: "Milestone achieved" → "{athlete} just hit a new milestone! Growing together."
+**Files to modify:**
+- `src/app/feed/page.tsx` — add session-day detection and prep card rendering
+- `src/lib/feed/today-focus.ts` — extend to return cues summary per athlete
+- New component: `src/components/feed/PrepCard.tsx`
 
 ---
 
-## Phase 3: Engagement Features — Making Coaches Want to Open the App
-**Priority: HIGH | Effort: Medium | Impact: Retention**
+### 1.2 Web Push Notifications
+**Impact: 5 | Effort: M (4-5 days)**
 
-Research from Nike Run Club, Strava, and fitness app studies shows that the apps coaches love combine **frictionless core actions** with **social rewards** and **visible progress**.
+The notification infrastructure is 70% built. The gap is the last mile:
 
-### 3.1 Frictionless session logging (2-3 taps)
-**This is the single most impactful change.** If logging feels like a chore, nothing else matters.
+- Add push subscription management to the service worker (`public/sw.js` — currently handles only caching)
+- Create a `push_subscriptions` table (user_id, endpoint, p256dh, auth keys)
+- Add subscription UI in account settings (permission prompt + toggle)
+- Wire existing notification creation points to also send web push:
+  - Milestone achieved → push to caregiver
+  - Unmatched Strava run → push to coach
+  - New cheer received → push to coaches
+  - Feel decline alert → push to coach
+- Use the Web Push protocol (npm `web-push` package)
 
-- **Smart defaults:** Pre-fill date with today, remember last athlete coached, suggest common distances
-- **Quick log mode:** Tap athlete → enter distance → done (feel + notes optional, can be added later)
-- **Draft persistence:** If a coach starts logging but gets interrupted, save form state to localStorage
-- **Post-log celebration:** After saving, show updated athlete stats + any milestones earned + warm confirmation
+**What already exists:** `notifications` table with `channel` field supporting 'push'. Service worker registered. Notification creation logic in multiple server actions. Email sending via Resend already works.
 
-### 3.2 Kudos / High-five on feed items
-Borrowed directly from Strava — the single most transferable engagement pattern.
-
-- One-tap interaction on any feed session card
-- Brief heart/high-five float animation (200ms)
-- Kudos counter visible on the card
-- Creates social reward loop: "I logged a run → other coaches gave kudos → I feel seen"
-- **DB:** New `kudos` table (user_id, session_id, created_at)
-- Low effort, high engagement impact
-
-### 3.3 Coach streak tracking
-- Track consecutive weeks where a coach logged at least one session
-- Display on feed greeting card: "Week 7" with a flame icon
-- Weekly streak (not daily) — one missed Saturday doesn't break momentum
-- Streak milestones at 4, 8, 12, 26, 52 weeks trigger celebration animation
-- Visible only to the coach themselves (not competitive between coaches)
-
-### 3.4 Monthly club goals
-- Admin-configurable monthly target: "Let's log 50 runs this month!"
-- Progress bar visible on feed page
-- Updates in real-time as sessions are logged
-- Celebrates when the club hits the goal together
-- Reinforces "growing together" — it's a club achievement, not individual
-
-### 3.5 Improved notifications as engagement triggers
-- Saturday morning "It's running day!" push/in-app notification (if sessions are scheduled)
-- "Your streak is at risk!" gentle reminder if a week is about to pass without logging
-- "{Athlete} earned a new milestone!" notification to relevant coaches
-- All notifications use warm, encouraging tone
-
-### 3.6 "Compare to past self" progress framing
-- Never show athlete-to-athlete comparisons (empathy over competition)
-- Frame all progress as personal growth: "Marcus's longest run yet!"
-- Show trend arrows on athlete profiles: distance trending up, sessions more frequent
-- Monthly mini-summaries: "This month: 8 sessions, 14.2km total — up from 6 sessions last month"
+**Files to create/modify:**
+- `public/sw.js` — add push event handler
+- New: `src/lib/push.ts` — web push sending utility
+- New: `src/app/api/push/subscribe/route.ts` — subscription endpoint
+- `src/app/account/page.tsx` — add notification preferences toggle
+- New migration: `push_subscriptions` table
 
 ---
 
-## Phase 4: Shareable Milestone Cards
-**Priority: HIGH | Effort: Medium | Impact: Community Pride + Organic Growth**
+### 1.3 Quick-Log Floating Action Button
+**Impact: 3 | Effort: S (1 day)**
 
-Currently milestones are "take a screenshot and share." The infrastructure is partially there (`share_image_url` field exists, milestone detail page is beautifully designed) but the bridge to social sharing is missing.
+Add a persistent "+" FAB on the feed page that opens the LogRunSheet directly. Currently coaches must navigate to an athlete first, then tap "Log a run." This adds friction to the most important action.
 
-### 4.1 Dynamic OG metadata for milestone pages
-- Add `generateMetadata()` to `/src/app/milestone/[id]/page.tsx`
-- Set `og:title`, `og:description`, `og:image`, `twitter:card`, `twitter:image`
-- When a milestone URL is shared on WhatsApp/Facebook/LinkedIn, it shows a rich preview card
+- FAB positioned above bottom nav (respecting safe area)
+- Opens LogRunSheet with an athlete selector prepended
+- Recently-coached athletes shown first
 
-### 4.2 Server-side milestone image generation
-- Create `/api/milestone/[id]/image` route using `@vercel/og` (Satori)
-- Renders a beautiful PNG card (1200x630 for OG, 1080x1080 for Instagram)
-- Design: warm gradient background (teal-to-emerald), large milestone icon, athlete name, achievement label, date, SOSG branding + "Growing Together" tagline
-- Cache with appropriate HTTP headers for performance
-- Store generated URL in `milestones.share_image_url`
-
-### 4.3 Share button on milestone badges
-- When a coach or caregiver views a milestone, show a prominent "Share" button
-- On mobile: triggers Web Share API (native share sheet — WhatsApp, Instagram, etc.)
-- Fallback: copy link to clipboard
-- After earning a milestone: full-screen celebration card with share prompt
-- Caregivers sharing these on WhatsApp creates organic growth and family pride
-
-### 4.4 Monthly review cards (future)
-- Generate a "Month in Review" card for each athlete
-- Sessions count, total distance, milestones earned, coach name
-- Shareable format — caregivers share to family WhatsApp groups
-- Reinforces the club's community narrative
+**Files to modify:**
+- `src/app/feed/page.tsx` — add FAB
+- `src/components/session/LogRunSheet.tsx` — add athlete selector mode
 
 ---
 
-## Phase 5: PWA — Mobile App Experience Without the App Store
-**Priority: HIGH | Effort: Medium | Impact: Native App Feel**
+### 1.4 Feed Pagination
+**Impact: 3 | Effort: S (2 days)**
 
-**Decision: PWA over Expo/React Native.** Reasoning:
-- Strava sync already works via server-side webhooks — no native background processing needed
-- Coaches log sessions after the run (not during) — no GPS tracking needed
-- Small focused community — App Store distribution adds friction, not value
-- Extends existing Next.js codebase vs. full rewrite
-- Install-to-home-screen gives native feel on both iOS and Android
+The feed is hard-capped at 30 sessions. Add cursor-based pagination:
 
-### 5.1 Web App Manifest
-- Create `manifest.json` with app name, icons, theme color, display mode
-- Design app icons at all required sizes (192x192, 512x512)
-- Set `display: "standalone"` for full-screen experience
-- Set `theme_color` to match teal accent
-- Configure `start_url` to `/feed`
+- "Load more" button at the bottom (not infinite scroll — keeps it simple)
+- Use the existing `date` ordering as cursor
+- Extract feed data fetching into a server action for incremental loading
 
-### 5.2 Service Worker with Serwist
-- Add `@serwist/next` (successor to `next-pwa`, works with App Router)
-- Cache static assets and page shells for fast loading
-- Offline fallback page: "You're offline — your sessions will sync when you're back"
-- Cache recent feed data for offline viewing
-- Pre-cache common routes (`/feed`, `/athletes`)
-
-### 5.3 Install prompt
-- Show a tasteful "Add to Home Screen" banner for mobile users
-- Only show after 2+ visits (don't annoy first-time users)
-- Explain the benefit: "Install SOSG for quick access — no app store needed"
-- Remember dismissal so it doesn't re-appear
-
-### 5.4 Push notifications (Android first)
-- Register service worker for push subscription
-- Integrate with web push API for session reminders and milestone notifications
-- iOS push support is limited — provide in-app notification center as fallback
-- Notification types: running day reminders, milestone achievements, streak alerts
-
-### 5.5 Splash screen and app-like transitions
-- Custom splash screen with SOSG branding on app launch
-- Page transitions that feel native (slide left/right between pages)
-- Pull-to-refresh on feed page
-- Haptic feedback on milestone celebrations (where supported)
+**Files to modify:**
+- `src/app/feed/page.tsx` — initial load stays server-rendered, add client component for "load more"
+- New: `src/app/feed/load-more-actions.ts` — `loadMoreSessions` server action
 
 ---
 
-## Phase 6: Resend SMTP Integration — Branded Email Experience
-**Priority: MEDIUM | Effort: Medium | Impact: Professional Polish**
+## PHASE 2: "Make It Shareable" (Weeks 4-6)
+*Goal: Turn every milestone into organic growth.*
 
-Currently all emails (magic links, invitations) are sent by Supabase's built-in email service — generic templates, no branding. The notification schema supports an `email` channel that's never been implemented.
+### 2.1 Public Milestone & Journey Pages
+**Impact: 5 | Effort: M (3-4 days)**
 
-### 6.1 Resend setup
-- Add `resend` package
-- Add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` to environment config
-- Create `/src/lib/email/resend.ts` — shared Resend client
-- Verify sender domain for deliverability
+The `/milestone/[id]` and `/story/[id]` pages exist but require auth. Make them publicly accessible with beautiful OG metadata:
 
-### 6.2 Email templates with react-email
-- Add `react-email` for component-based email templates
-- Create branded templates in `/src/components/emails/`:
-  - `MagicLinkEmail.tsx` — login magic link with SOSG branding
-  - `InvitationEmail.tsx` — welcome invitation with role explanation
-  - `MilestoneEmail.tsx` — "Your athlete achieved a milestone!" for caregivers
-  - `WeeklyDigestEmail.tsx` — weekly summary for coaches (optional)
-  - `layout.tsx` — shared email layout with SOSG header/footer
-- Design consistent with app's warm color palette (teal accent, warm backgrounds)
+- Create a public layout for these routes (no auth required, no bottom nav)
+- Generate OG images server-side (use `@vercel/og` or static SVG templates)
+- Add share buttons (copy link, native share API on mobile)
+- Include a "Join SOSG Running Club" CTA for visitors
 
-### 6.3 Configure Supabase custom SMTP
-- Point Supabase Auth email delivery to Resend SMTP
-- This means magic links and invite emails automatically use Resend's infrastructure
-- Custom templates get applied to all auth emails
+**What already exists:** `/milestone/[id]/page.tsx` and `/story/[id]/page.tsx` already render content. OG metadata generation partially exists. The milestone page already has `generateMetadata`.
 
-### 6.4 Notification email delivery
-- Implement email sending for notifications where `channel: 'email'`
-- Milestone earned → email to linked caregiver
-- Strava token expiry → email to connected coach
-- Weekly digest → optional email summary to all coaches
+**Files to modify:**
+- `src/middleware.ts` — exclude `/milestone/*` and `/story/*` from auth
+- `src/app/milestone/[id]/page.tsx` — add public layout, share buttons
+- `src/app/story/[id]/page.tsx` — add public layout, share buttons
+- New: `src/app/api/og/route.tsx` — OG image generation
 
 ---
 
-## Phase 7: Strava Integration Completeness
-**Priority: MEDIUM | Effort: Small | Impact: Data Completeness**
+### 2.2 Data Export (CSV/PDF)
+**Impact: 4 | Effort: M (3-4 days)**
 
-The Strava pipeline is architecturally complete but has gaps.
+Coaches and admins need to report outcomes to stakeholders, schools, and funders:
 
-### 7.1 Historical sync / backfill endpoint
-- `getAthleteActivities` in `client.ts` is implemented but never called
-- Create an admin action to trigger backfill for a connected coach
-- Useful for importing runs recorded before the webhook was set up
+- Add "Export" button on athlete detail page → CSV of all sessions
+- Add "Progress Report" button → PDF with chart snapshots, milestone timeline, cue summary
+- Add admin-level "Club Report" → aggregate stats PDF
+- Use existing Recharts data for chart snapshots
 
-### 7.2 Fix unmatched runs table
-- `sync.ts` references `strava_unmatched` table but it's not in the schema types
-- Verify the migration exists; if not, create it
-- Surface unmatched runs in the admin panel for manual assignment
-
-### 7.3 Hide coaching stats from caregivers
-- Account page shows "Your coaching stats" to all users including caregivers
-- Caregivers see "0 sessions" which is confusing
-- Conditionally hide the stats card for caregiver role
+**Files to create:**
+- New: `src/app/api/export/sessions/route.ts` — CSV generation
+- New: `src/app/api/export/report/route.ts` — PDF generation
+- `src/app/athletes/[id]/page.tsx` — add export buttons
 
 ---
 
-## Phase 8: Test Coverage Expansion
-**Priority: MEDIUM | Effort: Medium | Impact: Confidence**
+### 2.3 Year-in-Review / Annual Summary
+**Impact: 4 | Effort: M (4-5 days)**
 
-Current coverage: 3 unit test files (dates, milestones, matching) + 4 E2E tests (login page only). No server actions, no components, no Strava sync tested.
+Generate a beautiful per-athlete annual summary page:
 
-### 8.1 Server action unit tests
-- `createManualSession`, `updateManualSession` — session CRUD
-- `saveCues` — cue management
-- `addCoachNote`, `updateCoachNote`, `deleteCoachNote` — notes CRUD
-- `inviteUser`, `changeUserRole`, `toggleUserActive` — admin actions
-- Use the existing mock pattern (Proxy-based chainable Supabase mocks)
+- Total distance, session count, milestones earned
+- Month-by-month progression chart
+- Best moments (longest run, best feel streak, fastest improvement)
+- Coach quotes (pulled from coach_notes)
+- Shareable as a public link (same pattern as milestone pages)
 
-### 8.2 Strava pipeline tests
-- `processStravaActivity` — end-to-end sync flow
-- `getValidAccessToken` — token refresh logic
-- Error scenarios: expired tokens, unmatched runs, duplicate activities
-
-### 8.3 Component tests
-- Feed page grouping logic (`groupByDate`)
-- Milestone celebration display
-- Session card expand/collapse behavior
-
-### 8.4 E2E expansion
-- Authenticated coach flow: login → view feed → log a session → see it appear
-- Admin flow: invite user → change role
-- Milestone flow: log a run that triggers a milestone → verify it appears
+**Files to create:**
+- New: `src/app/review/[athleteId]/page.tsx`
+- New: `src/lib/analytics/year-review.ts` — data aggregation
+- New: `src/components/review/ReviewCard.tsx` — styled summary blocks
 
 ---
 
-## Deferred: Caregiver Access Control
-**Status: ON HOLD — Pending club discussion**
+## PHASE 3: "Make It Reliable" (Weeks 7-9)
+*Goal: Trust, testing, and offline resilience.*
 
-The audit identified that caregivers can see all athletes' data (not just their linked athlete). This is a valid concern but the decision has been deferred pending discussion with coaches and caregivers about the desired experience, given the current culture of open sharing via Excel, WhatsApp, and Strava.
+### 3.1 Offline-First for Core Flows
+**Impact: 4 | Effort: L (7-8 days)**
 
----
+Coaches at the track need three things offline:
 
-## Implementation Order & Dependencies
+1. **View athlete cues** — cache cues data in IndexedDB on each visit
+2. **Log a run** — queue session creation in IndexedDB, sync when online
+3. **View last session** — cache recent sessions per athlete
 
-```
-Phase 1 (Foundation)     ←── Start here. Unblocks everything.
-  ↓
-Phase 2 (UI/UX Overhaul) ←── Biggest perceived improvement.
-  ↓                           Can be done incrementally.
-Phase 3 (Engagement)     ←── Builds on the new UI.
-  ↓                           Kudos, streaks, celebrations.
-Phase 4 (Milestones)     ←── Can start in parallel with Phase 3.
-  ↓                           Independent workstream.
-Phase 5 (PWA)            ←── After UI is polished.
-  ↓                           Adds native app feel.
-Phase 6 (Resend)         ←── Independent. Can be done anytime.
-  ↓
-Phase 7 (Strava)         ←── Independent. Low urgency.
-  ↓
-Phase 8 (Tests)          ←── Ongoing. Add tests as features land.
-```
+Implementation:
+- Extend the existing service worker (`public/sw.js`) with Workbox-style runtime caching
+- Add IndexedDB wrapper for offline queue
+- Add sync indicator in the UI ("1 run waiting to sync")
+- Background sync via service worker when connectivity returns
 
-### Parallelizable work:
-- Phase 4 (Milestones) can run in parallel with Phase 3 (Engagement)
-- Phase 6 (Resend) is fully independent — can be done at any time
-- Phase 8 (Tests) should be woven into every phase, not saved for last
+**Files to create/modify:**
+- `public/sw.js` — add runtime caching strategies + background sync
+- New: `src/lib/offline/queue.ts` — IndexedDB queue manager
+- New: `src/lib/offline/sync.ts` — background sync logic
+- New: `src/components/ui/SyncIndicator.tsx`
+- `src/components/session/LogRunSheet.tsx` — queue locally when offline
 
 ---
 
-## New Dependencies Required
+### 3.2 Core Business Logic Tests
+**Impact: 4 | Effort: M (4-5 days)**
+
+Test infrastructure exists (Jest + Playwright). Some tests exist for badges, milestones, matching, notifications, and auth. Expand coverage to:
+
+1. **Feed data assembly** — correct grouping, sorting, kudos aggregation
+2. **Server actions** — all CRUD actions with role-based access checks
+3. **Strava sync pipeline end-to-end** — matching, deduplication, error handling
+4. **Cues versioning** — save, undo, version increment
+5. **E2E authenticated flows** — login → log session → milestone awarded → visible on feed
+
+**Existing test files to extend:**
+- `tests/unit/badges.test.ts`
+- `tests/unit/milestones.test.ts`
+- `tests/unit/strava-matching.test.ts`
+- New: `tests/unit/feed-assembly.test.ts`
+- New: `tests/e2e/coach-flow.spec.ts`
+
+---
+
+### 3.3 TypeScript Strictness Pass
+**Impact: 3 | Effort: M (3-4 days)**
+
+Replace `as any` casts with proper types. Priority order:
+
+1. Feed page (30+ casts) — define `FeedSession`, `FeedMilestone` interfaces
+2. Server actions — type all form data parsing
+3. Strava sync — type webhook payloads and API responses
+4. Component props — replace `any` props with explicit interfaces
+
+This is not glamorous but it prevents an entire class of runtime bugs.
+
+---
+
+## PHASE 4: "Make It Delightful" (Weeks 10-12)
+*Goal: Polish, personalization, and power features.*
+
+### 4.1 Voice-to-Log
+**Impact: 4 | Effort: L (5-7 days)**
+
+Use the Web Speech API (browser-native, no external service needed):
+
+- Add a microphone button on the LogRunSheet
+- Transcribe speech → parse with simple NLP rules:
+  - Athlete name → fuzzy match against athlete list
+  - Distance → regex for "X km" or "X kilometers"
+  - Feel → keyword matching ("great" → 5, "okay" → 3, "struggled" → 2)
+  - Remaining text → session note
+- Show parsed result for confirmation before saving
+- Fallback: if parsing fails, dump transcription into the note field
+
+**Files to create/modify:**
+- New: `src/lib/voice/parser.ts` — speech-to-session parser
+- New: `src/components/session/VoiceInput.tsx` — microphone UI
+- `src/components/session/LogRunSheet.tsx` — integrate voice input
+
+---
+
+### 4.2 Dark Mode
+**Impact: 3 | Effort: M (3-4 days)**
+
+The design token system in `tokens.css` makes this feasible:
+
+- Add dark variants for all CSS custom properties
+- Toggle in account settings (system/light/dark)
+- Store preference in `localStorage` + respect `prefers-color-scheme`
+- Apply via `class="dark"` on `<html>` element
+
+**Files to modify:**
+- `src/styles/tokens.css` — add `.dark` variants
+- `src/app/layout.tsx` — add theme class
+- New: `src/components/ui/ThemeToggle.tsx`
+- `src/app/account/page.tsx` — add theme toggle
+
+---
+
+### 4.3 Admin Analytics Dashboard
+**Impact: 3 | Effort: M (4-5 days)**
+
+The calculation functions exist in `coaching-insights.ts` and `session-trends.ts` but have no dashboard:
+
+- New admin page: `/admin/analytics`
+- Charts: sessions per week (trend), athletes active (trend), km per month
+- Coach leaderboard (sessions coached, badges earned)
+- Milestone velocity (milestones per month)
+- Feel distribution across all athletes
+
+**What already exists:** Recharts is installed. `session-trends.ts` computes weekly volumes. `coaching-insights.ts` computes feel trends.
+
+**Files to create:**
+- New: `src/app/admin/analytics/page.tsx`
+- New: `src/components/admin/AnalyticsCharts.tsx`
+
+---
+
+### 4.4 Scheduled Session Reminders
+**Impact: 3 | Effort: M (3-4 days)**
+
+`club_settings` already stores `session_day` and `session_time`. Use this to:
+
+- Send push notification to coaches 1 hour before session time on session day
+- Include athlete count and any alerts (declining feel, approaching milestones)
+- Add a cron endpoint similar to `/api/cron/weekly-digest`
+
+**Files to create:**
+- New: `src/app/api/cron/session-reminder/route.ts`
+- Extend: `src/lib/push.ts` — reminder payload formatting
+
+---
+
+## PRIORITY MATRIX SUMMARY
+
+| # | Feature | Impact | Effort | Phase | Depends On |
+|---|---------|--------|--------|-------|------------|
+| 1.1 | Pre-Session Prep Screen | 5 | M | 1 | — |
+| 1.2 | Web Push Notifications | 5 | M | 1 | — |
+| 1.3 | Quick-Log FAB | 3 | S | 1 | — |
+| 1.4 | Feed Pagination | 3 | S | 1 | — |
+| 2.1 | Public Milestone/Journey Pages | 5 | M | 2 | — |
+| 2.2 | Data Export (CSV/PDF) | 4 | M | 2 | — |
+| 2.3 | Year-in-Review | 4 | M | 2 | 2.2 |
+| 3.1 | Offline-First Core Flows | 4 | L | 3 | 1.2 (push infra) |
+| 3.2 | Core Business Logic Tests | 4 | M | 3 | — |
+| 3.3 | TypeScript Strictness Pass | 3 | M | 3 | — |
+| 4.1 | Voice-to-Log | 4 | L | 4 | — |
+| 4.2 | Dark Mode | 3 | M | 4 | — |
+| 4.3 | Admin Analytics Dashboard | 3 | M | 4 | — |
+| 4.4 | Scheduled Session Reminders | 3 | M | 4 | 1.2 (push) |
+
+---
+
+## IF I HAD TO PICK 3 THINGS TO SHIP FIRST
+
+1. **Pre-Session Prep Screen (1.1)** — Transforms the app from a logger to a coaching tool. Most of the data and computation already exists. 3-4 days.
+2. **Web Push Notifications (1.2)** — Unlocks all proactive engagement. Milestone celebrations, session reminders, and cheer delivery all depend on this. 4-5 days.
+3. **Public Milestone Pages (2.1)** — Turns every achievement into organic growth. Parents share these. 3-4 days.
+
+These three features combined (~2 weeks of work) would fundamentally change how the app feels. It goes from "I open this to log a run" to "this app helps me coach better and makes parents proud."
+
+---
+
+## NON-FEATURE PRIORITIES (Ongoing, Not Phased)
+
+These should be woven into every phase, not treated as separate projects:
+
+- **Test coverage**: Write tests for every new feature. Add regression tests when fixing bugs.
+- **Type safety**: Replace `any` in every file you touch. Don't create a separate "fix types" sprint.
+- **Performance**: Profile the feed page query count. Consider denormalized views for the most common queries.
+- **Accessibility**: Add focus rings to buttons. Trap focus in modals. Test with VoiceOver.
+- **Feed page refactor**: The 750-line `feed/page.tsx` should be decomposed into smaller server components as features are added. Don't refactor it standalone — refactor it as you build on it.
+
+---
+
+## NEW DEPENDENCIES REQUIRED
 
 | Package | Phase | Purpose |
 |---------|-------|---------|
-| `lottie-react` | 2, 3 | Celebration animations (confetti, checkmarks) |
-| `@vercel/og` | 4 | Server-side milestone image generation |
-| `@serwist/next` | 5 | PWA service worker for Next.js App Router |
-| `resend` | 6 | Transactional email delivery |
-| `react-email` | 6 | Component-based email templates |
-
-Dependencies to **remove**: `zustand` (unused legacy)
+| `web-push` | 1 | Web Push protocol for notifications |
+| `idb` | 3 | IndexedDB wrapper for offline queue |
+| `@vercel/og` | 2 | Server-side OG image generation |
+| `@react-pdf/renderer` | 2 | PDF report generation |
 
 ---
 
-## Success Metrics
+## METRICS TO TRACK
 
-How we'll know each phase worked:
+| Metric | Current (Estimated) | Target |
+|--------|-------------------|--------|
+| DAU / WAU ratio | ~0.15 (coaches log a few times/week) | 0.4+ |
+| Sessions logged within 1hr of session time | Unknown | 60%+ |
+| Milestone share rate | ~0% (no public sharing) | 30%+ |
+| Caregiver weekly opens | Unknown | 2+ per week |
+| Push notification opt-in rate | 0% (not available) | 70%+ |
+| Offline session logs synced | 0 (not available) | Track adoption |
 
-| Phase | Metric |
-|-------|--------|
-| 1. Foundation | Zero runtime errors in production, all TypeScript strict |
-| 2. UI/UX | Coach feedback: "Looks professional" / "Looks like a real app" |
-| 3. Engagement | Coaches open the app unprompted; session logging frequency increases |
-| 4. Milestones | Caregivers sharing milestone cards on WhatsApp |
-| 5. PWA | Coaches install to home screen; app loads in <2s |
-| 6. Resend | Professional branded emails; higher magic-link click-through |
-| 7. Strava | Zero unmatched runs; historical data imported |
-| 8. Tests | >80% coverage on server actions; CI catches regressions |
+---
+
+## WHAT THIS PLAN DOES NOT INCLUDE (AND WHY)
+
+| Excluded Item | Reason |
+|---|---|
+| UI/UX overhaul | The current UI is functional and consistent. Polish should happen incrementally, not as a rewrite phase. |
+| Native mobile app (React Native/Expo) | PWA is the right choice for this user base. No GPS tracking or background processing needed. |
+| Real-time/WebSocket updates | The usage patterns (log after sessions, check feed occasionally) don't justify the infrastructure cost. |
+| Multi-club support | Premature. Solve for one club exceptionally well first. |
+| Athlete self-service | The athletes in this program may have varying abilities with technology. Coach-mediated logging is the right design choice. |
+| Audit log | Important eventually, but the club is small enough that trust-based operations work for now. |
