@@ -9,10 +9,15 @@ export const maxDuration = 60 // allow up to 60s for large downloads
 
 /**
  * POST /api/photos/download
- * Body: { photoIds: string[], athleteName: string }
+ * Body: JSON { photoIds: string[], athleteName: string }
+ *   or: form-encoded with a `payload` field containing the same JSON
  *
  * Streams a ZIP file containing the requested photos.
  * Auth-gated: user must be logged in.
+ *
+ * The form-encoded variant exists so the browser can submit a native <form>
+ * and handle the Content-Disposition: attachment response natively — this
+ * avoids the blob-URL approach that breaks on iOS Safari.
  */
 export async function POST(req: NextRequest) {
   // Auth check
@@ -22,8 +27,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await req.json()
-  const { photoIds, athleteName } = body as { photoIds: string[]; athleteName: string }
+  // Parse body — supports both JSON and form-encoded payloads
+  let photoIds: string[]
+  let athleteName: string
+
+  const contentType = req.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) {
+    const body = await req.json()
+    photoIds = body.photoIds
+    athleteName = body.athleteName
+  } else {
+    // Form submission: JSON is packed into a hidden `payload` field
+    const formData = await req.formData()
+    const raw = formData.get('payload')
+    if (!raw || typeof raw !== 'string') {
+      return NextResponse.json({ error: 'Missing payload' }, { status: 400 })
+    }
+    const parsed = JSON.parse(raw)
+    photoIds = parsed.photoIds
+    athleteName = parsed.athleteName
+  }
 
   if (!Array.isArray(photoIds) || photoIds.length === 0) {
     return NextResponse.json({ error: 'No photos specified' }, { status: 400 })
