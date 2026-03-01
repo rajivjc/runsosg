@@ -282,7 +282,6 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 onChange={handlePhotoSelect}
                 className="hidden"
               />
