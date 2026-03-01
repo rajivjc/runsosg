@@ -5,6 +5,13 @@ import { useFormStatus } from 'react-dom'
 import { Camera, X } from 'lucide-react'
 import { compressPhoto } from '@/lib/media-client'
 
+/** Sanitize a blob URL — only allow the blob: scheme to prevent XSS. */
+function sanitizeBlobUrl(url: string): string {
+  const parsed = new URL(url)
+  if (parsed.protocol !== 'blob:') return ''
+  return parsed.href
+}
+
 type Feel = 1 | 2 | 3 | 4 | 5
 
 const FEEL_OPTIONS: { value: Feel; emoji: string; label: string }[] = [
@@ -54,12 +61,10 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
     try {
       const compressed = await compressPhoto(file)
       setPhotoFile(compressed)
-      const url = URL.createObjectURL(compressed)
-      if (url.startsWith('blob:')) setPhotoPreview(url)
+      setPhotoPreview(URL.createObjectURL(compressed))
     } catch {
       setPhotoFile(file)
-      const url = URL.createObjectURL(file)
-      if (url.startsWith('blob:')) setPhotoPreview(url)
+      setPhotoPreview(URL.createObjectURL(file))
     }
     setCompressing(false)
   }
@@ -249,7 +254,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                 <div className="relative inline-block">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={photoPreview}
+                    src={sanitizeBlobUrl(photoPreview)}
                     alt="Photo preview"
                     className="w-20 h-20 rounded-lg object-cover"
                   />
