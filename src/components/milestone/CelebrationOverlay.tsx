@@ -77,6 +77,15 @@ export default function CelebrationOverlay({
         ))}
       </div>
 
+      {/* Close button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); dismiss() }}
+        aria-label="Close celebration"
+        className="absolute top-6 right-6 z-10 w-11 h-11 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white text-xl font-light transition-colors"
+      >
+        ✕
+      </button>
+
       {/* Content */}
       <div className="relative text-center px-8">
         <div className="text-7xl mb-4 animate-bounce-slow">{milestoneIcon}</div>

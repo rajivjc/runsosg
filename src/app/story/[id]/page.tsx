@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { adminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import ShareButton from '@/components/milestone/ShareButton'
 
@@ -122,7 +123,10 @@ export default async function StoryPage({ params }: PageProps) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://runsosg.vercel.app'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6">
+    <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6">
+      <Link href="/feed" className="absolute top-4 left-4 inline-flex items-center gap-1 text-sm text-white/70 hover:text-white transition-colors min-h-[44px] min-w-[44px] px-2">
+        ← Home
+      </Link>
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm px-8 py-10 flex flex-col items-center text-center">
         <span className="text-7xl mb-4">🏃</span>
         <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2">Running Journey</p>

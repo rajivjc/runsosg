@@ -51,7 +51,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
           </>
         )
 
-        const baseClasses = `flex flex-1 flex-col items-center justify-center py-2.5 gap-1 font-medium transition-all rounded-lg mx-0.5 my-1 ${
+        const baseClasses = `flex flex-1 flex-col items-center justify-center min-h-[44px] py-3 gap-1 font-medium transition-all rounded-lg mx-0.5 ${
           active
             ? 'text-teal-600 bg-teal-50'
             : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'

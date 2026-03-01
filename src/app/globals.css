@@ -33,6 +33,13 @@ nav.fixed.bottom-0 {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Body bottom padding accounts for bottom nav + safe area on notched devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body.h-full {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   main {
