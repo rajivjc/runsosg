@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { X, ChevronLeft, ChevronRight, Download, Share2 } from 'lucide-react'
 import { formatDate } from '@/lib/utils/dates'
+import { savePhoto, shareViaWebShare } from '@/lib/utils/download'
 import type { PhotoData } from './AthleteTabs'
 
 type PhotoLightboxProps = {
@@ -12,39 +13,8 @@ type PhotoLightboxProps = {
   onClose: () => void
 }
 
-async function downloadPhoto(photo: PhotoData, athleteName: string) {
-  try {
-    const res = await fetch(photo.signed_url)
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${athleteName.replace(/\s+/g, '_')}_${formatDate(photo.created_at).replace(/\s+/g, '_')}_${photo.id.slice(0, 8)}.jpg`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  } catch {
-    // Silent failure for individual download
-  }
-}
-
-async function sharePhoto(photo: PhotoData, athleteName: string) {
-  try {
-    const res = await fetch(photo.signed_url)
-    const blob = await res.blob()
-    const file = new File([blob], `${athleteName.replace(/\s+/g, '_')}_${photo.id.slice(0, 8)}.jpg`, {
-      type: blob.type || 'image/jpeg',
-    })
-    await navigator.share({
-      files: [file],
-      title: `${athleteName} — Run photo`,
-      text: photo.caption || undefined,
-    })
-  } catch {
-    // User cancelled or share not supported — fall back to download
-    await downloadPhoto(photo, athleteName)
-  }
+function buildFilename(photo: PhotoData, athleteName: string): string {
+  return `${athleteName.replace(/\s+/g, '_')}_${formatDate(photo.created_at).replace(/\s+/g, '_')}_${photo.id.slice(0, 8)}.jpg`
 }
 
 export default function PhotoLightbox({ photos, initialIndex, athleteName, onClose }: PhotoLightboxProps) {
@@ -106,13 +76,29 @@ export default function PhotoLightbox({ photos, initialIndex, athleteName, onClo
 
   async function handleDownload() {
     setDownloading(true)
-    await downloadPhoto(photo, athleteName)
+    const filename = buildFilename(photo, athleteName)
+    await savePhoto(photo.id, photo.signed_url, filename, {
+      title: `${athleteName} — Run photo`,
+      text: photo.caption || undefined,
+    })
     setDownloading(false)
   }
 
   async function handleShare() {
     setDownloading(true)
-    await sharePhoto(photo, athleteName)
+    const filename = buildFilename(photo, athleteName)
+    const shared = await shareViaWebShare(photo.signed_url, filename, {
+      title: `${athleteName} — Run photo`,
+      text: photo.caption || undefined,
+    })
+    if (!shared) {
+      // Share not supported or cancelled — use savePhoto which is
+      // platform-aware (won't break out of iOS PWA standalone mode)
+      await savePhoto(photo.id, photo.signed_url, filename, {
+        title: `${athleteName} — Run photo`,
+        text: photo.caption || undefined,
+      })
+    }
     setDownloading(false)
   }
 

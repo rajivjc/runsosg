@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useTransition } from 'react'
 import { Download, CheckCircle, X, Share2 } from 'lucide-react'
 import { formatDate } from '@/lib/utils/dates'
+import { savePhoto, downloadZipViaForm } from '@/lib/utils/download'
 import PhotoLightbox from './PhotoLightbox'
 
 export type PhotoData = {
@@ -41,19 +42,6 @@ function groupByMonth(photos: PhotoData[]): { month: string; photos: PhotoData[]
     else groups.set(key, [photo])
   }
   return Array.from(groups.entries()).map(([month, photos]) => ({ month, photos }))
-}
-
-async function downloadSinglePhoto(photo: PhotoData, athleteName: string) {
-  const res = await fetch(photo.signed_url)
-  const blob = await res.blob()
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${athleteName.replace(/\s+/g, '_')}_${formatDate(photo.created_at).replace(/\s+/g, '_')}_${photo.id.slice(0, 8)}.jpg`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
 }
 
 export default function PhotosTab({
@@ -122,38 +110,29 @@ export default function PhotosTab({
     setSelectionMode(false)
   }
 
-  // Smart download: 1-3 photos direct, 4+ ZIP
+  // Smart download: 1-3 photos direct via server endpoint, 4+ via ZIP form submission
   async function handleDownload(ids: string[]) {
     if (ids.length === 0) return
     setDownloading(true)
 
     try {
       if (ids.length <= 3) {
-        // Direct download for small count
-        for (let i = 0; i < ids.length; i++) {
-          setDownloadProgress(`Saving ${i + 1} of ${ids.length}...`)
-          const photo = photos.find(p => p.id === ids[i])
-          if (photo) await downloadSinglePhoto(photo, athleteName)
+        // Direct download — server endpoint sets Content-Disposition: attachment.
+        // savePhoto() also handles iOS PWA (uses Web Share API to stay in-app).
+        for (const id of ids) {
+          const photo = photos.find(p => p.id === id)
+          if (!photo) continue
+          const filename = `${athleteName.replace(/\s+/g, '_')}_${formatDate(photo.created_at).replace(/\s+/g, '_')}_${photo.id.slice(0, 8)}.jpg`
+          await savePhoto(photo.id, photo.signed_url, filename, {
+            title: `${athleteName} — Run photo`,
+          })
         }
         showToast(`${ids.length} photo${ids.length > 1 ? 's' : ''} saved`)
       } else {
-        // ZIP download for bulk
+        // ZIP download via native form submission — browser handles the
+        // Content-Disposition: attachment response natively, no blob URLs needed.
         setDownloadProgress(`Preparing ${ids.length} photos...`)
-        const res = await fetch('/api/photos/download', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ photoIds: ids, athleteName }),
-        })
-        if (!res.ok) throw new Error('Download failed')
-        const blob = await res.blob()
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${athleteName.replace(/\s+/g, '_')}_photos_${new Date().toISOString().split('T')[0]}.zip`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        downloadZipViaForm(ids, athleteName)
         showToast(`${ids.length} photos saved as ZIP. Open the file to access them.`)
       }
     } catch {
