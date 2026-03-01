@@ -4,6 +4,8 @@ import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { parseValidDate } from '@/lib/utils/dates'
+import { sendEmail } from '@/lib/email/resend'
+import { invitationEmail } from '@/lib/email/templates'
 
 export type InviteFormState = {
   error?: string
@@ -21,7 +23,7 @@ export async function inviteUser(
   // Verify caller is admin
   const { data: callerUser } = await adminClient
     .from('users')
-    .select('role')
+    .select('role, name')
     .eq('id', user.id)
     .single()
   if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
@@ -35,7 +37,7 @@ export async function inviteUser(
   if (role === 'caregiver' && !athleteId) return { error: 'Caregiver invitations require an athlete' }
 
   // Insert invitation row
-  const { error: inviteRowError } = await adminClient
+  const { data: inviteRow, error: inviteRowError } = await adminClient
     .from('invitations')
     .insert({
       email,
@@ -44,13 +46,48 @@ export async function inviteUser(
       invited_by: user.id,
       accepted_at: null,
     })
+    .select('id')
+    .single()
   if (inviteRowError) return { error: 'Could not create the invitation. The email may already be invited.' }
 
-  // Send magic link via Supabase Auth admin
-  const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+  // Create auth user without sending Supabase's built-in email
+  const { error: createError } = await adminClient.auth.admin.createUser({
+    email,
+    email_confirm: true,
   })
-  if (emailError) return { error: 'Could not send the invitation email. Please check the email address and try again.' }
+
+  if (createError) {
+    // Roll back the invitation row
+    await adminClient.from('invitations').delete().eq('id', inviteRow.id)
+
+    if (
+      createError.message?.toLowerCase().includes('already been registered') ||
+      createError.message?.toLowerCase().includes('already exists')
+    ) {
+      return { error: 'This email is already registered. They can sign in from the login page.' }
+    }
+    return { error: 'Could not create the user account. Please try again.' }
+  }
+
+  // Send branded invitation email via Resend
+  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL}/login`
+  const emailResult = await sendEmail({
+    to: email,
+    subject: "You're invited to SOSG Running Club",
+    html: invitationEmail({
+      role,
+      inviterName: callerUser?.name ?? null,
+      loginUrl,
+    }),
+  })
+
+  if (!emailResult.success) {
+    console.error('[invite] Email send failed:', emailResult.error)
+    revalidatePath('/admin')
+    return {
+      success: `Account created for ${email}, but the invitation email could not be sent. They can sign in at the login page.`,
+    }
+  }
 
   revalidatePath('/admin')
   return { success: `Invitation sent to ${email}` }
@@ -244,7 +281,7 @@ export async function cancelInvitation(invitationId: string): Promise<{ error?: 
 
   if (error) return { error: 'Could not cancel the invitation. Please try again.' }
 
-  // Also delete the auth user created by inviteUserByEmail (if they never signed in)
+  // Also delete the auth user created by createUser (if they never signed in)
   try {
     const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
     const ghostUser = authUsers?.find(

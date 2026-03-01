@@ -118,6 +118,76 @@ export function weeklyDigestEmail({
   `)
 }
 
+export function caregiverDigestEmail({
+  caregiverName,
+  athleteName,
+  totalSessions,
+  totalKm,
+  milestonesEarned,
+  nextMilestone,
+  weekDateRange,
+  athleteUrl,
+}: {
+  caregiverName: string | null
+  athleteName: string
+  totalSessions: number
+  totalKm: number
+  milestonesEarned: { label: string; icon: string }[]
+  nextMilestone: { label: string; current: number; target: number } | null
+  weekDateRange: string
+  athleteUrl: string
+}): string {
+  const greeting = caregiverName ? `Hi ${caregiverName}` : 'Hi there'
+  const milestoneList = milestonesEarned
+    .map(m => `<li style="margin-bottom:4px;">${m.icon} ${m.label}</li>`)
+    .join('')
+
+  const progressPct = nextMilestone
+    ? Math.min(100, Math.round((nextMilestone.current / nextMilestone.target) * 100))
+    : 0
+
+  return layout(`
+    <h1 style="font-size:22px;font-weight:700;color:${BRAND_DARK};margin:0 0 8px 0;">
+      ${greeting}, here&rsquo;s ${athleteName}&rsquo;s week
+    </h1>
+    <p style="font-size:14px;color:#6B7280;margin:0 0 20px 0;">${weekDateRange}</p>
+    <div style="background-color:#F0FDFA;border-radius:8px;padding:16px;margin-bottom:20px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="text-align:center;width:50%;">
+            <p style="font-size:32px;font-weight:700;color:${BRAND_DARK};margin:0;">${totalSessions}</p>
+            <p style="font-size:14px;color:#6B7280;margin:4px 0 0 0;">session${totalSessions !== 1 ? 's' : ''}</p>
+          </td>
+          <td style="text-align:center;width:50%;">
+            <p style="font-size:32px;font-weight:700;color:${BRAND_DARK};margin:0;">${totalKm.toFixed(1)}</p>
+            <p style="font-size:14px;color:#6B7280;margin:4px 0 0 0;">km</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+    ${milestonesEarned.length > 0 ? `
+      <p style="font-size:14px;font-weight:600;color:${BRAND_DARK};margin:0 0 8px 0;">Milestones earned this week:</p>
+      <ul style="font-size:14px;color:#4B5563;margin:0 0 20px 0;padding-left:20px;">${milestoneList}</ul>
+    ` : ''}
+    ${nextMilestone ? `
+      <div style="background-color:#F9FAFB;border-radius:8px;padding:16px;margin-bottom:20px;">
+        <p style="font-size:13px;font-weight:600;color:${BRAND_DARK};margin:0 0 8px 0;">
+          Next milestone: ${nextMilestone.label}
+        </p>
+        <div style="background-color:#E5E7EB;border-radius:4px;height:8px;overflow:hidden;">
+          <div style="background-color:${BRAND_COLOR};height:8px;width:${progressPct}%;border-radius:4px;"></div>
+        </div>
+        <p style="font-size:12px;color:#9CA3AF;margin:6px 0 0 0;">${nextMilestone.current} / ${nextMilestone.target}</p>
+      </div>
+    ` : ''}
+    <div style="text-align:center;">
+      <a href="${athleteUrl}" style="display:inline-block;background-color:${BRAND_COLOR};color:white;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:24px;">
+        View ${athleteName}&rsquo;s Journey
+      </a>
+    </div>
+  `)
+}
+
 export function invitationEmail({
   role,
   inviterName,
