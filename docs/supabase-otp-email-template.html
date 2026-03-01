@@ -1,0 +1,68 @@
+<!--
+  Supabase OTP Email Template for SOSG Running Club
+  ==================================================
+
+  Paste this into: Supabase Dashboard > Authentication > Email Templates > Magic Link
+
+  Subject line: {{ .Token }} is your SOSG Running Club sign-in code
+
+  This template matches the branded invitation email sent via Resend.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#FBF9F7;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+         style="max-width:560px;margin:0 auto;padding:32px 16px;">
+    <tr><td>
+      <!-- Header -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="margin-bottom:24px;">
+        <tr>
+          <td style="font-size:16px;font-weight:700;color:#0D9488;
+                     text-transform:uppercase;letter-spacing:2px;">
+            SOSG Running Club
+          </td>
+        </tr>
+      </table>
+      <!-- Card -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="background-color:#FFFFFF;border-radius:12px;overflow:hidden;">
+        <tr><td style="padding:32px 24px;">
+          <h1 style="font-size:22px;font-weight:700;color:#1A1A2E;margin:0 0 8px 0;">
+            Your sign-in code
+          </h1>
+          <p style="font-size:15px;color:#4B5563;margin:0 0 24px 0;">
+            Enter this code to sign in to SOSG Running Club.
+          </p>
+          <div style="text-align:center;margin:0 0 24px 0;">
+            <span style="display:inline-block;font-size:32px;font-weight:700;
+                         letter-spacing:6px;color:#1A1A2E;font-family:'Courier New',monospace;
+                         background-color:#F3F4F6;padding:16px 28px;border-radius:8px;">
+              {{ .Token }}
+            </span>
+          </div>
+          <p style="font-size:13px;color:#9CA3AF;margin:0 0 4px 0;text-align:center;">
+            This code expires in 10 minutes.
+          </p>
+          <p style="font-size:13px;color:#9CA3AF;margin:0;text-align:center;">
+            If you didn&rsquo;t request this, you can safely ignore this email.
+          </p>
+        </td></tr>
+      </table>
+      <!-- Footer -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="margin-top:24px;">
+        <tr>
+          <td style="font-size:12px;color:#9CA3AF;text-align:center;">
+            SOSG Running Club &mdash; Growing Together
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
