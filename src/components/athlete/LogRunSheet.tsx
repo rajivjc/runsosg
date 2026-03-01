@@ -54,10 +54,12 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
     try {
       const compressed = await compressPhoto(file)
       setPhotoFile(compressed)
-      setPhotoPreview(URL.createObjectURL(compressed))
+      const url = URL.createObjectURL(compressed)
+      if (url.startsWith('blob:')) setPhotoPreview(url)
     } catch {
       setPhotoFile(file)
-      setPhotoPreview(URL.createObjectURL(file))
+      const url = URL.createObjectURL(file)
+      if (url.startsWith('blob:')) setPhotoPreview(url)
     }
     setCompressing(false)
   }
