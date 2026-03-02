@@ -63,6 +63,25 @@ export async function updateAthlete(
   const communication_notes = (formData.get('communication_notes') as string ?? '').trim() || null
   const medical_notes = (formData.get('medical_notes') as string ?? '').trim() || null
   const emergency_contact = (formData.get('emergency_contact') as string ?? '').trim() || null
+  const allow_public_sharing = formData.get('allow_public_sharing') === 'true'
+
+  // Check current state to detect sharing toggle changes
+  const { data: currentAthlete } = await adminClient
+    .from('athletes')
+    .select('allow_public_sharing, sharing_disabled_by_caregiver, caregiver_user_id')
+    .eq('id', athleteId)
+    .single()
+
+  // If caregiver disabled sharing, coaches cannot re-enable
+  const sharingUpdate = currentAthlete?.sharing_disabled_by_caregiver
+    ? {} // Don't change sharing columns
+    : {
+        allow_public_sharing,
+        // If coach is disabling, clear the caregiver override flag
+        ...((!allow_public_sharing && currentAthlete?.allow_public_sharing)
+          ? { sharing_disabled_by_caregiver: false }
+          : {}),
+      }
 
   const { error } = await adminClient
     .from('athletes')
@@ -75,6 +94,7 @@ export async function updateAthlete(
       communication_notes,
       medical_notes,
       emergency_contact,
+      ...sharingUpdate,
       updated_at: new Date().toISOString(),
       updated_by: user.id,
     })
@@ -82,7 +102,29 @@ export async function updateAthlete(
 
   if (error) return { error: 'Could not update athlete profile. Please try again.' }
 
+  // Notify caregiver when sharing is enabled
+  const justEnabled = allow_public_sharing && !currentAthlete?.allow_public_sharing && !currentAthlete?.sharing_disabled_by_caregiver
+  if (justEnabled && currentAthlete?.caregiver_user_id) {
+    const { data: coachRow } = await adminClient
+      .from('users')
+      .select('name')
+      .eq('id', user.id)
+      .single()
+
+    await adminClient.from('notifications').insert({
+      user_id: currentAthlete.caregiver_user_id,
+      type: 'general' as const,
+      channel: 'in_app' as const,
+      payload: {
+        message: `Coach ${coachRow?.name ?? 'A coach'} enabled a shareable link for ${name}'s running achievements. The link shows ${name}'s name, run count, distance, and milestones — nothing else. You can turn this off anytime from your home screen.`,
+        athlete_id: athleteId,
+      },
+      read: false,
+    })
+  }
+
   revalidatePath(`/athletes/${athleteId}`)
+  revalidatePath('/feed')
   return {}
 }
 
@@ -194,6 +236,7 @@ export async function createManualSession(
     }
 
     if (feel !== null && (feel === 1 || feel === 2)) {
+      // TODO: Add web push notification here — sendPush() to all coaches for low_feel_alert
       await adminClient.from('notifications').insert({
         user_id: user.id,
         type: 'low_feel_alert',

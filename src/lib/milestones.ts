@@ -147,6 +147,8 @@ export async function checkAndAwardMilestones(
     }
 
     // 6. Create milestone notifications for the coach
+    // TODO: Add web push notification here — sendPush() to coach + caregiver
+    // See plan: Feature B (Web Push Notifications) — deferred to avoid notification fatigue
     if (coachUserId) {
       const notificationInserts = toAward.map((def: any) => ({
         user_id: coachUserId,

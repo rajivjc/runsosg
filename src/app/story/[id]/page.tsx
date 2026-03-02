@@ -18,7 +18,7 @@ const getStoryData = cache(async (athleteId: string) => {
   ] = await Promise.all([
     adminClient
       .from('athletes')
-      .select('id, name, joined_at, running_goal, created_at')
+      .select('id, name, joined_at, running_goal, created_at, allow_public_sharing')
       .eq('id', athleteId)
       .single(),
     adminClient
@@ -51,7 +51,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!data) return { title: 'Story Not Found' }
 
   const { athlete, sessions, milestones, heroPhotoUrl } = data
+  const isPublic = (athlete as Record<string, unknown>).allow_public_sharing === true
+
+  if (!isPublic) {
+    return {
+      title: 'Private — SOSG Running Club',
+      robots: { index: false, follow: false },
+    }
+  }
+
   const totalKm = sessions.reduce((sum, s: any) => sum + (s.distance_km ?? 0), 0)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const ogImageUrl = `${appUrl}/api/story/${params.id}/image`
 
   const description = `${athlete.name} has completed ${sessions.length} session${sessions.length !== 1 ? 's' : ''} covering ${totalKm.toFixed(1)}km with ${milestones.length} milestone${milestones.length !== 1 ? 's' : ''} at SOSG Running Club.`
 
@@ -62,13 +73,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: `${athlete.name}'s Running Journey`,
       description,
       type: 'profile',
-      ...(heroPhotoUrl ? { images: [{ url: heroPhotoUrl }] } : {}),
+      images: heroPhotoUrl
+        ? [{ url: heroPhotoUrl }]
+        : [{ url: ogImageUrl, width: 1200, height: 630 }],
     },
     twitter: {
-      card: heroPhotoUrl ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title: `${athlete.name}'s Running Journey`,
       description,
-      ...(heroPhotoUrl ? { images: [heroPhotoUrl] } : {}),
+      images: heroPhotoUrl ? [heroPhotoUrl] : [ogImageUrl],
     },
   }
 }
@@ -78,6 +91,29 @@ export default async function StoryPage({ params }: PageProps) {
   if (!data) notFound()
 
   const { athlete, sessions, milestones, heroPhotoUrl } = data
+  const isPublic = (athlete as Record<string, unknown>).allow_public_sharing === true
+
+  if (!isPublic) {
+    return (
+      <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm px-8 py-10 flex flex-col items-center text-center">
+          <span className="text-5xl mb-4">🔒</span>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">This profile is private</h1>
+          <p className="text-sm text-gray-500 mb-6">
+            This athlete&apos;s running journey is not publicly shared.
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-full px-6 py-3 transition-colors"
+          >
+            Sign in
+          </Link>
+          <p className="text-xs text-gray-300 font-medium uppercase tracking-widest mt-6">SOSG Running Club</p>
+        </div>
+      </div>
+    )
+  }
+
   const totalKm = sessions.reduce((sum, s: any) => sum + (s.distance_km ?? 0), 0)
   const sessionsWithFeel = sessions.filter((s: any) => s.feel != null)
   const avgFeel = sessionsWithFeel.length > 0
@@ -201,6 +237,9 @@ export default async function StoryPage({ params }: PageProps) {
           />
           <p className="text-xs text-gray-300 font-medium uppercase tracking-widest">SOSG Running Club — Growing Together</p>
         </div>
+        <p className="text-[10px] text-white/40 text-center mt-4 max-w-xs">
+          This page shows {athlete.name}&apos;s running achievements only. No personal details, notes, or contact information are included.
+        </p>
       </div>
     </div>
   )

@@ -19,6 +19,10 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
+// TODO: Web Push Notifications — add 'push' and 'notificationclick' event
+// listeners here once Feature B (Web Push) is implemented.
+// See plan for details: push event → showNotification(), notificationclick → openWindow()
+
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     // Network-first for navigation, cache the response for faster PWA launches

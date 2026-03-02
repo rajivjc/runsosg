@@ -29,7 +29,7 @@ export default async function EditAthletePage({ params }: PageProps) {
 
   const { data: athlete } = await supabase
     .from('athletes')
-    .select('id, name, date_of_birth, running_goal, goal_type, goal_target, communication_notes, medical_notes, emergency_contact, photo_url, active')
+    .select('id, name, date_of_birth, running_goal, goal_type, goal_target, communication_notes, medical_notes, emergency_contact, photo_url, active, allow_public_sharing, sharing_disabled_by_caregiver, caregiver_user_id')
     .eq('id', id)
     .single()
 

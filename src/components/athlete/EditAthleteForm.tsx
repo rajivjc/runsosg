@@ -13,6 +13,9 @@ type AthleteProfile = {
   communication_notes: string | null
   medical_notes: string | null
   emergency_contact: string | null
+  allow_public_sharing?: boolean
+  sharing_disabled_by_caregiver?: boolean
+  caregiver_user_id?: string | null
 }
 
 type Props = {
@@ -35,6 +38,7 @@ function SubmitButton() {
 
 export default function EditAthleteForm({ athlete, onUpdate }: Props) {
   const [error, setError] = useState<string | null>(null)
+  const [sharingEnabled, setSharingEnabled] = useState(athlete.allow_public_sharing ?? false)
 
   async function handleAction(formData: FormData) {
     setError(null)
@@ -164,6 +168,61 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
           placeholder="e.g. Mum — +65 9123 4567"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
         />
+      </div>
+
+      {/* Share achievements */}
+      <div className="bg-teal-50/50 border border-teal-100 rounded-lg px-4 py-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-teal-700">📣 Share achievements</p>
+          {athlete.sharing_disabled_by_caregiver ? (
+            <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              Disabled by caregiver
+            </span>
+          ) : (
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                name="allow_public_sharing"
+                value="true"
+                checked={sharingEnabled}
+                onChange={(e) => setSharingEnabled(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600" />
+            </label>
+          )}
+        </div>
+        {athlete.sharing_disabled_by_caregiver ? (
+          <p className="text-[10px] text-gray-500">
+            {athlete.name}&apos;s caregiver turned this off. They can re-enable it from their dashboard.
+          </p>
+        ) : (
+          <>
+            <p className="text-[10px] text-teal-600">
+              Create a shareable link for {athlete.name}&apos;s milestones and running journey. Caregivers can send it to family.
+            </p>
+            <p className="text-[10px] text-teal-600">
+              The link shows: name, run count, distance, milestones. Never included: notes, medical info, contact details.
+            </p>
+            {sharingEnabled && (
+              <div className="pt-1 space-y-1">
+                <a
+                  href={`/story/${athlete.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-teal-700 hover:text-teal-900 font-medium underline"
+                >
+                  Preview what the link looks like →
+                </a>
+                {athlete.caregiver_user_id && (
+                  <p className="text-[10px] text-amber-600">
+                    {athlete.name}&apos;s caregiver will be notified and can turn this off anytime.
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {error && (

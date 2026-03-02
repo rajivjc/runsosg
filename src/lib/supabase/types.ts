@@ -23,7 +23,7 @@ export interface Database {
       }
       athletes: {
         Row: Athlete & Record<string, unknown>
-        Insert: Omit<Athlete, 'id' | 'created_at' | 'updated_at' | 'updated_by' | 'goal_type' | 'goal_target'> & { id?: string; created_at?: string | null; updated_at?: string | null; updated_by?: string | null; goal_type?: Athlete['goal_type']; goal_target?: number | null }
+        Insert: Omit<Athlete, 'id' | 'created_at' | 'updated_at' | 'updated_by' | 'goal_type' | 'goal_target' | 'allow_public_sharing' | 'sharing_disabled_by_caregiver'> & { id?: string; created_at?: string | null; updated_at?: string | null; updated_by?: string | null; goal_type?: Athlete['goal_type']; goal_target?: number | null; allow_public_sharing?: boolean; sharing_disabled_by_caregiver?: boolean }
         Update: Partial<Athlete>
         Relationships: []
       }
@@ -219,6 +219,8 @@ export interface Athlete {
   medical_notes: string | null
   emergency_contact: string | null
   caregiver_user_id: string | null
+  allow_public_sharing: boolean
+  sharing_disabled_by_caregiver: boolean
   updated_by: string | null
   updated_at: string | null
   created_at: string | null
