@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import ShareButton from '@/components/milestone/ShareButton'
+import CloseButton from '@/components/milestone/CloseButton'
 import { getHeroPhoto, getSignedUrl } from '@/lib/media'
 
 interface PageProps {
@@ -184,9 +185,7 @@ export default async function StoryPage({ params }: PageProps) {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6">
-      <Link href="/feed" className="absolute top-4 left-4 inline-flex items-center gap-1 text-sm text-white/70 hover:text-white transition-colors min-h-[44px] min-w-[44px] px-2">
-        ← Home
-      </Link>
+      <CloseButton />
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm px-8 py-10 flex flex-col items-center text-center">
         {/* Hero photo or running emoji fallback */}
         {heroPhotoUrl ? (
