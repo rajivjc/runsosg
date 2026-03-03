@@ -17,6 +17,14 @@ jest.mock('@/lib/email/templates', () => ({
   milestoneEmail: jest.fn().mockReturnValue('<html>test</html>'),
 }))
 
+// ── Mock cached milestone definitions ─────────────────────────────────────────
+
+const mockGetMilestoneDefinitions = jest.fn()
+
+jest.mock('@/lib/feed/shared-queries', () => ({
+  getMilestoneDefinitions: (...args: unknown[]) => mockGetMilestoneDefinitions(...args),
+}))
+
 // ── Mock adminClient ──────────────────────────────────────────────────────────
 
 const mockFrom = jest.fn()
@@ -61,12 +69,12 @@ describe('checkAndAwardMilestones — single athlete fetch', () => {
     const insertedMilestones: unknown[] = []
     const insertedNotifications: unknown[] = []
 
+    // Milestone definitions now come from the cached getter
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 1 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 1 } },
-        ])
-      }
       if (table === 'milestones') {
         const obj: Record<string, unknown> = {}
         const handler: ProxyHandler<Record<string, unknown>> = {
@@ -136,12 +144,11 @@ describe('checkAndAwardMilestones — single athlete fetch', () => {
   it('uses athlete name in both email and notification from single fetch', async () => {
     const insertedNotifications: unknown[] = []
 
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 1 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 1 } },
-        ])
-      }
       if (table === 'milestones') {
         const obj: Record<string, unknown> = {}
         const handler: ProxyHandler<Record<string, unknown>> = {
@@ -201,12 +208,11 @@ describe('checkAndAwardMilestones — single athlete fetch', () => {
   it('falls back to default name when athlete not found', async () => {
     const insertedNotifications: unknown[] = []
 
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 1 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 1 } },
-        ])
-      }
       if (table === 'milestones') {
         const obj: Record<string, unknown> = {}
         const handler: ProxyHandler<Record<string, unknown>> = {

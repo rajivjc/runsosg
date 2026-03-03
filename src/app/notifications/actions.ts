@@ -18,7 +18,7 @@ export async function markNotificationRead(notificationId: string): Promise<{ er
   if (error) return { error: 'Could not dismiss notification.' }
 
   revalidatePath('/notifications')
-  revalidatePath('/feed')
+  // Reading notifications doesn't change feed content — skip revalidatePath('/feed')
   return {}
 }
 
@@ -36,7 +36,7 @@ export async function markAllNotificationsRead(): Promise<{ error?: string }> {
   if (error) return { error: 'Could not mark notifications as read.' }
 
   revalidatePath('/notifications')
-  revalidatePath('/feed')
+  // Reading notifications doesn't change feed content — skip revalidatePath('/feed')
   return {}
 }
 

@@ -1,6 +1,7 @@
 import { adminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/resend'
 import { milestoneEmail } from '@/lib/email/templates'
+import { getMilestoneDefinitions } from '@/lib/feed/shared-queries'
 
 export async function checkAndAwardMilestones(
   athleteId: string,
@@ -8,14 +9,10 @@ export async function checkAndAwardMilestones(
   coachUserId?: string
 ): Promise<number> {
   try {
-    // 1. Fetch all active automatic milestone definitions
-    const { data: definitions } = await adminClient
-      .from('milestone_definitions')
-      .select('id, label, icon, condition')
-      .eq('active', true)
-      .eq('type', 'automatic')
+    // 1. Fetch all active automatic milestone definitions (cached)
+    const definitions = await getMilestoneDefinitions()
 
-    if (!definitions || definitions.length === 0) return 0
+    if (definitions.length === 0) return 0
 
     // 2. Fetch existing milestones for this athlete to avoid duplicates
     const { data: existing } = await adminClient

@@ -16,6 +16,14 @@ jest.mock('@/lib/email/templates', () => ({
   milestoneEmail: jest.fn().mockReturnValue('<html>test</html>'),
 }))
 
+// ── Mock cached milestone definitions ─────────────────────────────────────────
+
+const mockGetMilestoneDefinitions = jest.fn()
+
+jest.mock('@/lib/feed/shared-queries', () => ({
+  getMilestoneDefinitions: (...args: unknown[]) => mockGetMilestoneDefinitions(...args),
+}))
+
 // ── Mock adminClient ──────────────────────────────────────────────────────────
 
 const mockFrom = jest.fn()
@@ -59,8 +67,8 @@ describe('checkAndAwardMilestones', () => {
   const coachId = 'coach-1'
 
   it('returns 0 when there are no active definitions', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') return chainable([])
+    mockGetMilestoneDefinitions.mockResolvedValue([])
+    mockFrom.mockImplementation(() => {
       return chainable([])
     })
 
@@ -71,12 +79,11 @@ describe('checkAndAwardMilestones', () => {
   it('awards session_count milestone when count matches exactly', async () => {
     const insertedRows: unknown[] = []
 
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 3 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 3 } },
-        ])
-      }
       if (table === 'milestones') {
         // On select (existing milestones) → none
         // On insert → capture the data
@@ -120,12 +127,11 @@ describe('checkAndAwardMilestones', () => {
   it('awards session_count milestone when count EXCEEDS threshold (>=)', async () => {
     const insertedRows: unknown[] = []
 
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-3', label: '3 Runs', icon: '🏃', condition: { metric: 'session_count', threshold: 3 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-3', label: '3 Runs', icon: '🏃', condition: { metric: 'session_count', threshold: 3 } },
-        ])
-      }
       if (table === 'milestones') {
         const obj: Record<string, unknown> = {}
         const handler: ProxyHandler<Record<string, unknown>> = {
@@ -164,12 +170,11 @@ describe('checkAndAwardMilestones', () => {
   })
 
   it('does NOT award session_count milestone when count does not match', async () => {
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-1', label: '5 Runs', icon: '🏃', condition: { metric: 'session_count', threshold: 5 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-1', label: '5 Runs', icon: '🏃', condition: { metric: 'session_count', threshold: 5 } },
-        ])
-      }
       if (table === 'milestones') return chainable([])
       if (table === 'sessions') {
         return chainable([
@@ -188,12 +193,11 @@ describe('checkAndAwardMilestones', () => {
   it('awards distance_km milestone when current session distance >= threshold', async () => {
     const insertedRows: unknown[] = []
 
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-5k', label: '5K Runner', icon: '🎉', condition: { metric: 'distance_km', threshold: 5 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-5k', label: '5K Runner', icon: '🎉', condition: { metric: 'distance_km', threshold: 5 } },
-        ])
-      }
       if (table === 'milestones') {
         const obj: Record<string, unknown> = {}
         const handler: ProxyHandler<Record<string, unknown>> = {
@@ -229,12 +233,11 @@ describe('checkAndAwardMilestones', () => {
   it('awards longest_run milestone when current session is the longest', async () => {
     const insertedRows: unknown[] = []
 
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-pb', label: 'Personal Best', icon: '⭐', condition: { metric: 'longest_run' } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-pb', label: 'Personal Best', icon: '⭐', condition: { metric: 'longest_run' } },
-        ])
-      }
       if (table === 'milestones') {
         const obj: Record<string, unknown> = {}
         const handler: ProxyHandler<Record<string, unknown>> = {
@@ -269,12 +272,11 @@ describe('checkAndAwardMilestones', () => {
   })
 
   it('does NOT award longest_run when current session is NOT the longest', async () => {
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-pb', label: 'Personal Best', icon: '⭐', condition: { metric: 'longest_run' } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-pb', label: 'Personal Best', icon: '⭐', condition: { metric: 'longest_run' } },
-        ])
-      }
       if (table === 'milestones') return chainable([])
       if (table === 'sessions') {
         return chainable([
@@ -290,12 +292,11 @@ describe('checkAndAwardMilestones', () => {
   })
 
   it('skips definitions already awarded to the athlete', async () => {
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 1 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-1', label: 'First Run!', icon: '🏃', condition: { metric: 'session_count', threshold: 1 } },
-        ])
-      }
       if (table === 'milestones') {
         // Already awarded def-1
         return chainable([{ milestone_definition_id: 'def-1' }])
@@ -314,12 +315,11 @@ describe('checkAndAwardMilestones', () => {
     const insertedMilestones: unknown[] = []
     const insertedNotifications: unknown[] = []
 
+    mockGetMilestoneDefinitions.mockResolvedValue([
+      { id: 'def-10', label: '10 Sessions', icon: '🔟', condition: { metric: 'session_count', threshold: 2 } },
+    ])
+
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'milestone_definitions') {
-        return chainable([
-          { id: 'def-10', label: '10 Sessions', icon: '🔟', condition: { metric: 'session_count', threshold: 2 } },
-        ])
-      }
       if (table === 'milestones') {
         const obj: Record<string, unknown> = {}
         const handler: ProxyHandler<Record<string, unknown>> = {
@@ -385,6 +385,7 @@ describe('checkAndAwardMilestones', () => {
   })
 
   it('handles errors gracefully and returns 0', async () => {
+    mockGetMilestoneDefinitions.mockRejectedValue(new Error('DB connection failed'))
     mockFrom.mockImplementation(() => {
       throw new Error('DB connection failed')
     })

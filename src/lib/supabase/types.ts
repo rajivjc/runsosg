@@ -177,6 +177,14 @@ export interface Database {
         Args: Record<string, never>
         Returns: string
       }
+      get_total_km: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      get_weekly_stats: {
+        Args: { since: string }
+        Returns: { session_count: number; total_km: number; athlete_count: number }[]
+      }
     }
     Enums: Record<string, never>
   }

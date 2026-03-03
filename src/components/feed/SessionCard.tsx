@@ -1,8 +1,7 @@
-'use client'
-
 import Link from 'next/link'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import KudosButton from '@/components/feed/KudosButton'
+import MilestoneShareLink from '@/components/feed/MilestoneShareLink'
 import type { FeedSession, MilestoneBadge } from '@/lib/feed/types'
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -66,16 +65,7 @@ export default function SessionCard({ session: s, badges, kudosCount, myKudos, i
           {badges.map((m, i) => (
             <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded-full">
               {m.icon || '🏆'} {m.label}
-              {m.id && (
-                <Link
-                  href={`/milestone/${m.id}`}
-                  className="ml-0.5 text-amber-400 hover:text-amber-600"
-                  title="Share this milestone"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  ↗
-                </Link>
-              )}
+              {m.id && <MilestoneShareLink milestoneId={m.id} />}
             </span>
           ))}
         </div>

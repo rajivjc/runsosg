@@ -97,6 +97,6 @@ export async function markCheersViewed(
     return { error: 'Could not mark cheers as viewed' }
   }
 
-  revalidatePath('/feed')
+  // Viewing cheers doesn't change feed content — skip revalidatePath('/feed')
   return {}
 }

@@ -3,6 +3,7 @@
 import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 
 async function verifyAdmin(): Promise<{ userId: string } | { error: string }> {
   const supabase = await createClient()
@@ -67,6 +68,7 @@ export async function createMilestoneDefinition(
   if (error) return { error: 'Could not create milestone definition. Please try again.' }
 
   revalidatePath('/admin/milestones')
+  revalidateTag('milestone-definitions')
   return { success: `Milestone "${label}" created.` }
 }
 
@@ -85,6 +87,7 @@ export async function toggleMilestoneDefinitionActive(
   if (error) return { error: 'Could not update milestone. Please try again.' }
 
   revalidatePath('/admin/milestones')
+  revalidateTag('milestone-definitions')
   return {}
 }
 
@@ -110,5 +113,6 @@ export async function updateMilestoneDefinition(
   if (error) return { error: 'Could not update milestone. Please try again.' }
 
   revalidatePath('/admin/milestones')
+  revalidateTag('milestone-definitions')
   return {}
 }

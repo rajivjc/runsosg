@@ -6,6 +6,7 @@ import {
   detectBestWeekEver,
   type SessionForInsights,
 } from '@/lib/analytics/coaching-insights'
+import { getMilestoneDefinitions } from '@/lib/feed/shared-queries'
 
 export interface FocusItem {
   type: 'approaching_milestone' | 'not_seen_recently' | 'feel_declining' | 'personal_best' | 'best_week_ever'
@@ -38,12 +39,17 @@ export interface CaregiverFocusData {
  * Returns streak info + actionable focus items (max 3).
  */
 export async function getCoachFocusData(coachUserId: string): Promise<CoachFocusData> {
-  // 1. All sessions by this coach (for streak + discovering their athletes)
+  // Issue 4: Only fetch recent coach sessions (90 days is enough for streak calc)
+  const ninetyDaysAgo = new Date()
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+  const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().split('T')[0]
+
   const { data: coachSessions } = await adminClient
     .from('sessions')
     .select('date, athlete_id')
     .eq('coach_user_id', coachUserId)
     .eq('status', 'completed')
+    .gte('date', ninetyDaysAgoStr)
 
   if (!coachSessions || coachSessions.length === 0) {
     return { streak: { current: 0, activeThisWeek: false }, items: [] }
@@ -52,26 +58,26 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
   // 2. Calculate streak (filter out sessions with null/empty dates)
   const streak = calculateWeeklyStreak(coachSessions.map(s => s.date).filter((d): d is string => d != null && d !== ''))
 
-  // 3. Unique athlete IDs this coach has worked with
+  // 3. Unique athlete IDs this coach has worked with (recent)
   const athleteIds = [...new Set(coachSessions.map(s => s.athlete_id))]
 
-  // 4. Parallel: athlete names, milestone defs, earned milestones
-  //    We derive session counts and last-dates from coachSessions + a single
-  //    lightweight query (only athlete_id) rather than fetching every row.
+  // 4. Parallel: athlete names, milestone defs (cached), earned milestones,
+  //    and recent sessions per athlete for insights
   const [
     { data: athleteRows },
     { data: allAthleteIds },
-    { data: milestoneDefs },
+    milestoneDefs,
     { data: earnedMilestones },
     { data: latestPerAthlete },
   ] = await Promise.all([
     adminClient.from('athletes').select('id, name').in('id', athleteIds).eq('active', true),
-    // Lightweight: only athlete_id column for counting (no date/distance payload)
+    // Lightweight: only athlete_id column for session counting
     adminClient.from('sessions').select('athlete_id').in('athlete_id', athleteIds).eq('status', 'completed'),
-    adminClient.from('milestone_definitions').select('id, label, icon, condition').eq('active', true).eq('type', 'automatic'),
+    // Issue 5: Use cached milestone definitions
+    getMilestoneDefinitions(),
     adminClient.from('milestones').select('athlete_id, milestone_definition_id').in('athlete_id', athleteIds),
-    // Sessions per athlete — for last date, insights (feel trends, PBs)
-    adminClient.from('sessions').select('athlete_id, date, distance_km, feel').in('athlete_id', athleteIds).eq('status', 'completed').order('date', { ascending: false }),
+    // Issue 4: Limit insight data to last 90 days (feel trends, PBs, best weeks)
+    adminClient.from('sessions').select('athlete_id, date, distance_km, feel').in('athlete_id', athleteIds).eq('status', 'completed').gte('date', ninetyDaysAgoStr).order('date', { ascending: false }),
   ])
 
   const nameMap = Object.fromEntries((athleteRows ?? []).map(a => [a.id, a.name]))
@@ -107,7 +113,7 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
     const count = sessionCountMap[athleteId] ?? 0
     const earned = earnedMap[athleteId] ?? new Set()
 
-    for (const def of milestoneDefs ?? []) {
+    for (const def of milestoneDefs) {
       if (earned.has(def.id)) continue
       const condition = def.condition as { metric?: string; threshold?: number } | null
       if (!condition || condition.metric !== 'session_count' || !condition.threshold) continue
@@ -230,12 +236,13 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
 export async function getCaregiverFocusData(athleteId: string): Promise<CaregiverFocusData> {
   const [
     { count: sessionCount },
-    { data: milestoneDefs },
+    milestoneDefs,
     { data: earnedMilestones },
     { data: lastSession },
   ] = await Promise.all([
     adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('athlete_id', athleteId).eq('status', 'completed'),
-    adminClient.from('milestone_definitions').select('id, label, icon, condition').eq('active', true).eq('type', 'automatic'),
+    // Issue 5: Use cached milestone definitions
+    getMilestoneDefinitions(),
     adminClient.from('milestones').select('milestone_definition_id').eq('athlete_id', athleteId),
     adminClient
       .from('sessions')
@@ -254,7 +261,7 @@ export async function getCaregiverFocusData(athleteId: string): Promise<Caregive
   let nextMilestone: CaregiverFocusData['nextMilestone'] = null
   let closestThreshold = Infinity
 
-  for (const def of milestoneDefs ?? []) {
+  for (const def of milestoneDefs) {
     if (earned.has(def.id)) continue
     const condition = def.condition as { metric?: string; threshold?: number } | null
     if (!condition || condition.metric !== 'session_count' || !condition.threshold) continue

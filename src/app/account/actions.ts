@@ -23,7 +23,7 @@ export async function disconnectStrava() {
 
   revalidatePath('/account')
   revalidatePath('/athletes')
-  revalidatePath('/feed')
+  // Disconnecting Strava doesn't change feed session data — skip revalidatePath('/feed')
   redirect('/account')
 }
 

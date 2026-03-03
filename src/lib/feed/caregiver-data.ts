@@ -1,14 +1,15 @@
 /**
  * Caregiver feed data loader.
  *
- * Fetches only the data caregivers need: their linked athlete's stats,
- * plus the shared global feed (sessions + kudos).
+ * Uses Supabase joins, DB-level aggregation (RPCs), and shared helpers
+ * to minimise query count and payload size.
  */
 
 import { adminClient } from '@/lib/supabase/admin'
 import { getCaregiverFocusData } from '@/lib/feed/today-focus'
 import { computeWeeklyRecap } from '@/lib/feed/weekly-recap'
-import { groupByDate, buildLookupMap } from '@/lib/feed/utils'
+import { groupByDate } from '@/lib/feed/utils'
+import { loadClubStats } from '@/lib/feed/shared-queries'
 import type {
   CaregiverFeedData,
   FeedSession,
@@ -21,22 +22,24 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
 
-  // ─── Batch 1: User + global feed + club stats + caregiver's athlete ──
+  const weekAgo = new Date()
+  weekAgo.setDate(weekAgo.getDate() - 7)
+  const weekAgoStr = weekAgo.toISOString().split('T')[0]
+
+  // ─── Batch 1: User + feed (with joins) + milestones + caregiver's athlete ──
   const [
     { data: userRow },
     { data: rawSessions },
     { data: rawMilestones },
-    { count: totalSessionCount },
-    { count: totalAthleteCount },
-    { count: totalMilestoneCount },
-    { count: coachCount },
-    { count: caregiverCount },
     { data: caregiverAthlete },
+    clubStats,
+    { data: weeklyStatsResult },
   ] = await Promise.all([
     adminClient.from('users').select('role, name').eq('id', userId).single(),
+    // Issue 3: Supabase joins fetch athlete + coach names in one query
     adminClient
       .from('sessions')
-      .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title')
+      .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, athletes(name), users!sessions_coach_user_id_fkey(name)')
       .eq('status', 'completed')
       .order('date', { ascending: false })
       .limit(30),
@@ -45,12 +48,11 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       .select('id, athlete_id, session_id, label, achieved_at, athletes(name), milestone_definitions(icon)')
       .order('achieved_at', { ascending: false })
       .limit(20),
-    adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
-    adminClient.from('athletes').select('*', { count: 'exact', head: true }).eq('active', true),
-    adminClient.from('milestones').select('*', { count: 'exact', head: true }),
-    adminClient.from('users').select('*', { count: 'exact', head: true }).in('role', ['coach', 'admin']).eq('active', true),
-    adminClient.from('users').select('*', { count: 'exact', head: true }).eq('role', 'caregiver').eq('active', true),
     adminClient.from('athletes').select('id, name, allow_public_sharing, sharing_disabled_by_caregiver').eq('caregiver_user_id', userId).maybeSingle(),
+    // Issue 1 & 2: Shared helper for club stats (includes get_total_km RPC)
+    loadClubStats(),
+    // Issue 8: DB-level weekly stats instead of JS filtering
+    adminClient.rpc('get_weekly_stats', { since: weekAgoStr }),
   ])
 
   // Start caregiver focus concurrently if athlete exists
@@ -58,23 +60,21 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     ? getCaregiverFocusData(caregiverAthlete.id).catch(() => null)
     : Promise.resolve(null)
 
-  // ─── Batch 2: Session lookups + caregiver-specific data ────────
+  // ─── Batch 2: Kudos + caregiver-specific data (athlete/coach names from joins) ──
   const sessions = rawSessions ?? []
-  const athleteIds = [...new Set(sessions.map(s => s.athlete_id).filter(Boolean))]
-  const coachIds = [...new Set(sessions.map(s => s.coach_user_id).filter((id): id is string => id != null))]
   const sessionIds = sessions.map(s => s.id)
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 
-  const batch2 = await Promise.all([
-    // Athlete names for feed sessions
-    athleteIds.length > 0
-      ? adminClient.from('athletes').select('id, name').in('id', athleteIds)
-      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
-    // Coach names for feed sessions
-    coachIds.length > 0
-      ? adminClient.from('users').select('id, name, email').in('id', coachIds)
-      : Promise.resolve({ data: [] as { id: string; name: string | null; email: string | null }[] }),
+  const [
+    { data: kudosRows },
+    { data: myKudosRows },
+    { data: cgSessions },
+    { data: cgMilestones },
+    { data: cgNotes },
+    { count: cheerTodayCount },
+    { data: sentCheers },
+  ] = await Promise.all([
     // Kudos counts
     sessionIds.length > 0
       ? adminClient.from('kudos').select('session_id').in('session_id', sessionIds)
@@ -99,27 +99,9 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     adminClient.from('cheers').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', todayStart.toISOString()),
     // Sent cheers
     adminClient.from('cheers').select('id, athlete_id, message, created_at, viewed_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
-    // Total km (shared with coach, needed for club stats)
-    adminClient.from('sessions').select('distance_km').eq('status', 'completed'),
   ])
 
-  const [
-    { data: athletes },
-    { data: coaches },
-    { data: kudosRows },
-    { data: myKudosRows },
-    { data: cgSessions },
-    { data: cgMilestones },
-    { data: cgNotes },
-    { count: cheerTodayCount },
-    { data: sentCheers },
-    { data: totalKmRows },
-  ] = batch2
-
-  // ─── Build enriched feed ───────────────────────────────────────
-  const athleteMap = buildLookupMap((athletes ?? []) as { id: string; name?: string | null }[])
-  const coachMap = buildLookupMap((coaches ?? []) as { id: string; name?: string | null; email?: string | null }[])
-
+  // ─── Build enriched feed (names extracted from joins) ──────────
   const feed: FeedSession[] = sessions.map(s => ({
     id: s.id,
     date: s.date,
@@ -130,8 +112,8 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     athlete_id: s.athlete_id,
     coach_user_id: s.coach_user_id,
     strava_title: s.strava_title,
-    athlete_name: athleteMap[s.athlete_id] ?? 'Unknown athlete',
-    coach_name: coachMap[s.coach_user_id ?? ''] ?? null,
+    athlete_name: (s as unknown as { athletes?: { name?: string } }).athletes?.name ?? 'Unknown athlete',
+    coach_name: (s as unknown as { users?: { name?: string } }).users?.name ?? null,
   }))
 
   const groups = groupByDate(feed)
@@ -175,25 +157,26 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
   }
   const myKudos = new Set((myKudosRows ?? []).map(k => k.session_id))
 
-  // ─── Weekly stats ──────────────────────────────────────────────
-  const weekAgo = new Date()
-  weekAgo.setDate(weekAgo.getDate() - 7)
-  const thisWeek = feed.filter(s => {
-    if (!s.date) return false
-    const d = new Date(s.date)
-    return !isNaN(d.getTime()) && d >= weekAgo
-  })
-
+  // ─── Weekly recap (needs individual sessions for star moment) ──
   const weekStart = new Date()
   weekStart.setDate(weekStart.getDate() - 7)
   weekStart.setHours(0, 0, 0, 0)
+  const thisWeekSessions = feed.filter(s => {
+    if (!s.date) return false
+    const d = new Date(s.date)
+    return !isNaN(d.getTime()) && d >= weekStart
+  })
   const weeklyRecap = computeWeeklyRecap(
-    thisWeek.map(s => ({ athlete_id: s.athlete_id, athlete_name: s.athlete_name, distance_km: s.distance_km, feel: s.feel })),
+    thisWeekSessions.map(s => ({ athlete_id: s.athlete_id, athlete_name: s.athlete_name, distance_km: s.distance_km, feel: s.feel })),
     recentMilestoneDates,
     weekStart
   )
 
-  const totalKm = (totalKmRows ?? []).reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
+  // Issue 8: Use DB-computed weekly stats for accuracy
+  const weeklyRow = weeklyStatsResult as unknown as { session_count: number; total_km: number; athlete_count: number } | null
+  const weeklyStats = weeklyRow
+    ? { count: weeklyRow.session_count, km: Number(weeklyRow.total_km), athletes: weeklyRow.athlete_count }
+    : { count: thisWeekSessions.length, km: thisWeekSessions.reduce((sum, s) => sum + (s.distance_km ?? 0), 0), athletes: new Set(thisWeekSessions.map(s => s.athlete_id)).size }
 
   // ─── Caregiver milestones formatting ───────────────────────────
   const formattedCgMilestones = (cgMilestones ?? []).map((m: Record<string, unknown>) => ({
@@ -218,22 +201,11 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     groups,
     kudosCounts,
     myKudos,
-    clubStats: {
-      sessions: totalSessionCount ?? 0,
-      km: totalKm,
-      athletes: totalAthleteCount ?? 0,
-      milestones: totalMilestoneCount ?? 0,
-      coaches: coachCount ?? 0,
-      caregivers: caregiverCount ?? 0,
-    },
+    clubStats,
     milestonesBySession,
     celebrationMilestones,
     weeklyRecap,
-    weeklyStats: {
-      count: thisWeek.length,
-      km: thisWeek.reduce((sum, s) => sum + (s.distance_km ?? 0), 0),
-      athletes: new Set(thisWeek.map(s => s.athlete_id)).size,
-    },
+    weeklyStats,
     allowPublicSharing: (caregiverAthlete as Record<string, unknown>)?.allow_public_sharing === true,
     sharingDisabledByCaregiver: (caregiverAthlete as Record<string, unknown>)?.sharing_disabled_by_caregiver === true,
   }
