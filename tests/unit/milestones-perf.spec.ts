@@ -32,7 +32,7 @@ const mockFrom = jest.fn()
 jest.mock('@/lib/supabase/admin', () => ({
   adminClient: {
     from: (...args: unknown[]) => mockFrom(...args),
-    auth: { admin: { listUsers: jest.fn().mockResolvedValue({ data: { users: [] } }) } },
+    auth: { admin: { listUsers: jest.fn().mockResolvedValue({ data: { users: [] } }), getUserById: jest.fn().mockResolvedValue({ data: { user: null } }) } },
   },
 }))
 

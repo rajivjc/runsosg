@@ -89,7 +89,14 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     .eq('id', user.id)
     .single()
 
-  if (userRow && userRow.active === false) {
+  if (!userRow) {
+    // User exists in auth but not in users table — redirect to onboarding
+    const setupUrl = request.nextUrl.clone()
+    setupUrl.pathname = '/setup'
+    return NextResponse.redirect(setupUrl)
+  }
+
+  if (userRow.active === false) {
     await supabase.auth.signOut()
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'

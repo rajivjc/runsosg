@@ -25,10 +25,15 @@ export async function toggleKudos(sessionId: string): Promise<{ given: boolean; 
       .delete()
       .eq('id', existing.id)
   } else {
-    // Give kudos
-    await adminClient
+    // Give kudos — unique constraint prevents duplicates from race conditions
+    const { error: insertError } = await adminClient
       .from('kudos')
       .insert({ session_id: sessionId, user_id: user.id })
+    if (insertError?.code === '23505') {
+      // Duplicate — already given, treat as success
+    } else if (insertError) {
+      return { given: false, count: 0, error: 'Could not give kudos' }
+    }
   }
 
   // Get updated count

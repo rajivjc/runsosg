@@ -103,7 +103,7 @@ export async function getCoachDigests(
     .in('id', coachIds)
     .eq('active', true)
 
-  const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
+  const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 })
   const authMap = new Map(authUsers?.map(u => [u.id, u.email]) ?? [])
 
   const digests: CoachDigestData[] = []
@@ -191,7 +191,7 @@ export async function getCaregiverDigests(
     .in('id', caregiverIds)
     .eq('active', true)
 
-  const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
+  const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 })
   const authMap = new Map(authUsers?.map(u => [u.id, u.email]) ?? [])
   const caregiverMap = new Map(
     (caregiverUsers ?? []).map(u => [u.id, { name: u.name, email: authMap.get(u.id) }])

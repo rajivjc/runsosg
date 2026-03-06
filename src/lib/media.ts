@@ -1,6 +1,6 @@
 import { adminClient } from '@/lib/supabase/admin'
 
-const SIGNED_URL_EXPIRY = 3600 // 1 hour
+const SIGNED_URL_EXPIRY = 86400 // 24 hours
 
 export type MediaRow = {
   id: string

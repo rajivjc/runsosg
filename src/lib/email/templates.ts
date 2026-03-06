@@ -5,6 +5,15 @@ const BRAND_COLOR = '#0D9488'
 const BRAND_DARK = '#1A1A2E'
 const BG_COLOR = '#FBF9F7'
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function layout(content: string): string {
   return `
 <!DOCTYPE html>
@@ -69,10 +78,10 @@ export function milestoneEmail({
       <p style="font-size:12px;font-weight:700;color:${BRAND_COLOR};text-transform:uppercase;letter-spacing:2px;margin:0 0 8px 0;">
         Milestone Achieved
       </p>
-      <h1 style="font-size:28px;font-weight:700;color:${BRAND_DARK};margin:0 0 4px 0;">${athleteName}</h1>
-      <p style="font-size:20px;font-weight:600;color:${BRAND_COLOR};margin:0 0 16px 0;">${milestoneLabel}</p>
+      <h1 style="font-size:28px;font-weight:700;color:${BRAND_DARK};margin:0 0 4px 0;">${escapeHtml(athleteName)}</h1>
+      <p style="font-size:20px;font-weight:600;color:${BRAND_COLOR};margin:0 0 16px 0;">${escapeHtml(milestoneLabel)}</p>
       <p style="font-size:14px;color:#9CA3AF;margin:0 0 4px 0;">${date}</p>
-      ${coachName ? `<p style="font-size:14px;color:#9CA3AF;margin:0;">Coached by ${coachName}</p>` : ''}
+      ${coachName ? `<p style="font-size:14px;color:#9CA3AF;margin:0;">Coached by ${escapeHtml(coachName)}</p>` : ''}
       <div style="margin-top:24px;">
         <a href="${milestoneUrl}" style="display:inline-block;background-color:${BRAND_COLOR};color:white;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:24px;">
           View Milestone
@@ -95,11 +104,11 @@ export function weeklyDigestEmail({
   weekDateRange: string
   feedUrl: string
 }): string {
-  const athleteList = athleteNames.map(n => `<li style="margin-bottom:4px;">${n}</li>`).join('')
+  const athleteList = athleteNames.map(n => `<li style="margin-bottom:4px;">${escapeHtml(n)}</li>`).join('')
 
   return layout(`
     <h1 style="font-size:22px;font-weight:700;color:${BRAND_DARK};margin:0 0 8px 0;">
-      Hey ${coachName}, here&rsquo;s your week
+      Hey ${escapeHtml(coachName)}, here&rsquo;s your week
     </h1>
     <p style="font-size:14px;color:#6B7280;margin:0 0 20px 0;">${weekDateRange}</p>
     <div style="background-color:#F0FDFA;border-radius:8px;padding:16px;margin-bottom:20px;">
@@ -137,9 +146,9 @@ export function caregiverDigestEmail({
   weekDateRange: string
   athleteUrl: string
 }): string {
-  const greeting = caregiverName ? `Hi ${caregiverName}` : 'Hi there'
+  const greeting = caregiverName ? `Hi ${escapeHtml(caregiverName)}` : 'Hi there'
   const milestoneList = milestonesEarned
-    .map(m => `<li style="margin-bottom:4px;">${m.icon} ${m.label}</li>`)
+    .map(m => `<li style="margin-bottom:4px;">${escapeHtml(m.icon)} ${escapeHtml(m.label)}</li>`)
     .join('')
 
   const progressPct = nextMilestone
@@ -148,7 +157,7 @@ export function caregiverDigestEmail({
 
   return layout(`
     <h1 style="font-size:22px;font-weight:700;color:${BRAND_DARK};margin:0 0 8px 0;">
-      ${greeting}, here&rsquo;s ${athleteName}&rsquo;s week
+      ${greeting}, here&rsquo;s ${escapeHtml(athleteName)}&rsquo;s week
     </h1>
     <p style="font-size:14px;color:#6B7280;margin:0 0 20px 0;">${weekDateRange}</p>
     <div style="background-color:#F0FDFA;border-radius:8px;padding:16px;margin-bottom:20px;">
@@ -172,7 +181,7 @@ export function caregiverDigestEmail({
     ${nextMilestone ? `
       <div style="background-color:#F9FAFB;border-radius:8px;padding:16px;margin-bottom:20px;">
         <p style="font-size:13px;font-weight:600;color:${BRAND_DARK};margin:0 0 8px 0;">
-          Next milestone: ${nextMilestone.label}
+          Next milestone: ${escapeHtml(nextMilestone.label)}
         </p>
         <div style="background-color:#E5E7EB;border-radius:4px;height:8px;overflow:hidden;">
           <div style="background-color:${BRAND_COLOR};height:8px;width:${progressPct}%;border-radius:4px;"></div>
@@ -182,7 +191,7 @@ export function caregiverDigestEmail({
     ` : ''}
     <div style="text-align:center;">
       <a href="${athleteUrl}" style="display:inline-block;background-color:${BRAND_COLOR};color:white;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:24px;">
-        View ${athleteName}&rsquo;s Journey
+        View ${escapeHtml(athleteName)}&rsquo;s Journey
       </a>
     </div>
   `)
@@ -202,7 +211,7 @@ export function invitationEmail({
       You&rsquo;re invited to SOSG Running Club
     </h1>
     <p style="font-size:15px;color:#4B5563;margin:0 0 8px 0;">
-      ${inviterName ? `${inviterName} has invited you` : 'You&rsquo;ve been invited'} to join as a <strong>${role}</strong>.
+      ${inviterName ? `${escapeHtml(inviterName)} has invited you` : 'You&rsquo;ve been invited'} to join as a <strong>${escapeHtml(role)}</strong>.
     </p>
     <p style="font-size:15px;color:#4B5563;margin:0 0 24px 0;">
       ${role === 'coach'

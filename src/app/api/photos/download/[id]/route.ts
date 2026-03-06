@@ -29,12 +29,30 @@ export async function GET(
   // Fetch media record
   const { data: photo } = await adminClient
     .from('media')
-    .select('id, url, storage_path')
+    .select('id, url, storage_path, athlete_id')
     .eq('id', id)
     .single()
 
   if (!photo) {
     return NextResponse.json({ error: 'Photo not found' }, { status: 404 })
+  }
+
+  // Verify role — caregivers can only download their linked athlete's photos
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (callerUser?.role === 'caregiver') {
+    const { data: linkedAthlete } = await adminClient
+      .from('athletes')
+      .select('id')
+      .eq('caregiver_user_id', user.id)
+      .single()
+    if (photo.athlete_id !== linkedAthlete?.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
   }
 
   // Get download URL

@@ -44,7 +44,7 @@ export interface StravaPhoto {
 
 // ─── OAuth state (signed user ID so callback works without browser cookies) ───
 
-const STATE_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'fallback'
+const STATE_SECRET = process.env.STRAVA_STATE_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
 const STATE_MAX_AGE_SECONDS = 600 // 10 minutes
 
 export function createStravaState(userId: string): string {

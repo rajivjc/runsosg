@@ -283,7 +283,10 @@ export async function cancelInvitation(invitationId: string): Promise<{ error?: 
 
   // Also delete the auth user created by createUser (if they never signed in)
   try {
-    const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
+    const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    })
     const ghostUser = authUsers?.find(
       (u) => u.email === invitation.email && u.last_sign_in_at == null
     )
@@ -315,8 +318,7 @@ export async function deleteUser(userId: string): Promise<{ error?: string }> {
   if (callerUser?.role !== 'admin') return { error: 'Only admins can perform this action.' }
 
   // Look up the user's email so we can clean up invitations
-  const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
-  const targetUser = authUsers?.find((u) => u.id === userId)
+  const { data: { user: targetUser } } = await adminClient.auth.admin.getUserById(userId)
   const targetEmail = targetUser?.email
 
   // Delete matching invitation rows

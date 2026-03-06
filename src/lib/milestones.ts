@@ -93,7 +93,10 @@ export async function checkAndAwardMilestones(
       share_image_url: null,
     }))
 
-    const { error } = await adminClient.from('milestones').insert(inserts)
+    const { data: insertedMilestones, error } = await adminClient
+      .from('milestones')
+      .insert(inserts)
+      .select('id')
     if (error) {
       console.error('Failed to insert milestones:', error)
       return 0
@@ -111,8 +114,7 @@ export async function checkAndAwardMilestones(
     // Send milestone email to caregiver (if athlete has one linked)
     try {
       if (athlete?.caregiver_user_id) {
-        const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
-        const caregiverAuth = authUsers?.find(u => u.id === athlete.caregiver_user_id)
+        const { data: { user: caregiverAuth } } = await adminClient.auth.admin.getUserById(athlete.caregiver_user_id)
         const { data: coach } = coachUserId
           ? await adminClient.from('users').select('name').eq('id', coachUserId).single()
           : { data: null }
@@ -123,6 +125,7 @@ export async function checkAndAwardMilestones(
             const date = new Date().toLocaleDateString('en-SG', {
               day: 'numeric', month: 'long', year: 'numeric',
             })
+            const milestoneId = insertedMilestones?.[toAward.indexOf(def)]?.id
             await sendEmail({
               to: caregiverAuth.email,
               subject: `${athleteName} achieved a milestone: ${def.label}!`,
@@ -132,7 +135,7 @@ export async function checkAndAwardMilestones(
                 milestoneIcon: (def as any).icon ?? '🏆',
                 coachName: coach?.name ?? null,
                 date,
-                milestoneUrl: `${appUrl}/milestone/${inserts[0]?.athlete_id ?? ''}`,
+                milestoneUrl: `${appUrl}/milestone/${milestoneId ?? ''}`,
               }),
             })
           }

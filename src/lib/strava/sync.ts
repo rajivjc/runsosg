@@ -60,13 +60,17 @@ async function upsertSessionForAthlete(
     return updated?.id ?? existing.id
   }
 
-  const { data: inserted } = await adminClient
+  const { data: inserted, error: insertError } = await adminClient
     .from('sessions')
     .insert({ ...payload, feel: null, note: null })
     .select('id')
     .single()
 
-  return inserted?.id ?? ''
+  if (insertError || !inserted?.id) {
+    throw new Error(`Failed to insert session for athlete ${athleteMatch.athleteId}: ${insertError?.message ?? 'no ID returned'}`)
+  }
+
+  return inserted.id
 }
 
 const MAX_PHOTOS_PER_SESSION = 2

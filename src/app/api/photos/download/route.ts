@@ -63,11 +63,31 @@ export async function POST(req: NextRequest) {
   // Cap at 50 photos per ZIP to prevent abuse
   const ids = photoIds.slice(0, 50)
 
+  // Verify role — caregivers can only download their linked athlete's photos
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
   // Fetch media records
   const { data: photos } = await adminClient
     .from('media')
-    .select('id, url, storage_path, created_at, caption')
+    .select('id, url, storage_path, created_at, caption, athlete_id')
     .in('id', ids)
+
+  if (callerUser?.role === 'caregiver' && photos) {
+    const { data: linkedAthlete } = await adminClient
+      .from('athletes')
+      .select('id')
+      .eq('caregiver_user_id', user.id)
+      .single()
+    const linkedId = linkedAthlete?.id
+    const unauthorized = photos.some(p => p.athlete_id !== linkedId)
+    if (unauthorized) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  }
 
   if (!photos || photos.length === 0) {
     return NextResponse.json({ error: 'No photos found' }, { status: 404 })

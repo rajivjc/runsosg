@@ -60,6 +60,9 @@ export async function updateAthlete(
   const goal_type = (formData.get('goal_type') as string ?? '').trim() || null
   const goal_target_raw = (formData.get('goal_target') as string ?? '').trim()
   const goal_target = goal_target_raw ? parseFloat(goal_target_raw) : null
+  if (goal_target !== null && (!isFinite(goal_target) || goal_target < 0 || goal_target > 10000)) {
+    return { error: 'Goal target must be between 0 and 10,000' }
+  }
   const communication_notes = (formData.get('communication_notes') as string ?? '').trim() || null
   const medical_notes = (formData.get('medical_notes') as string ?? '').trim() || null
   const emergency_contact = (formData.get('emergency_contact') as string ?? '').trim() || null
@@ -136,18 +139,29 @@ export async function createManualSession(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Your session has expired. Please sign in again.' }
 
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role === 'caregiver') return { error: 'Caregivers cannot log sessions' }
+
   const date = parseValidDate(formData.get('date') as string)
   if (!date) return { error: 'A valid date is required (YYYY-MM-DD)' }
 
   const title = (formData.get('title') as string ?? '').trim() || null
   const distanceKm = parseFloat(formData.get('distance_km') as string ?? '')
   if (isNaN(distanceKm) || distanceKm <= 0) return { error: 'Distance is required' }
+  if (distanceKm > 100) return { error: 'Distance cannot exceed 100 km' }
   const durationMinutes = parseInt(formData.get('duration_minutes') as string ?? '')
   if (isNaN(durationMinutes) || durationMinutes <= 0) return { error: 'Duration is required' }
+  if (durationMinutes > 1440) return { error: 'Duration cannot exceed 24 hours' }
   const feel = parseInt(formData.get('feel') as string ?? '') || null
   const note = (formData.get('note') as string ?? '').trim() || null
   const avgHr = parseInt(formData.get('avg_heart_rate') as string ?? '')
   const maxHr = parseInt(formData.get('max_heart_rate') as string ?? '')
+  if (!isNaN(avgHr) && (avgHr < 30 || avgHr > 300)) return { error: 'Average heart rate must be between 30 and 300 bpm' }
+  if (!isNaN(maxHr) && (maxHr < 30 || maxHr > 300)) return { error: 'Max heart rate must be between 30 and 300 bpm' }
 
   const { error } = await supabase
     .from('sessions')
@@ -257,6 +271,7 @@ export async function createManualSession(
   await syncBadges(user.id)
 
   revalidatePath(`/athletes/${athleteId}`)
+  revalidatePath('/feed')
   return {}
 }
 
@@ -274,6 +289,13 @@ export async function saveCues(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Your session has expired. Please sign in again.' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role === 'caregiver') return { error: 'Caregivers cannot edit coaching cues' }
 
   const payload = {
     athlete_id: athleteId,
@@ -351,6 +373,26 @@ export async function updateSessionFeel(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Your session has expired. Please sign in again.' }
+
+  // Verify ownership or admin role
+  const { data: session } = await adminClient
+    .from('sessions')
+    .select('coach_user_id')
+    .eq('id', sessionId)
+    .single()
+
+  if (!session) return { error: 'Session not found' }
+
+  if (session.coach_user_id !== user.id) {
+    const { data: callerUser } = await adminClient
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    if (callerUser?.role !== 'admin') {
+      return { error: 'You can only update sessions you logged' }
+    }
+  }
 
   const { error } = await adminClient
     .from('sessions')
@@ -503,14 +545,16 @@ export async function deleteSession(
     }
   }
 
-  // Delete related milestones for this session
-  await adminClient.from('milestones').delete().eq('session_id', sessionId)
+  // Delete related milestones for this session (best-effort)
+  const { error: milestoneErr } = await adminClient.from('milestones').delete().eq('session_id', sessionId)
+  if (milestoneErr) console.error('Failed to delete milestones for session', sessionId, milestoneErr.message)
 
-  // Delete related notifications referencing this session
-  await adminClient
+  // Delete related notifications referencing this session (best-effort)
+  const { error: notifErr } = await adminClient
     .from('notifications')
     .delete()
     .contains('payload', { session_id: sessionId })
+  if (notifErr) console.error('Failed to delete notifications for session', sessionId, notifErr.message)
 
   // Delete the session
   const { error } = await adminClient.from('sessions').delete().eq('id', sessionId)
