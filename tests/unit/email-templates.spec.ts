@@ -94,5 +94,45 @@ describe('Email templates', () => {
       expect(html).toContain('read-only access')
       expect(html).not.toContain('null')
     })
+
+    it('includes getting started steps for coaches', () => {
+      const html = invitationEmail({
+        role: 'coach',
+        inviterName: 'Admin',
+        loginUrl: 'https://app.test/login',
+      })
+
+      expect(html).toContain('After you sign in')
+      expect(html).toContain('Set your display name')
+      expect(html).toContain('Connect Strava')
+      expect(html).toContain('Log your first run')
+      expect(html).toContain('install the app')
+    })
+
+    it('includes getting started steps for caregivers', () => {
+      const html = invitationEmail({
+        role: 'caregiver',
+        inviterName: null,
+        loginUrl: 'https://app.test/login',
+      })
+
+      expect(html).toContain('After you sign in')
+      expect(html).toContain('Set your display name')
+      expect(html).toContain('View your athlete')
+      expect(html).toContain('Send your first cheer')
+      expect(html).toContain('install the app')
+    })
+
+    it('does not include getting started for admin role', () => {
+      const html = invitationEmail({
+        role: 'admin',
+        inviterName: 'Admin',
+        loginUrl: 'https://app.test/login',
+      })
+
+      expect(html).not.toContain('After you sign in')
+      expect(html).not.toContain('Connect Strava')
+      expect(html).not.toContain('Send your first cheer')
+    })
   })
 })

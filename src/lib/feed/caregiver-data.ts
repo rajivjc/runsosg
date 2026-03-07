@@ -8,6 +8,7 @@
 import { adminClient } from '@/lib/supabase/admin'
 import { getCaregiverFocusData } from '@/lib/feed/today-focus'
 import { computeWeeklyRecap } from '@/lib/feed/weekly-recap'
+import { computeCaregiverOnboardingState } from '@/lib/onboarding'
 import { groupByDate } from '@/lib/feed/utils'
 import { loadClubStats } from '@/lib/feed/shared-queries'
 import type {
@@ -188,6 +189,14 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
 
   const caregiverFocus = await caregiverFocusPromise
 
+  // ─── Caregiver onboarding ────────────────────────────────────
+  const caregiverOnboarding = computeCaregiverOnboardingState({
+    userName: userRow?.name ?? null,
+    hasLinkedAthlete: !!caregiverAthlete,
+    hasViewedAthlete: !!caregiverAthlete,
+    hasSentCheer: (sentCheers ?? []).length > 0,
+  })
+
   return {
     user: { role: userRow?.role ?? 'caregiver', name: userRow?.name ?? null },
     athlete: caregiverAthlete ? { id: caregiverAthlete.id, name: caregiverAthlete.name } : null,
@@ -208,5 +217,6 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     weeklyStats,
     allowPublicSharing: (caregiverAthlete as Record<string, unknown>)?.allow_public_sharing === true,
     sharingDisabledByCaregiver: (caregiverAthlete as Record<string, unknown>)?.sharing_disabled_by_caregiver === true,
+    onboarding: caregiverOnboarding.isNewUser ? caregiverOnboarding : null,
   }
 }

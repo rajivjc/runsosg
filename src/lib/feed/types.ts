@@ -125,4 +125,6 @@ export interface CaregiverFeedData {
   // Caregiver sharing control (Feature A)
   allowPublicSharing: boolean
   sharingDisabledByCaregiver: boolean
+  // Caregiver onboarding
+  onboarding: OnboardingState | null
 }
