@@ -107,7 +107,6 @@ describe('Email templates', () => {
       expect(html).toContain('Connect Strava')
       expect(html).toContain('Log your first run')
       expect(html).toContain('install the app')
-      expect(html).toContain('/setup')
     })
 
     it('includes getting started steps for caregivers', () => {

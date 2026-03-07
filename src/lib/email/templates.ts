@@ -220,8 +220,13 @@ export function invitationEmail({
         ? 'As a caregiver, you&rsquo;ll have read-only access to see your athlete&rsquo;s sessions and milestones.'
         : 'As an admin, you&rsquo;ll have full access to manage the club.'}
     </p>
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${loginUrl}" style="display:inline-block;background-color:${BRAND_COLOR};color:white;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:24px;">
+        Accept Invitation
+      </a>
+    </div>
     ${role === 'coach' ? `
-    <div style="background-color:#F0FDFA;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+    <div style="background-color:#F0FDFA;border-radius:8px;padding:16px 20px;">
       <p style="font-size:14px;font-weight:600;color:${BRAND_DARK};margin:0 0 12px 0;">
         After you sign in, here&rsquo;s what to do:
       </p>
@@ -240,11 +245,11 @@ export function invitationEmail({
         </tr>
       </table>
       <p style="font-size:13px;color:#6B7280;margin:12px 0 0 0;">
-        Tip: You can also <a href="${loginUrl.replace('/login', '/setup')}" style="color:${BRAND_COLOR};text-decoration:underline;">install the app</a> on your phone for quick access.
+        Tip: You can also install the app on your phone for the best experience.
       </p>
     </div>
     ` : ''}${role === 'caregiver' ? `
-    <div style="background-color:#FFFBEB;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+    <div style="background-color:#FFFBEB;border-radius:8px;padding:16px 20px;">
       <p style="font-size:14px;font-weight:600;color:${BRAND_DARK};margin:0 0 12px 0;">
         After you sign in, here&rsquo;s what to do:
       </p>
@@ -263,14 +268,9 @@ export function invitationEmail({
         </tr>
       </table>
       <p style="font-size:13px;color:#6B7280;margin:12px 0 0 0;">
-        Tip: You can also <a href="${loginUrl.replace('/login', '/setup')}" style="color:#D97706;text-decoration:underline;">install the app</a> on your phone for quick access.
+        Tip: You can also install the app on your phone for the best experience.
       </p>
     </div>
     ` : ''}
-    <div style="text-align:center;">
-      <a href="${loginUrl}" style="display:inline-block;background-color:${BRAND_COLOR};color:white;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:24px;">
-        Accept Invitation
-      </a>
-    </div>
   `)
 }
