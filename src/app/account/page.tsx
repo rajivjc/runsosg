@@ -8,6 +8,7 @@ import SignOutButton from '@/components/account/SignOutButton'
 export const metadata: Metadata = { title: 'My Account — SOSG Running Club' }
 import StravaStatus from '@/components/account/StravaStatus'
 import DisplayNameForm from '@/components/account/DisplayNameForm'
+import PushToggle from '@/components/account/PushToggle'
 import { formatDate, formatDistance } from '@/lib/utils/dates'
 import { BADGE_DEFINITIONS } from '@/lib/badges'
 import { calculateGoalProgress } from '@/lib/goals'
@@ -175,6 +176,12 @@ export default async function AccountPage({
           </div>
         )}
         <DisplayNameForm currentName={userRow?.name ?? null} />
+      </section>
+
+      {/* Push notifications */}
+      <section>
+        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-1">Notifications</p>
+        <PushToggle vapidPublicKey={process.env.VAPID_PUBLIC_KEY ?? ''} />
       </section>
 
       {/* Coaching stats — only for coaches and admins */}

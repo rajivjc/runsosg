@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { ChevronRight } from 'lucide-react'
 import type { AthleteListItem } from '@/app/athletes/page'
 import { formatDate } from '@/lib/utils/dates'
@@ -57,9 +58,12 @@ export default function AthleteCard({
     >
       {/* Avatar */}
       {photoUrl ? (
-        <img
+        <Image
           src={photoUrl}
           alt={name}
+          width={48}
+          height={48}
+          unoptimized
           className="rounded-full w-12 h-12 object-cover flex-shrink-0"
         />
       ) : (

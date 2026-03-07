@@ -2,6 +2,7 @@ import { adminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email/resend'
 import { milestoneEmail } from '@/lib/email/templates'
 import { getMilestoneDefinitions } from '@/lib/feed/shared-queries'
+import { sendPushToUser } from '@/lib/push'
 
 export async function checkAndAwardMilestones(
   athleteId: string,
@@ -147,8 +148,6 @@ export async function checkAndAwardMilestones(
     }
 
     // 6. Create milestone notifications for the coach
-    // TODO: Add web push notification here — sendPush() to coach + caregiver
-    // See plan: Feature B (Web Push Notifications) — deferred to avoid notification fatigue
     if (coachUserId) {
       const notificationInserts = toAward.map((def: any) => ({
         user_id: coachUserId,
@@ -171,6 +170,33 @@ export async function checkAndAwardMilestones(
 
       if (notifError) {
         console.error('Failed to insert milestone notifications:', notifError)
+      }
+
+      // Web push — batch multiple milestones into one message
+      try {
+        const pushBody = toAward.length === 1
+          ? `${athleteName} earned a milestone: ${toAward[0].label}!`
+          : `${athleteName} earned ${toAward.length} milestones!`
+
+        await sendPushToUser(coachUserId, {
+          title: 'Milestone earned!',
+          body: pushBody,
+          url: `/athletes/${athleteId}`,
+          tag: `milestone-${sessionId}`,
+        })
+
+        // Also push to caregiver if linked
+        if (athlete?.caregiver_user_id) {
+          await sendPushToUser(athlete.caregiver_user_id, {
+            title: 'Milestone earned!',
+            body: pushBody,
+            url: `/feed`,
+            tag: `milestone-${sessionId}`,
+          })
+        }
+      } catch (pushErr) {
+        // Push failures should not block milestone creation
+        console.warn('Milestone push notification failed:', pushErr)
       }
     }
 

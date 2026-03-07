@@ -7,6 +7,7 @@ import { checkAndAwardMilestones } from '@/lib/milestones'
 import { syncBadges } from '@/lib/badges'
 import { parseValidDate } from '@/lib/utils/dates'
 import { getAthletePhotosPaginated, withSignedUrls, deleteMediaForSession, deleteMediaById } from '@/lib/media'
+import { sendPushToRole } from '@/lib/push'
 
 export async function addCoachNote(athleteId: string, content: string): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -250,7 +251,6 @@ export async function createManualSession(
     }
 
     if (feel !== null && (feel === 1 || feel === 2)) {
-      // TODO: Add web push notification here — sendPush() to all coaches for low_feel_alert
       await adminClient.from('notifications').insert({
         user_id: user.id,
         type: 'low_feel_alert',
@@ -264,6 +264,16 @@ export async function createManualSession(
         },
         read: false,
       })
+
+      // Push to all coaches and admins
+      const pushPayload = {
+        title: 'Low feel alert',
+        body: `${athleteRow?.name ?? 'An athlete'} had a tough session. Check in before next run.`,
+        url: `/athletes/${athleteId}`,
+        tag: `low-feel-${newSession.id}`,
+      }
+      sendPushToRole('coach', pushPayload).catch(() => {})
+      sendPushToRole('admin', pushPayload).catch(() => {})
     }
   }
 
@@ -436,6 +446,15 @@ export async function updateSessionFeel(
           },
           read: false,
         })
+
+        const feelPush = {
+          title: 'Low feel alert',
+          body: `${athleteName} had a tough session. Check in before next run.`,
+          url: `/athletes/${session.athlete_id}`,
+          tag: `low-feel-${sessionId}`,
+        }
+        sendPushToRole('coach', feelPush).catch(() => {})
+        sendPushToRole('admin', feelPush).catch(() => {})
       }
     }
   }
@@ -510,6 +529,15 @@ export async function updateManualSession(
           },
           read: false,
         })
+
+        const feelPush = {
+          title: 'Low feel alert',
+          body: `${athleteName} had a tough session. Check in before next run.`,
+          url: `/athletes/${updatedSession.athlete_id}`,
+          tag: `low-feel-${sessionId}`,
+        }
+        sendPushToRole('coach', feelPush).catch(() => {})
+        sendPushToRole('admin', feelPush).catch(() => {})
       }
     }
   }

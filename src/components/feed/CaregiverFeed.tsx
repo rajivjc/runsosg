@@ -7,6 +7,7 @@ import ClubStats from '@/components/feed/ClubStats'
 import WeeklyRecapCard from '@/components/feed/WeeklyRecapCard'
 import SessionGroup from '@/components/feed/SessionGroup'
 import CaregiverSharingControl from '@/components/feed/CaregiverSharingControl'
+import BetaBanner from '@/components/feed/BetaBanner'
 import type { CaregiverFeedData } from '@/lib/feed/types'
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -25,7 +26,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
     recentSessions: caregiverRecentSessions,
     milestones: caregiverMilestones,
     recentNotes: caregiverRecentNotes,
-    cheerSentToday,
+    cheersToday,
     sentCheers: caregiverSentCheers,
     caregiverFocus,
     sessions,
@@ -48,6 +49,8 @@ export default function CaregiverFeed({ data, userId }: Props) {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
+      <BetaBanner />
+
       {/* Milestone celebration overlay */}
       {celebrationMilestones.length > 0 && (
         <MilestoneDetector recentMilestones={celebrationMilestones} />
@@ -177,7 +180,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
               <CheerBox
                 athleteId={caregiverAthlete.id}
                 athleteFirstName={caregiverAthlete.name?.split(' ')[0] ?? 'your athlete'}
-                alreadySentToday={cheerSentToday}
+                cheersToday={cheersToday}
               />
             </div>
 

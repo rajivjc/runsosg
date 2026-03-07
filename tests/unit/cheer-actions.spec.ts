@@ -116,10 +116,10 @@ describe('sendCheer', () => {
     expect(result.error).toBe('You can only send cheers for your linked athlete')
   })
 
-  it('enforces rate limit of 1 cheer per day', async () => {
-    setupMocks({ cheerCount: 1 })
+  it('enforces rate limit of 3 cheers per day', async () => {
+    setupMocks({ cheerCount: 3 })
     const result = await sendCheer('a1', 'Go Ali!')
-    expect(result.error).toContain('one cheer per day')
+    expect(result.error).toContain('3 cheers today')
   })
 
   it('succeeds with valid input', async () => {

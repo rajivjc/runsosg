@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils/dates'
 import ClubStats from '@/components/feed/ClubStats'
 import WeeklyRecapCard from '@/components/feed/WeeklyRecapCard'
 import SessionGroup from '@/components/feed/SessionGroup'
+import BetaBanner from '@/components/feed/BetaBanner'
 import type { CoachFeedData } from '@/lib/feed/types'
 
 interface Props {
@@ -42,6 +43,8 @@ export default function CoachFeed({ data, userId }: Props) {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
+      <BetaBanner />
+
       {/* Milestone celebration overlay */}
       {celebrationMilestones.length > 0 && (
         <MilestoneDetector recentMilestones={celebrationMilestones} />

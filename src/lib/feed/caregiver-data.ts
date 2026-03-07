@@ -203,7 +203,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     recentSessions: (cgSessions ?? []) as { id: string; date: string; distance_km: number | null; feel: number | null }[],
     milestones: formattedCgMilestones,
     recentNotes: (cgNotes ?? []) as { content: string; created_at: string }[],
-    cheerSentToday: (cheerTodayCount ?? 0) > 0,
+    cheersToday: cheerTodayCount ?? 0,
     sentCheers: (sentCheers ?? []) as FeedCheer[],
     caregiverFocus,
     sessions: feed,

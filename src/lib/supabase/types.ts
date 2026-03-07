@@ -171,6 +171,12 @@ export interface Database {
         Update: Partial<Cheer>
         Relationships: []
       }
+      push_subscriptions: {
+        Row: PushSubscriptionRow & Record<string, unknown>
+        Insert: Omit<PushSubscriptionRow, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<PushSubscriptionRow>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -408,5 +414,14 @@ export interface Cheer {
   user_id: string
   message: string
   viewed_at: string | null
+  created_at: string
+}
+
+export interface PushSubscriptionRow {
+  id: string
+  user_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
   created_at: string
 }

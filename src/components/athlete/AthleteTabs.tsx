@@ -186,7 +186,7 @@ export default function AthleteTabs({
         />
       )}
       {activeTab === 'cues' && (
-        <CuesTab athleteId={athlete.id} initialCues={cues} />
+        <CuesTab athleteId={athlete.id} athleteName={athlete.name} initialCues={cues} />
       )}
       {activeTab === 'photos' && (
         <PhotosTab

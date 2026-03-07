@@ -17,6 +17,7 @@ const SECTIONS: Section[] = ['helps', 'avoid', 'best_cues', 'kit']
 
 type CuesTabProps = {
   athleteId: string
+  athleteName: string
   initialCues: CuesData | null
 }
 
@@ -44,7 +45,7 @@ function emptyCues(athleteId: string): CuesData {
 
 const UNDO_TIMEOUT_MS = 5000
 
-export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
+export default function CuesTab({ athleteId, athleteName, initialCues }: CuesTabProps) {
   const [cues, setCues] = useState<CuesData>(initialCues ?? emptyCues(athleteId))
   const [inputValues, setInputValues] = useState<Record<Section, string>>({
     helps: '', avoid: '', best_cues: '', kit: '',
@@ -132,8 +133,19 @@ export default function CuesTab({ athleteId, initialCues }: CuesTabProps) {
     handleSave(restored)
   }
 
+  const allEmpty = SECTIONS.every((s) => cues[s].length === 0)
+
   return (
     <div className="space-y-6">
+      {allEmpty && (
+        <div className="text-center py-6">
+          <p className="text-3xl mb-2">📋</p>
+          <p className="text-base font-semibold text-gray-900 mb-1">No coaching cues yet</p>
+          <p className="text-sm text-gray-500">
+            Cues help coaches know what works for {athleteName.split(' ')[0]}. Add the first one below.
+          </p>
+        </div>
+      )}
       {saveError && (
         <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           {saveError}

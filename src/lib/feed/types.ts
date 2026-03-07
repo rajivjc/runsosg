@@ -102,7 +102,7 @@ export interface CaregiverFeedData {
   recentSessions: { id: string; date: string; distance_km: number | null; feel: number | null }[]
   milestones: { id: string; label: string; icon: string; achieved_at: string }[]
   recentNotes: { content: string; created_at: string }[]
-  cheerSentToday: boolean
+  cheersToday: number
   sentCheers: FeedCheer[]
   caregiverFocus: CaregiverFocusData | null
   // Caregivers also see the global feed

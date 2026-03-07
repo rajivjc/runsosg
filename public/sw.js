@@ -19,9 +19,41 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// TODO: Web Push Notifications — add 'push' and 'notificationclick' event
-// listeners here once Feature B (Web Push) is implemented.
-// See plan for details: push event → showNotification(), notificationclick → openWindow()
+// Web Push Notifications
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+  try {
+    const data = event.data.json()
+    const options = {
+      body: data.body || '',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: data.tag || 'sosg-notification',
+      data: { url: data.url || '/' },
+    }
+    event.waitUntil(self.registration.showNotification(data.title || 'SOSG Running Club', options))
+  } catch (e) {
+    // Malformed push payload — ignore silently
+  }
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = event.notification.data?.url || '/'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      // Focus existing tab if one is open
+      for (const client of clients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(url)
+          return client.focus()
+        }
+      }
+      // Otherwise open a new window
+      return self.clients.openWindow(url)
+    })
+  )
+})
 
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {

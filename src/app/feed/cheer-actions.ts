@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { sendPushToRole } from '@/lib/push'
 
 export async function sendCheer(
   athleteId: string,
@@ -15,7 +16,7 @@ export async function sendCheer(
   // Verify user is a caregiver
   const { data: userRow } = await adminClient
     .from('users')
-    .select('role')
+    .select('role, name')
     .eq('id', user.id)
     .single()
 
@@ -24,7 +25,7 @@ export async function sendCheer(
   // Verify this caregiver is linked to this athlete
   const { data: athlete } = await adminClient
     .from('athletes')
-    .select('id, caregiver_user_id')
+    .select('id, name, caregiver_user_id')
     .eq('id', athleteId)
     .single()
 
@@ -38,7 +39,7 @@ export async function sendCheer(
     return { error: 'Message must be 1–100 characters' }
   }
 
-  // Rate limit: max 1 cheer per day per caregiver
+  // Rate limit: max 3 cheers per day per caregiver
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 
@@ -48,8 +49,8 @@ export async function sendCheer(
     .eq('user_id', user.id)
     .gte('created_at', todayStart.toISOString())
 
-  if ((count ?? 0) >= 1) {
-    return { error: 'You can send one cheer per day — come back tomorrow!' }
+  if ((count ?? 0) >= 3) {
+    return { error: 'You\'ve sent 3 cheers today — come back tomorrow!' }
   }
 
   const { error } = await adminClient
@@ -60,6 +61,17 @@ export async function sendCheer(
     console.error('Failed to insert cheer:', error)
     return { error: 'Something went wrong' }
   }
+
+  // Push notification to coaches and admins
+  const caregiverName = userRow?.name?.split(' ')[0] ?? 'A caregiver'
+  const pushPayload = {
+    title: `Cheer for ${athlete?.name ?? 'an athlete'}`,
+    body: `${caregiverName}: "${trimmed}"`,
+    url: '/feed',
+    tag: `cheer-${athleteId}`,
+  }
+  sendPushToRole('coach', pushPayload).catch(() => {})
+  sendPushToRole('admin', pushPayload).catch(() => {})
 
   revalidatePath('/feed')
   revalidatePath(`/athletes/${athleteId}`)

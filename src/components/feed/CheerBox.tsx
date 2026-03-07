@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react'
 import { sendCheer } from '@/app/feed/cheer-actions'
 
+const MAX_CHEERS_PER_DAY = 3
+
 const PRESETS = [
   'Go {name}! 🎉',
   'You got this! 💪',
@@ -13,15 +15,18 @@ const PRESETS = [
 type Props = {
   athleteId: string
   athleteFirstName: string
-  alreadySentToday: boolean
+  cheersToday: number
 }
 
-export default function CheerBox({ athleteId, athleteFirstName, alreadySentToday }: Props) {
+export default function CheerBox({ athleteId, athleteFirstName, cheersToday: initialCheersToday }: Props) {
   const [showCustom, setShowCustom] = useState(false)
   const [customText, setCustomText] = useState('')
-  const [sent, setSent] = useState(alreadySentToday)
+  const [cheersUsed, setCheersUsed] = useState(initialCheersToday)
+  const [justSent, setJustSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const remaining = MAX_CHEERS_PER_DAY - cheersUsed
 
   function handleSend(message: string) {
     setError(null)
@@ -30,17 +35,28 @@ export default function CheerBox({ athleteId, athleteFirstName, alreadySentToday
       if (result.error) {
         setError(result.error)
       } else {
-        setSent(true)
+        setCheersUsed(prev => prev + 1)
+        setJustSent(true)
         setShowCustom(false)
         setCustomText('')
+        // Reset "just sent" after a moment so they can send another
+        setTimeout(() => setJustSent(false), 2000)
       }
     })
   }
 
-  if (sent) {
+  if (remaining <= 0 || (justSent && remaining <= 1)) {
     return (
       <div className="bg-white/50 rounded-lg px-3 py-2.5 text-center">
-        <p className="text-xs text-amber-700 font-medium">🎉 Cheer sent! You&apos;ll see a &#10003; when your coach has seen it.</p>
+        <p className="text-xs text-amber-700 font-medium">🎉 All cheers sent today! Come back tomorrow.</p>
+      </div>
+    )
+  }
+
+  if (justSent) {
+    return (
+      <div className="bg-white/50 rounded-lg px-3 py-2.5 text-center">
+        <p className="text-xs text-amber-700 font-medium">🎉 Cheer sent! You have {remaining - 1} left today.</p>
       </div>
     )
   }
@@ -49,7 +65,10 @@ export default function CheerBox({ athleteId, athleteFirstName, alreadySentToday
 
   return (
     <div>
-      <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2">Send a cheer</p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Send a cheer</p>
+        <p className="text-[10px] text-amber-400">{remaining} left today</p>
+      </div>
       {error && (
         <p className="text-xs text-red-600 mb-2">{error}</p>
       )}

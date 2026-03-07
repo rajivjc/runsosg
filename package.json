@@ -21,7 +21,8 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "recharts": "^3.7.0",
-    "resend": "^6.9.2"
+    "resend": "^6.9.2",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@playwright/test": "1.55.1",
@@ -32,6 +33,7 @@
     "@types/node": "20.16.5",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
+    "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.4.24",
     "dotenv": "^17.3.1",
     "eslint": "^8.57.1",
