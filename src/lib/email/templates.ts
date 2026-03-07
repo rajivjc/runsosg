@@ -220,6 +220,53 @@ export function invitationEmail({
         ? 'As a caregiver, you&rsquo;ll have read-only access to see your athlete&rsquo;s sessions and milestones.'
         : 'As an admin, you&rsquo;ll have full access to manage the club.'}
     </p>
+    ${role === 'coach' ? `
+    <div style="background-color:#F0FDFA;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <p style="font-size:14px;font-weight:600;color:${BRAND_DARK};margin:0 0 12px 0;">
+        After you sign in, here&rsquo;s what to do:
+      </p>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;color:#4B5563;">
+        <tr>
+          <td style="padding:0 8px 8px 0;vertical-align:top;font-weight:600;color:${BRAND_COLOR};">1.</td>
+          <td style="padding-bottom:8px;"><strong>Set your display name</strong> &mdash; so athletes and fellow coaches know who you are</td>
+        </tr>
+        <tr>
+          <td style="padding:0 8px 8px 0;vertical-align:top;font-weight:600;color:${BRAND_COLOR};">2.</td>
+          <td style="padding-bottom:8px;"><strong>Connect Strava</strong> &mdash; your runs will sync automatically</td>
+        </tr>
+        <tr>
+          <td style="padding:0 8px 0 0;vertical-align:top;font-weight:600;color:${BRAND_COLOR};">3.</td>
+          <td><strong>Log your first run</strong> &mdash; pick an athlete and record a session</td>
+        </tr>
+      </table>
+      <p style="font-size:13px;color:#6B7280;margin:12px 0 0 0;">
+        Tip: You can also <a href="${loginUrl.replace('/login', '/setup')}" style="color:${BRAND_COLOR};text-decoration:underline;">install the app</a> on your phone for quick access.
+      </p>
+    </div>
+    ` : ''}${role === 'caregiver' ? `
+    <div style="background-color:#FFFBEB;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <p style="font-size:14px;font-weight:600;color:${BRAND_DARK};margin:0 0 12px 0;">
+        After you sign in, here&rsquo;s what to do:
+      </p>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;color:#4B5563;">
+        <tr>
+          <td style="padding:0 8px 8px 0;vertical-align:top;font-weight:600;color:#D97706;">1.</td>
+          <td style="padding-bottom:8px;"><strong>Set your display name</strong> &mdash; so coaches know who you are</td>
+        </tr>
+        <tr>
+          <td style="padding:0 8px 8px 0;vertical-align:top;font-weight:600;color:#D97706;">2.</td>
+          <td style="padding-bottom:8px;"><strong>View your athlete&rsquo;s progress</strong> &mdash; see runs, milestones, and coach notes</td>
+        </tr>
+        <tr>
+          <td style="padding:0 8px 0 0;vertical-align:top;font-weight:600;color:#D97706;">3.</td>
+          <td><strong>Send your first cheer</strong> &mdash; your encouragement shows up for coaches on run day</td>
+        </tr>
+      </table>
+      <p style="font-size:13px;color:#6B7280;margin:12px 0 0 0;">
+        Tip: You can also <a href="${loginUrl.replace('/login', '/setup')}" style="color:#D97706;text-decoration:underline;">install the app</a> on your phone for quick access.
+      </p>
+    </div>
+    ` : ''}
     <div style="text-align:center;">
       <a href="${loginUrl}" style="display:inline-block;background-color:${BRAND_COLOR};color:white;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:24px;">
         Accept Invitation

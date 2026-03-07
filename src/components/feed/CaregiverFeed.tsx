@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils/dates'
 import MilestoneDetector from '@/components/milestone/MilestoneDetector'
+import CaregiverOnboardingCard from '@/components/feed/CaregiverOnboardingCard'
 import CheerBox from '@/components/feed/CheerBox'
 import ClubStats from '@/components/feed/ClubStats'
 import WeeklyRecapCard from '@/components/feed/WeeklyRecapCard'
@@ -37,17 +38,29 @@ export default function CaregiverFeed({ data, userId }: Props) {
     weeklyRecap,
     weeklyStats,
     allowPublicSharing,
+    onboarding,
   } = data
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const firstName = user.name?.split(' ')[0] ?? 'there'
+  const showOnboarding = onboarding != null
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
       {/* Milestone celebration overlay */}
       {celebrationMilestones.length > 0 && (
         <MilestoneDetector recentMilestones={celebrationMilestones} />
+      )}
+
+      {/* Onboarding checklist for new caregivers */}
+      {showOnboarding && (
+        <CaregiverOnboardingCard
+          firstName={firstName}
+          steps={onboarding.steps}
+          completedCount={onboarding.completedCount}
+          totalCount={onboarding.totalCount}
+        />
       )}
 
       {/* Caregiver greeting card */}

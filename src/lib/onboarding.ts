@@ -1,7 +1,7 @@
 /**
  * Onboarding state computation — pure function.
  *
- * Determines which onboarding steps a new coach has completed
+ * Determines which onboarding steps a new coach or caregiver has completed
  * based on their activity data. No database calls.
  */
 
@@ -9,6 +9,13 @@ export interface OnboardingInput {
   userName: string | null
   totalSessionsCoached: number
   hasStravaConnection: boolean
+}
+
+export interface CaregiverOnboardingInput {
+  userName: string | null
+  hasLinkedAthlete: boolean
+  hasViewedAthlete: boolean
+  hasSentCheer: boolean
 }
 
 export interface OnboardingStep {
@@ -48,6 +55,42 @@ export function computeOnboardingState(input: OnboardingInput): OnboardingState 
       label: 'Log your first run',
       completed: input.totalSessionsCoached > 0,
       href: '/athletes',
+    },
+  ]
+
+  const completedCount = steps.filter(s => s.completed).length
+
+  return {
+    isNewUser: completedCount < steps.length,
+    steps,
+    completedCount,
+    totalCount: steps.length,
+  }
+}
+
+/**
+ * Compute the onboarding state for a caregiver.
+ * A caregiver is "new" if they haven't completed all steps.
+ */
+export function computeCaregiverOnboardingState(input: CaregiverOnboardingInput): OnboardingState {
+  const steps: OnboardingStep[] = [
+    {
+      key: 'name',
+      label: 'Set your display name',
+      completed: input.userName != null && input.userName.trim().length > 0,
+      href: '/account',
+    },
+    {
+      key: 'view_athlete',
+      label: 'View your athlete\u2019s progress',
+      completed: input.hasViewedAthlete || !input.hasLinkedAthlete,
+      href: '/feed',
+    },
+    {
+      key: 'send_cheer',
+      label: 'Send your first cheer',
+      completed: input.hasSentCheer,
+      href: '/feed',
     },
   ]
 

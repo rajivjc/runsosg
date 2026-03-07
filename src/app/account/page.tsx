@@ -387,6 +387,54 @@ export default async function AccountPage({
         </section>
       )}
 
+      {/* Getting started guide */}
+      <section>
+        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">Getting started</p>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4 space-y-2.5">
+          {isCaregiver ? (
+            <>
+              <div className="flex items-center gap-3">
+                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${userRow?.name ? 'bg-amber-500 text-white' : 'border-2 border-amber-300'}`}>
+                  {userRow?.name && <span className="text-[10px]">&#10003;</span>}
+                </span>
+                <span className={`text-sm ${userRow?.name ? 'text-amber-600 line-through' : 'text-gray-900 font-medium'}`}>Set your display name</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${caregiverAthlete ? 'bg-amber-500 text-white' : 'border-2 border-amber-300'}`}>
+                  {caregiverAthlete && <span className="text-[10px]">&#10003;</span>}
+                </span>
+                <span className={`text-sm ${caregiverAthlete ? 'text-amber-600 line-through' : 'text-gray-900 font-medium'}`}>View your athlete&apos;s progress</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-amber-300 flex items-center justify-center text-xs" />
+                <Link href="/feed" className="text-sm text-gray-900 font-medium hover:text-amber-700">Send your first cheer</Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-3">
+                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${userRow?.name ? 'bg-teal-500 text-white' : 'border-2 border-teal-300'}`}>
+                  {userRow?.name && <span className="text-[10px]">&#10003;</span>}
+                </span>
+                <span className={`text-sm ${userRow?.name ? 'text-teal-600 line-through' : 'text-gray-900 font-medium'}`}>Set your display name</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${connection ? 'bg-teal-500 text-white' : 'border-2 border-teal-300'}`}>
+                  {connection && <span className="text-[10px]">&#10003;</span>}
+                </span>
+                <span className={`text-sm ${connection ? 'text-teal-600 line-through' : 'text-gray-900 font-medium'}`}>Connect Strava for auto-sync</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${totalSessions > 0 ? 'bg-teal-500 text-white' : 'border-2 border-teal-300'}`}>
+                  {totalSessions > 0 && <span className="text-[10px]">&#10003;</span>}
+                </span>
+                <span className={`text-sm ${totalSessions > 0 ? 'text-teal-600 line-through' : 'text-gray-900 font-medium'}`}>Log your first run</span>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
       {/* App setup guide */}
       <section>
         <Link
