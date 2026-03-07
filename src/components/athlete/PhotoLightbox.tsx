@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { X, ChevronLeft, ChevronRight, Download, Share2 } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Download, Share2, Trash2 } from 'lucide-react'
 import { formatDate } from '@/lib/utils/dates'
 import { savePhoto, shareViaWebShare } from '@/lib/utils/download'
 import type { PhotoData } from './AthleteTabs'
@@ -11,15 +11,17 @@ type PhotoLightboxProps = {
   initialIndex: number
   athleteName: string
   onClose: () => void
+  onDelete?: (photoId: string) => Promise<void>
 }
 
 function buildFilename(photo: PhotoData, athleteName: string): string {
   return `${athleteName.replace(/\s+/g, '_')}_${formatDate(photo.created_at).replace(/\s+/g, '_')}_${photo.id.slice(0, 8)}.jpg`
 }
 
-export default function PhotoLightbox({ photos, initialIndex, athleteName, onClose }: PhotoLightboxProps) {
+export default function PhotoLightbox({ photos, initialIndex, athleteName, onClose, onDelete }: PhotoLightboxProps) {
   const [index, setIndex] = useState(initialIndex)
   const [downloading, setDownloading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const touchStartX = useRef<number | null>(null)
   const touchStartY = useRef<number | null>(null)
 
@@ -102,6 +104,19 @@ export default function PhotoLightbox({ photos, initialIndex, athleteName, onClo
     setDownloading(false)
   }
 
+  async function handleDelete() {
+    if (!onDelete || !photo) return
+    if (!window.confirm('Delete this photo? This cannot be undone.')) return
+    setDeleting(true)
+    await onDelete(photo.id)
+    setDeleting(false)
+    if (photos.length <= 1) {
+      onClose()
+    } else if (index >= photos.length - 1) {
+      setIndex(i => Math.max(0, i - 1))
+    }
+  }
+
   if (!photo) return null
 
   return (
@@ -139,6 +154,16 @@ export default function PhotoLightbox({ photos, initialIndex, athleteName, onClo
           >
             <Download size={20} />
           </button>
+          {onDelete && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="p-2.5 text-white/70 hover:text-red-400 hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
+              aria-label="Delete photo"
+            >
+              <Trash2 size={20} />
+            </button>
+          )}
           <button
             onClick={onClose}
             className="p-2.5 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"

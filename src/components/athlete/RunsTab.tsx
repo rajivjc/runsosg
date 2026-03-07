@@ -29,6 +29,7 @@ type RunsTabProps = {
   isReadOnly?: boolean
   onSessionUpdated?: () => void
   onLogRun?: () => void
+  onDeletePhoto?: (photoId: string) => Promise<void>
 }
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -68,6 +69,7 @@ type SessionCardProps = {
   onUpdated?: () => void
   badges?: MilestoneData[]
   photos?: PhotoData[]
+  onDeletePhoto?: (photoId: string) => Promise<void>
 }
 
 const FEEL_COLORS: Record<number, string> = {
@@ -102,7 +104,7 @@ function formatPace(distanceKm: number, durationSeconds: number): string {
   return `${paceMinutes}:${paceSeconds.toString().padStart(2, '0')} /km`
 }
 
-function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated, badges = [], photos = [] }: SessionCardProps) {
+function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated, badges = [], photos = [], onDeletePhoto }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [feel, setFeel] = useState<Feel | null>(s.feel as Feel | null)
   const [note, setNote] = useState(s.note ?? '')
@@ -393,13 +395,14 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
           initialIndex={lightboxIndex}
           athleteName={athleteName}
           onClose={() => setLightboxIndex(null)}
+          onDelete={onDeletePhoto}
         />
       )}
     </div>
   )
 }
 
-export default function RunsTab({ sessions, milestones, photosBySession, weeklyData, weeklyVolume, feelTrend, distanceTimeline, milestonePins, athleteId, athleteName, isReadOnly = false, onSessionUpdated, onLogRun }: RunsTabProps) {
+export default function RunsTab({ sessions, milestones, photosBySession, weeklyData, weeklyVolume, feelTrend, distanceTimeline, milestonePins, athleteId, athleteName, isReadOnly = false, onSessionUpdated, onLogRun, onDeletePhoto }: RunsTabProps) {
   const milestonesBySession: Record<string, MilestoneData[]> = {}
   for (const m of milestones) {
     if (!m.session_id) continue
@@ -452,6 +455,7 @@ export default function RunsTab({ sessions, milestones, photosBySession, weeklyD
           onUpdated={onSessionUpdated}
           badges={milestonesBySession[item.data.id] ?? []}
           photos={photosBySession?.[item.data.id] ?? []}
+          onDeletePhoto={onDeletePhoto}
         />
       ))}
     </div>

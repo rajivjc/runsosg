@@ -82,9 +82,7 @@ export default function SessionCard({ session: s, badges, kudosCount, myKudos, i
     </div>
   )
 
-  return isReadOnly ? (
-    <div>{card}</div>
-  ) : (
+  return (
     <Link href={`/athletes/${s.athlete_id}`}>{card}</Link>
   )
 }

@@ -38,15 +38,15 @@ export function computeOnboardingState(input: OnboardingInput): OnboardingState 
       href: '/account',
     },
     {
-      key: 'log_run',
-      label: 'Log your first run',
-      completed: input.totalSessionsCoached > 0,
-      href: '/athletes',
-    },
-    {
       key: 'strava',
       label: 'Connect Strava for auto-sync',
       completed: input.hasStravaConnection,
+      href: '/account',
+    },
+    {
+      key: 'log_run',
+      label: 'Log your first run',
+      completed: input.totalSessionsCoached > 0,
       href: '/athletes',
     },
   ]

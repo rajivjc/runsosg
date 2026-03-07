@@ -74,20 +74,47 @@ export default async function MilestoneSharePage({ params }: PageProps) {
 
   const isPublic = milestone.athletes?.allow_public_sharing === true
 
-  // Logged-in coaches/admins can always view milestones
+  // Logged-in coaches/admins/linked caregivers can always view milestones
   let canView = isPublic
-  if (!canView) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: userRow } = await adminClient.from('users').select('role').eq('id', user.id).single()
-      if (userRow?.role === 'admin' || userRow?.role === 'coach') {
-        canView = true
-      }
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!canView && user) {
+    const { data: userRow } = await adminClient.from('users').select('role').eq('id', user.id).single()
+    if (userRow?.role === 'admin' || userRow?.role === 'coach') {
+      canView = true
+    } else if (userRow?.role === 'caregiver') {
+      const { data: linked } = await adminClient
+        .from('athletes')
+        .select('id')
+        .eq('caregiver_user_id', user.id)
+        .eq('id', milestone.athlete_id)
+        .single()
+      if (linked) canView = true
     }
   }
 
   if (!canView) {
+    if (user) {
+      return (
+        <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm px-8 py-10 flex flex-col items-center text-center">
+            <span className="text-5xl mb-4">🔒</span>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">This profile is private</h1>
+            <p className="text-sm text-gray-500 mb-6">
+              Sharing is not enabled for this athlete yet. Ask the coach to enable sharing.
+            </p>
+            <Link
+              href="/feed"
+              className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-full px-6 py-3 transition-colors"
+            >
+              Back to home
+            </Link>
+            <p className="text-xs text-gray-300 font-medium uppercase tracking-widest mt-6">SOSG Running Club</p>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6">
         <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm px-8 py-10 flex flex-col items-center text-center">

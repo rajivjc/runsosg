@@ -24,6 +24,7 @@ type PhotosTabProps = {
     photos: PhotoData[]
     nextCursor: string | null
   }>
+  onDeletePhoto?: (photoId: string) => Promise<void>
 }
 
 /** Group photos by month (e.g. "March 2026") */
@@ -51,6 +52,7 @@ export default function PhotosTab({
   initialCursor,
   totalCount,
   loadMore,
+  onDeletePhoto,
 }: PhotosTabProps) {
   const [photos, setPhotos] = useState<PhotoData[]>(initialPhotos)
   const [cursor, setCursor] = useState<string | null>(initialCursor)
@@ -354,6 +356,10 @@ export default function PhotosTab({
           initialIndex={lightboxIndex}
           athleteName={athleteName}
           onClose={() => setLightboxIndex(null)}
+          onDelete={onDeletePhoto ? async (photoId) => {
+            await onDeletePhoto(photoId)
+            setPhotos(prev => prev.filter(p => p.id !== photoId))
+          } : undefined}
         />
       )}
     </div>

@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { checkAndAwardMilestones } from '@/lib/milestones'
 import { syncBadges } from '@/lib/badges'
 import { parseValidDate } from '@/lib/utils/dates'
-import { getAthletePhotosPaginated, withSignedUrls } from '@/lib/media'
+import { getAthletePhotosPaginated, withSignedUrls, deleteMediaForSession, deleteMediaById } from '@/lib/media'
 
 export async function addCoachNote(athleteId: string, content: string): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -549,6 +549,9 @@ export async function deleteSession(
     }
   }
 
+  // Delete media (storage files + DB rows) before removing session
+  await deleteMediaForSession(sessionId)
+
   // Delete related milestones for this session (best-effort)
   const { error: milestoneErr } = await adminClient.from('milestones').delete().eq('session_id', sessionId)
   if (milestoneErr) console.error('Failed to delete milestones for session', sessionId, milestoneErr.message)
@@ -560,9 +563,18 @@ export async function deleteSession(
     .contains('payload', { session_id: sessionId })
   if (notifErr) console.error('Failed to delete notifications for session', sessionId, notifErr.message)
 
-  // Delete the session
-  const { error } = await adminClient.from('sessions').delete().eq('id', sessionId)
-  if (error) return { error: 'Could not delete the session. Please try again.' }
+  // Strava-synced sessions: soft-delete to prevent re-sync
+  // Manual sessions: hard-delete
+  if (session.sync_source === 'strava_webhook') {
+    const { error } = await adminClient
+      .from('sessions')
+      .update({ strava_deleted_at: new Date().toISOString() })
+      .eq('id', sessionId)
+    if (error) return { error: 'Could not delete the session. Please try again.' }
+  } else {
+    const { error } = await adminClient.from('sessions').delete().eq('id', sessionId)
+    if (error) return { error: 'Could not delete the session. Please try again.' }
+  }
 
   // Re-evaluate badges for the session's coach (not the admin performing the delete)
   if (session.coach_user_id) {
@@ -571,6 +583,37 @@ export async function deleteSession(
 
   revalidatePath(`/athletes/${athleteId}`)
   revalidatePath('/feed')
+  return {}
+}
+
+export async function deletePhoto(
+  mediaId: string,
+  athleteId: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role === 'caregiver') return { error: 'Caregivers cannot delete photos' }
+
+  // Verify the photo belongs to this athlete
+  const { data: media } = await adminClient
+    .from('media')
+    .select('id, athlete_id')
+    .eq('id', mediaId)
+    .single()
+  if (!media) return { error: 'Photo not found' }
+  if (media.athlete_id !== athleteId) return { error: 'Photo does not belong to this athlete' }
+
+  const result = await deleteMediaById(mediaId)
+  if (result.error) return result
+
+  revalidatePath(`/athletes/${athleteId}`)
   return {}
 }
 

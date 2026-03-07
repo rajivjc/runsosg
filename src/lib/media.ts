@@ -161,6 +161,58 @@ export async function getHeroPhoto(athleteId: string): Promise<MediaRow | null> 
 }
 
 /**
+ * Delete all media (storage files + DB rows) for a session.
+ * Call this before deleting the session to prevent orphaned photos.
+ */
+export async function deleteMediaForSession(sessionId: string): Promise<void> {
+  const { data: mediaRows } = await adminClient
+    .from('media')
+    .select('id, storage_path')
+    .eq('session_id', sessionId)
+
+  if (!mediaRows || mediaRows.length === 0) return
+
+  // Delete storage files (only for rows with a storage_path — external URLs are skipped)
+  const storagePaths = mediaRows
+    .map(r => r.storage_path)
+    .filter((p): p is string => p !== null)
+
+  if (storagePaths.length > 0) {
+    await adminClient.storage.from('athlete-media').remove(storagePaths)
+  }
+
+  // Delete DB rows
+  await adminClient
+    .from('media')
+    .delete()
+    .in('id', mediaRows.map(r => r.id))
+}
+
+/**
+ * Delete a single media record (storage file + DB row).
+ */
+export async function deleteMediaById(mediaId: string): Promise<{ error?: string }> {
+  const { data: media } = await adminClient
+    .from('media')
+    .select('id, storage_path')
+    .eq('id', mediaId)
+    .single()
+
+  if (!media) return { error: 'Photo not found' }
+
+  // Delete storage file if it exists
+  if (media.storage_path) {
+    await adminClient.storage.from('athlete-media').remove([media.storage_path])
+  }
+
+  // Delete DB row
+  const { error } = await adminClient.from('media').delete().eq('id', mediaId)
+  if (error) return { error: 'Could not delete the photo. Please try again.' }
+
+  return {}
+}
+
+/**
  * Enrich media rows with signed URLs.
  */
 export async function withSignedUrls(photos: MediaRow[]): Promise<(MediaRow & { signed_url: string })[]> {

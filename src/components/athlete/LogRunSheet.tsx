@@ -100,6 +100,10 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
   // Default date to today in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0]
 
+  // Auto-populate title based on time of day
+  const hour = new Date().getHours()
+  const defaultTitle = hour < 12 ? 'Morning Run' : hour < 17 ? 'Afternoon Run' : 'Evening Run'
+
   return (
     <>
       {/* Backdrop */}
@@ -125,6 +129,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
               <input
                 type="text"
                 name="title"
+                defaultValue={defaultTitle}
                 placeholder="e.g. Sunday long run"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
@@ -150,7 +155,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  Distance (km)
+                  Distance (km) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -164,7 +169,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
               </div>
               <div className="flex-1">
                 <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                  Duration (mins)
+                  Duration (mins) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"

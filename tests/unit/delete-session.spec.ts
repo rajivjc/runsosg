@@ -37,6 +37,13 @@ jest.mock('@/lib/milestones', () => ({
   checkAndAwardMilestones: jest.fn().mockResolvedValue(0),
 }))
 
+jest.mock('@/lib/media', () => ({
+  getAthletePhotosPaginated: jest.fn().mockResolvedValue({ photos: [], nextCursor: null }),
+  withSignedUrls: jest.fn().mockResolvedValue([]),
+  deleteMediaForSession: jest.fn().mockResolvedValue(undefined),
+  deleteMediaById: jest.fn().mockResolvedValue({}),
+}))
+
 const mockSyncBadges = jest.fn().mockResolvedValue({ awarded: [], revoked: [] })
 
 jest.mock('@/lib/badges', () => ({
@@ -138,20 +145,22 @@ describe('deleteSession', () => {
     expect(mock.deletes['sessions']).toBe(1)
   })
 
-  it('deletes a Strava-synced session owned by the coach', async () => {
+  it('soft-deletes a Strava-synced session owned by the coach', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: coachId } } })
 
     const mock = createQueueMock()
-    // Strava session — this should now work (no sync_source guard)
+    // Strava session — soft-deleted (update, not delete)
     mock.enqueue('sessions', { data: { id: sessionId, sync_source: 'strava_webhook', coach_user_id: coachId } })
     mock.enqueue('milestones', { data: null })
     mock.enqueue('notifications', { data: null })
+    // Soft-delete via update (not hard delete)
     mock.enqueue('sessions', { data: null })
     mockFrom.mockImplementation(mock.impl)
 
     const result = await deleteSession(sessionId, athleteId)
     expect(result.error).toBeUndefined()
-    expect(mock.deletes['sessions']).toBe(1)
+    // Strava sessions are soft-deleted (update strava_deleted_at), not hard-deleted
+    expect(mock.deletes['sessions']).toBeUndefined()
   })
 
   it('returns error when coach tries to delete another coach session', async () => {
@@ -173,8 +182,8 @@ describe('deleteSession', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } })
 
     const mock = createQueueMock()
-    // Session owned by another coach
-    mock.enqueue('sessions', { data: { id: sessionId, sync_source: 'strava_webhook', coach_user_id: coachId } })
+    // Session owned by another coach (manual — hard-delete)
+    mock.enqueue('sessions', { data: { id: sessionId, sync_source: 'manual', coach_user_id: coachId } })
     // Admin role check
     mock.enqueue('users', { data: { role: 'admin' } })
     // Cleanup
@@ -221,7 +230,7 @@ describe('deleteSession', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } })
 
     const mock = createQueueMock()
-    // Session owned by coachId, deleted by admin
+    // Session owned by coachId, deleted by admin (manual session — hard-delete)
     mock.enqueue('sessions', { data: { id: sessionId, sync_source: 'manual', coach_user_id: coachId } })
     mock.enqueue('users', { data: { role: 'admin' } })
     mock.enqueue('milestones', { data: null })

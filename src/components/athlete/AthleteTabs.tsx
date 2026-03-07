@@ -94,6 +94,7 @@ type AthleteTabsProps = {
   addCoachNote: (athleteId: string, content: string) => Promise<{ error?: string }>
   isReadOnly?: boolean
   currentUserId?: string
+  onDeletePhoto?: (photoId: string) => Promise<void>
 }
 
 export default function AthleteTabs({
@@ -114,6 +115,7 @@ export default function AthleteTabs({
   addCoachNote,
   isReadOnly = false,
   currentUserId,
+  onDeletePhoto,
 }: AthleteTabsProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('feed')
@@ -180,6 +182,7 @@ export default function AthleteTabs({
           isReadOnly={isReadOnly}
           onSessionUpdated={() => router.refresh()}
           onLogRun={() => setLogRunOpen(true)}
+          onDeletePhoto={onDeletePhoto}
         />
       )}
       {activeTab === 'cues' && (
@@ -193,6 +196,7 @@ export default function AthleteTabs({
           initialCursor={photoCursor}
           totalCount={photoCount}
           loadMore={loadMorePhotos}
+          onDeletePhoto={onDeletePhoto}
         />
       )}
       {activeTab === 'notes' && (

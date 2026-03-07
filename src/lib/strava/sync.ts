@@ -19,14 +19,19 @@ async function upsertSessionForAthlete(
   activity: StravaActivity,
   stravaActivityId: number,
   coachUserId: string
-): Promise<string> {
+): Promise<string | null> {
   // Check if a session already exists for this athlete + activity
   const { data: existing } = await adminClient
     .from('sessions')
-    .select('id, feel, note')
+    .select('id, feel, note, strava_deleted_at')
     .eq('strava_activity_id', stravaActivityId)
     .eq('athlete_id', athleteMatch.athleteId)
     .maybeSingle()
+
+  // If the session was manually deleted by a coach, skip re-creation
+  if (existing?.strava_deleted_at) {
+    return null
+  }
 
   const payload = {
     athlete_id: athleteMatch.athleteId,
@@ -336,6 +341,9 @@ export async function processStravaActivity(
         coachUserId
       )
 
+      // Session was soft-deleted by coach — skip processing
+      if (!sessionId) continue
+
       if (!firstSessionId) firstSessionId = sessionId
 
       // Send feel prompt only if this is a new session with no existing feel
@@ -504,8 +512,8 @@ export async function processStravaActivity(
 
     const unmatchedMessage =
       matchResult.ambiguousIdentifiers.length > 0
-        ? `${activityDesc} matched multiple athletes for "${matchResult.ambiguousIdentifiers.join(', ')}". Tap to link manually.`
-        : `${activityDesc} couldn't be linked — add #sosg <name> to the Strava title and save, or tap to link manually.`
+        ? `${activityDesc} matched multiple athletes for "${matchResult.ambiguousIdentifiers.join(', ')}". Tap to pick the right athlete.`
+        : `${activityDesc} couldn't be linked. Tap to pick an athlete, or add #sosg <name> to the Strava title and re-sync.`
 
     await adminClient.from('notifications').insert({
       user_id: coachUserId,

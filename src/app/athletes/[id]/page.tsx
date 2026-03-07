@@ -13,7 +13,7 @@ import { computeWeeklyVolume, computeFeelTrend, computeDistanceTimeline } from '
 import type { MilestonePin } from '@/lib/analytics/session-trends'
 import CheerViewTracker from '@/components/feed/CheerViewTracker'
 import { getAthletePhotosPaginated, getAthletePhotos, getAthletePhotoCount, withSignedUrls } from '@/lib/media'
-import { addCoachNote } from './actions'
+import { addCoachNote, deletePhoto } from './actions'
 
 interface PageProps {
   params: { id: string }
@@ -313,6 +313,10 @@ export default async function AthleteHubPage({ params }: PageProps) {
         addCoachNote={addCoachNote}
         isReadOnly={isReadOnly}
         currentUserId={user?.id}
+        onDeletePhoto={!isReadOnly ? async (photoId: string) => {
+          'use server'
+          await deletePhoto(photoId, id)
+        } : undefined}
       />
     </main>
   )
