@@ -1,8 +1,11 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Users, Settings, User, Bell } from 'lucide-react'
+
+const POLL_INTERVAL_MS = 30_000
 
 type Props = {
   isAdmin: boolean
@@ -18,8 +21,33 @@ const ICONS: Record<string, any> = {
   '/account': User,
 }
 
-export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCount }: Props) {
+export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCount: initialCount }: Props) {
   const pathname = usePathname()
+  const [unreadCount, setUnreadCount] = useState(initialCount)
+
+  // Keep in sync with server-rendered prop (e.g. after navigation)
+  useEffect(() => {
+    setUnreadCount(initialCount)
+  }, [initialCount])
+
+  const pollUnreadCount = useCallback(async () => {
+    try {
+      const res = await fetch('/api/notifications/unread-count')
+      if (res.ok) {
+        const { count } = await res.json()
+        setUnreadCount(count)
+      }
+    } catch {
+      // Silently ignore network errors — will retry next interval
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isCaregiver) return
+
+    const id = setInterval(pollUnreadCount, POLL_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [isCaregiver, pollUnreadCount])
 
   const tabs = [
     { href: '/feed', label: 'Feed' },

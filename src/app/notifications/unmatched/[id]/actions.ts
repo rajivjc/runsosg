@@ -78,6 +78,7 @@ export async function resolveUnmatchedRun(
       resolved_at: new Date().toISOString(),
       resolved_by: user.id,
       resolved_session_id: session.id,
+      resolution_type: 'linked',
     })
     .eq('id', unmatchedId)
 
@@ -180,4 +181,54 @@ export async function resyncFromStrava(
   }
 
   return { matched: false, error: 'No athlete match found. Add hashtags like #sosg #athletename to the Strava activity title or description, then try again.' }
+}
+
+export async function dismissAsNotCoaching(
+  unmatchedId: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!callerUser || callerUser.role === 'caregiver') {
+    return { error: 'Not authorised' }
+  }
+
+  // Resolve the unmatched row as dismissed (not a coaching run)
+  const { error: resolveErr } = await adminClient
+    .from('strava_unmatched')
+    .update({
+      resolved_at: new Date().toISOString(),
+      resolved_by: user.id,
+      resolution_type: 'dismissed',
+    })
+    .eq('id', unmatchedId)
+    .is('resolved_at', null)
+
+  if (resolveErr) return { error: 'Could not dismiss run.' }
+
+  // Mark any unmatched_run notifications for this unmatched row as read
+  const { data: notifs } = await adminClient
+    .from('notifications')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('type', 'unmatched_run')
+    .eq('read', false)
+    .contains('payload', { unmatched_id: unmatchedId })
+
+  if (notifs && notifs.length > 0) {
+    await adminClient
+      .from('notifications')
+      .update({ read: true })
+      .in('id', notifs.map((n) => n.id))
+  }
+
+  revalidatePath('/notifications')
+  return {}
 }

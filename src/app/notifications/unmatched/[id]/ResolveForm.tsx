@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { resolveUnmatchedRun, resyncFromStrava } from './actions'
+import { resolveUnmatchedRun, resyncFromStrava, dismissAsNotCoaching } from './actions'
 
 type Athlete = { id: string; name: string }
 
@@ -18,6 +18,7 @@ export function ResolveForm({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [resyncing, setResyncing] = useState(false)
+  const [dismissing, setDismissing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const filtered = search.trim()
@@ -57,7 +58,22 @@ export function ResolveForm({
     setResyncing(false)
   }
 
-  const busy = submitting || resyncing
+  async function handleDismiss() {
+    setDismissing(true)
+    setError(null)
+
+    const result = await dismissAsNotCoaching(unmatchedId)
+    if (result.error) {
+      setError(result.error)
+      setDismissing(false)
+      return
+    }
+
+    router.push('/notifications')
+    router.refresh()
+  }
+
+  const busy = submitting || resyncing || dismissing
 
   return (
     <div>
@@ -132,6 +148,21 @@ export function ResolveForm({
         className="w-full bg-teal-600 text-white font-medium rounded-lg py-3 text-sm hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {submitting ? 'Linking...' : 'Link to athlete'}
+      </button>
+
+      {/* Dismiss as not a coaching run */}
+      <div className="relative flex items-center justify-center my-5">
+        <div className="border-t border-gray-200 w-full" />
+        <span className="absolute bg-gray-50 px-3 text-xs text-gray-400 uppercase tracking-wide">or</span>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleDismiss}
+        disabled={busy}
+        className="w-full border border-gray-300 text-gray-500 font-medium rounded-lg py-2.5 text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {dismissing ? 'Skipping...' : 'Skip — not a coaching run'}
       </button>
     </div>
   )

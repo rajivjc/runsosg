@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { markNotificationRead, markAllNotificationsRead } from '@/app/notifications/actions'
+import { markNotificationRead, markAllNotificationsRead, dismissUnmatchedRun } from '@/app/notifications/actions'
 
 type Notification = {
   id: string
@@ -115,15 +115,29 @@ export function NotificationList({ variant, notification }: Props) {
   const clickTarget = getClickTarget(n)
   const clickHint = getClickHint(n)
 
+  const isUnmatched = n.type === 'unmatched_run'
+
   const handleClick = clickTarget
     ? async () => {
-        if (!isRead) {
+        // For unmatched_run, don't mark as read on click — let the resolve
+        // action mark it read when the coach actually links the athlete.
+        if (!isRead && !isUnmatched) {
           setDismissed(true)
           await markNotificationRead(n.id)
         }
         router.push(clickTarget)
       }
     : undefined
+
+  const handleDismissAsNotCoaching = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!n.payload.unmatched_id) return
+    setBusy(true)
+    setDismissed(true)
+    await dismissUnmatchedRun(n.id, n.payload.unmatched_id)
+    router.refresh()
+    setBusy(false)
+  }
 
   return (
     <div
@@ -148,17 +162,28 @@ export function NotificationList({ variant, notification }: Props) {
         )}
       </div>
       {!isRead && (
-        <button
-          className="flex-shrink-0 text-xs text-teal-600 font-medium hover:text-teal-700 mt-0.5"
-          onClick={async (e) => {
-            e.stopPropagation()
-            setDismissed(true)
-            await markNotificationRead(n.id)
-            router.refresh()
-          }}
-        >
-          Dismiss
-        </button>
+        <div className="flex flex-col gap-1.5 flex-shrink-0 mt-0.5">
+          {isUnmatched && n.payload.unmatched_id && (
+            <button
+              disabled={busy}
+              className="text-xs text-gray-500 font-medium hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              onClick={handleDismissAsNotCoaching}
+            >
+              {busy ? 'Skipping…' : 'Not coaching'}
+            </button>
+          )}
+          <button
+            className="text-xs text-teal-600 font-medium hover:text-teal-700"
+            onClick={async (e) => {
+              e.stopPropagation()
+              setDismissed(true)
+              await markNotificationRead(n.id)
+              router.refresh()
+            }}
+          >
+            Dismiss
+          </button>
+        </div>
       )}
     </div>
   )

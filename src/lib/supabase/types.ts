@@ -121,6 +121,7 @@ export interface Database {
           resolved_at?: string | null
           resolved_by?: string | null
           resolved_session_id?: string | null
+          resolution_type?: 'linked' | 'dismissed' | null
         } & Record<string, unknown>
         Update: Partial<StravaUnmatched> & Record<string, unknown>
         Relationships: []
@@ -354,6 +355,7 @@ export interface StravaUnmatched {
   resolved_at: string | null
   resolved_by: string | null
   resolved_session_id: string | null
+  resolution_type: 'linked' | 'dismissed' | null
 }
 
 export interface SessionRsvp {
