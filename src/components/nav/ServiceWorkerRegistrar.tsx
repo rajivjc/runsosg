@@ -2,12 +2,17 @@
 
 import { useEffect } from 'react'
 
+// Module-level flag to prevent the postMessage handler and the Cache API
+// fallback from both firing window.location.href in rapid succession.
+let navigating = false
+
 /**
  * Check for a pending navigation URL stored by the service worker's
  * notificationclick handler. This is the fallback for when postMessage
  * arrives before the listener is registered (cold start race condition).
  */
 async function consumePendingNavigation() {
+  if (navigating) return
   try {
     const navCache = await caches.open('sosg-pending-nav')
     const response = await navCache.match('/_pending')
@@ -15,6 +20,7 @@ async function consumePendingNavigation() {
       const url = await response.text()
       await navCache.delete('/_pending')
       if (url && url !== window.location.pathname) {
+        navigating = true
         window.location.href = url
       }
     }
@@ -27,6 +33,10 @@ export default function ServiceWorkerRegistrar() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
 
+    // Reset on mount — if the component re-mounts after a soft navigation
+    // that didn't trigger location.href, the flag should be cleared.
+    navigating = false
+
     navigator.serviceWorker.register('/sw.js').catch(() => {
       // Service worker registration failed — non-critical, ignore silently
     })
@@ -36,7 +46,9 @@ export default function ServiceWorkerRegistrar() {
     // because client.navigate() corrupts the React tree on iOS PWAs, causing
     // stale content to persist across all routes.
     const handleMessage = (event: MessageEvent) => {
+      if (navigating) return
       if (event.data?.type === 'NAVIGATE' && typeof event.data.url === 'string') {
+        navigating = true
         // Clear the cache fallback since we're handling it now
         caches.open('sosg-pending-nav').then((c) => c.delete('/_pending')).catch(() => {})
         window.location.href = event.data.url

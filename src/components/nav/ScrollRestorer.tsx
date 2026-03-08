@@ -8,6 +8,14 @@ export default function ScrollRestorer() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
+
+    // Force iOS WebKit to tear down stale compositing layers from the
+    // previous page's <main>. Toggling a transform on <body> forces a
+    // compositor re-evaluation, clearing any orphaned GPU textures.
+    document.body.style.transform = 'translateZ(0)'
+    requestAnimationFrame(() => {
+      document.body.style.transform = ''
+    })
   }, [pathname])
 
   return null

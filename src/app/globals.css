@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
-/* Smooth page entrance */
+/* Smooth page entrance — opacity only (no transform) to avoid creating a
+   CSS containing block for position:fixed descendants and to prevent iOS
+   WebKit from retaining orphaned GPU compositing layers across navigations. */
 main {
-  animation: fadeInUp 250ms ease-out;
+  animation: fadeIn 200ms ease-out;
 }
 
-@keyframes fadeInUp {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
