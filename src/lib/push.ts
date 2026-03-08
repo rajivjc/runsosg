@@ -38,15 +38,27 @@ export async function sendPushToUser(
   userId: string,
   payload: PushPayload
 ): Promise<void> {
-  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return
-  if (isQuietHours()) return
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    console.warn('[push] VAPID keys not configured — skipping push for user', userId)
+    return
+  }
+  if (isQuietHours()) {
+    const sgtHour = new Date().toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'Asia/Singapore' })
+    console.log('[push] Quiet hours (SGT hour:', sgtHour, ') — skipping push for user', userId)
+    return
+  }
 
   const { data: subscriptions } = await adminClient
     .from('push_subscriptions')
     .select('id, endpoint, p256dh, auth')
     .eq('user_id', userId)
 
-  if (!subscriptions || subscriptions.length === 0) return
+  if (!subscriptions || subscriptions.length === 0) {
+    console.log('[push] No subscriptions found for user', userId)
+    return
+  }
+
+  console.log('[push] Sending to user', userId, '—', subscriptions.length, 'subscription(s), title:', payload.title)
 
   const body = JSON.stringify({
     title: payload.title,
@@ -55,7 +67,7 @@ export async function sendPushToUser(
     tag: payload.tag,
   })
 
-  await Promise.allSettled(
+  const results = await Promise.allSettled(
     subscriptions.map(async (sub) => {
       try {
         await webpush.sendNotification(
@@ -65,17 +77,27 @@ export async function sendPushToUser(
           },
           body
         )
+        return 'sent'
       } catch (err: any) {
         // 410 Gone or 404 = subscription expired, clean up
         if (err?.statusCode === 410 || err?.statusCode === 404) {
+          console.warn('[push] Subscription expired (status', err.statusCode, ') for user', userId, '— removing')
           await adminClient
             .from('push_subscriptions')
             .delete()
             .eq('id', sub.id)
+          return 'expired'
         }
+        console.error('[push] Failed to send to user', userId, '— status:', err?.statusCode, 'message:', err?.message)
+        return 'error'
       }
     })
   )
+
+  const sent = results.filter(r => r.status === 'fulfilled' && r.value === 'sent').length
+  const expired = results.filter(r => r.status === 'fulfilled' && r.value === 'expired').length
+  const errors = results.filter(r => r.status === 'fulfilled' && r.value === 'error').length
+  console.log('[push] Results for user', userId, '— sent:', sent, 'expired:', expired, 'errors:', errors)
 }
 
 /**
@@ -86,8 +108,15 @@ export async function sendPushToRole(
   role: 'admin' | 'coach' | 'caregiver',
   payload: PushPayload
 ): Promise<void> {
-  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return
-  if (isQuietHours()) return
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    console.warn('[push] VAPID keys not configured — skipping push for role', role)
+    return
+  }
+  if (isQuietHours()) {
+    const sgtHour = new Date().toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'Asia/Singapore' })
+    console.log('[push] Quiet hours (SGT hour:', sgtHour, ') — skipping push for role', role)
+    return
+  }
 
   const { data: users } = await adminClient
     .from('users')
@@ -95,7 +124,12 @@ export async function sendPushToRole(
     .eq('role', role)
     .eq('active', true)
 
-  if (!users || users.length === 0) return
+  if (!users || users.length === 0) {
+    console.log('[push] No active users with role', role)
+    return
+  }
+
+  console.log('[push] Sending to role', role, '—', users.length, 'user(s), title:', payload.title)
 
   await Promise.allSettled(
     users.map((u) => sendPushToUser(u.id, payload))
