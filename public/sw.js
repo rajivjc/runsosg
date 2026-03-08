@@ -1,4 +1,5 @@
-const CACHE_NAME = 'sosg-v5'
+const CACHE_NAME = 'sosg-v7'
+const NAV_CACHE = 'sosg-pending-nav'
 const SHELL_ASSETS = ['/api/manifest.json', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', (event) => {
@@ -12,7 +13,9 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        keys
+          .filter((k) => k !== CACHE_NAME && k !== NAV_CACHE)
+          .map((k) => caches.delete(k))
       )
     )
   )
@@ -41,21 +44,34 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   const url = event.notification.data?.url || '/'
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
-      for (const client of clients) {
+    (async () => {
+      // Persist the target URL so the client can pick it up even on cold start
+      // (when postMessage might arrive before the listener is registered).
+      const navCache = await caches.open(NAV_CACHE)
+      await navCache.put('/_pending', new Response(url))
+
+      const allClients = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      })
+
+      for (const client of allClients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
+          // Use postMessage instead of client.navigate() — on iOS PWAs,
+          // client.navigate() corrupts the React tree, leaving stale
+          // content from the previous page visible across all routes.
+          client.postMessage({ type: 'NAVIGATE', url })
           try {
-            await client.navigate(url)
             await client.focus()
-            return
           } catch {
-            // client.navigate() can fail on frozen/discarded tabs (mobile).
-            // Fall through to openWindow below.
+            // focus() can fail on frozen/discarded tabs
           }
+          return
         }
       }
+      // No existing window — open a new one
       return self.clients.openWindow(url)
-    })
+    })()
   )
 })
 
