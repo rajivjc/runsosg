@@ -87,7 +87,8 @@ type Props =
 
 export function NotificationList({ variant, notification }: Props) {
   const router = useRouter()
-  const [dismissed, setDismissed] = useState(notification?.read ?? false)
+  const [markedRead, setMarkedRead] = useState(notification?.read ?? false)
+  const [explicitlyDismissed, setExplicitlyDismissed] = useState(false)
   const [busy, setBusy] = useState(false)
 
   if (variant === 'mark-all') {
@@ -110,7 +111,8 @@ export function NotificationList({ variant, notification }: Props) {
   const n = notification!
   const message = getNotificationMessage(n)
   const icon = getNotificationIcon(n.type)
-  const isRead = n.read || dismissed
+  const isRead = n.read || markedRead
+  const showDismissedStyle = explicitlyDismissed
 
   const clickTarget = getClickTarget(n)
   const clickHint = getClickHint(n)
@@ -118,12 +120,11 @@ export function NotificationList({ variant, notification }: Props) {
   const isUnmatched = n.type === 'unmatched_run'
 
   const handleClick = clickTarget
-    ? async () => {
+    ? () => {
         // For unmatched_run, don't mark as read on click — let the resolve
         // action mark it read when the coach actually links the athlete.
         if (!isRead && !isUnmatched) {
-          setDismissed(true)
-          await markNotificationRead(n.id)
+          markNotificationRead(n.id) // fire-and-forget, no await
         }
         router.push(clickTarget)
       }
@@ -133,7 +134,7 @@ export function NotificationList({ variant, notification }: Props) {
     e.stopPropagation()
     if (!n.payload.unmatched_id) return
     setBusy(true)
-    setDismissed(true)
+    setExplicitlyDismissed(true)
     await dismissUnmatchedRun(n.id, n.payload.unmatched_id)
     router.refresh()
     setBusy(false)
@@ -142,26 +143,34 @@ export function NotificationList({ variant, notification }: Props) {
   return (
     <div
       className={`rounded-xl border shadow-sm px-4 py-3 flex items-start gap-3 transition-all duration-500 ease-in-out ${
-        isRead
+        showDismissedStyle
           ? 'bg-gray-50 border-gray-200 opacity-60 scale-[0.98]'
-          : 'bg-white border-teal-200'
+          : isRead
+            ? 'bg-gray-50 border-gray-200'
+            : 'bg-white border-teal-200'
       } ${clickTarget ? 'cursor-pointer' : ''}`}
       onClick={handleClick}
     >
-      <span className={`text-lg mt-0.5 flex-shrink-0 transition-all duration-500 ${isRead ? 'grayscale' : ''}`}>{icon}</span>
+      <span className={`text-lg mt-0.5 flex-shrink-0 transition-all duration-500 ${showDismissedStyle ? 'grayscale' : ''}`}>{icon}</span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm transition-all duration-500 ${isRead ? 'text-gray-400 line-through' : 'text-gray-900 font-medium'}`}>
+        <p className={`text-sm transition-all duration-500 ${
+          showDismissedStyle
+            ? 'text-gray-400 line-through'
+            : isRead
+              ? 'text-gray-500'
+              : 'text-gray-900 font-medium'
+        }`}>
           {message}
         </p>
         <p className="text-xs text-gray-400 mt-1">
           {relativeTime(n.created_at)}
-          {isRead && <span className="ml-2 text-gray-300 italic">dismissed</span>}
+          {showDismissedStyle && <span className="ml-2 text-gray-300 italic">dismissed</span>}
         </p>
         {clickTarget && !isRead && clickHint && (
           <p className="text-xs text-teal-600 mt-1">{clickHint}</p>
         )}
       </div>
-      {!isRead && (
+      {!isRead && !explicitlyDismissed && (
         <div className="flex flex-col gap-1.5 flex-shrink-0 mt-0.5">
           {isUnmatched && n.payload.unmatched_id && (
             <button
@@ -176,7 +185,7 @@ export function NotificationList({ variant, notification }: Props) {
             className="text-xs text-teal-600 font-medium hover:text-teal-700"
             onClick={async (e) => {
               e.stopPropagation()
-              setDismissed(true)
+              setExplicitlyDismissed(true)
               await markNotificationRead(n.id)
               router.refresh()
             }}
