@@ -1,8 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import type { OnboardingStep } from '@/lib/onboarding'
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
 
 type OnboardingCardProps = {
   firstName: string
@@ -14,6 +19,15 @@ type OnboardingCardProps = {
 const STORAGE_KEY = 'sosg_onboarding_collapsed'
 const OLD_STORAGE_KEY = 'sosg_onboarding_dismissed'
 
+function isStandalone(): boolean {
+  if (typeof window === 'undefined') return false
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    ('standalone' in window.navigator &&
+      (window.navigator as unknown as { standalone: boolean }).standalone === true)
+  )
+}
+
 /**
  * Welcome checklist card for new coaches.
  * Shown instead of the greeting card when the coach hasn't completed all steps.
@@ -21,13 +35,15 @@ const OLD_STORAGE_KEY = 'sosg_onboarding_dismissed'
  */
 export default function OnboardingCard({
   firstName,
-  steps,
-  completedCount,
+  steps: serverSteps,
+  completedCount: serverCompletedCount,
   totalCount,
 }: OnboardingCardProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [isInstalled, setIsInstalled] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
-  // Check sessionStorage on mount + clean up old localStorage key
+  // Check sessionStorage on mount + clean up old localStorage key + detect standalone
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // Clean up old permanent dismiss key so existing coaches see the card again
@@ -35,8 +51,41 @@ export default function OnboardingCard({
 
       const stored = sessionStorage.getItem(STORAGE_KEY)
       if (stored === 'true') setCollapsed(true)
+
+      // Detect if app is already installed as PWA
+      setIsInstalled(isStandalone())
     }
   }, [])
+
+  // Capture beforeinstallprompt for native install
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setInstallPrompt(e as BeforeInstallPromptEvent)
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  // Override install_app step completion client-side
+  const steps = useMemo(() =>
+    serverSteps.map(step =>
+      step.key === 'install_app' && isInstalled
+        ? { ...step, completed: true }
+        : step
+    ), [serverSteps, isInstalled])
+
+  const completedCount = isInstalled
+    ? serverCompletedCount + 1
+    : serverCompletedCount
+
+  const handleInstallClick = useCallback(async () => {
+    if (!installPrompt) return
+    await installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    if (outcome === 'accepted') setIsInstalled(true)
+    setInstallPrompt(null)
+  }, [installPrompt])
 
   function handleToggle() {
     const next = !collapsed
@@ -111,8 +160,8 @@ export default function OnboardingCard({
 
       {/* Checklist */}
       <div className="space-y-2">
-        {steps.map((step) => (
-          <Link key={step.key} href={step.href}>
+        {steps.map((step) => {
+          const inner = (
             <div className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
               step.completed
                 ? 'bg-white/40'
@@ -135,8 +184,23 @@ export default function OnboardingCard({
                 {step.label}
               </span>
             </div>
-          </Link>
-        ))}
+          )
+
+          // Use native install prompt if available for the install step
+          if (step.key === 'install_app' && installPrompt && !step.completed) {
+            return (
+              <button key={step.key} onClick={handleInstallClick} className="w-full text-left">
+                {inner}
+              </button>
+            )
+          }
+
+          return (
+            <Link key={step.key} href={step.href}>
+              {inner}
+            </Link>
+          )
+        })}
       </div>
 
     </div>

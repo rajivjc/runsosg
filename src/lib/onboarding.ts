@@ -51,12 +51,21 @@ export function computeOnboardingState(input: OnboardingInput): OnboardingState 
       completed: input.totalSessionsCoached > 0,
       href: '/athletes',
     },
+    {
+      key: 'install_app',
+      label: 'Install the app for quick access',
+      completed: false, // Only detectable client-side (standalone mode)
+      href: '/setup',
+    },
   ]
 
   const completedCount = steps.filter(s => s.completed).length
+  // isNewUser is based on server-knowable steps only (exclude client-only install_app)
+  const serverSteps = steps.filter(s => s.key !== 'install_app')
+  const serverCompleted = serverSteps.filter(s => s.completed).length
 
   return {
-    isNewUser: completedCount < steps.length,
+    isNewUser: serverCompleted < serverSteps.length,
     steps,
     completedCount,
     totalCount: steps.length,
