@@ -22,7 +22,7 @@ describe('computeOnboardingState', () => {
     const state = computeOnboardingState(input())
     expect(state.isNewUser).toBe(true)
     expect(state.completedCount).toBe(0)
-    expect(state.totalCount).toBe(2)
+    expect(state.totalCount).toBe(3)
   })
 
   it('marks log_run step completed when sessions > 0', () => {
@@ -37,14 +37,15 @@ describe('computeOnboardingState', () => {
     expect(stravaStep!.completed).toBe(true)
   })
 
-  it('returns isNewUser=false when all steps completed', () => {
+  it('returns isNewUser=false when server-knowable steps completed (install_app excluded)', () => {
     const state = computeOnboardingState(input({
       totalSessionsCoached: 5,
       hasStravaConnection: true,
     }))
+    // isNewUser ignores client-only install_app step
     expect(state.isNewUser).toBe(false)
     expect(state.completedCount).toBe(2)
-    expect(state.totalCount).toBe(2)
+    expect(state.totalCount).toBe(3)
   })
 
   it('returns correct partial completion', () => {
@@ -54,6 +55,17 @@ describe('computeOnboardingState', () => {
     }))
     expect(state.isNewUser).toBe(true)
     expect(state.completedCount).toBe(1) // strava only
+  })
+
+  it('includes install_app step that is always incomplete server-side', () => {
+    const state = computeOnboardingState(input({
+      totalSessionsCoached: 5,
+      hasStravaConnection: true,
+    }))
+    const installStep = state.steps.find(s => s.key === 'install_app')
+    expect(installStep).toBeDefined()
+    expect(installStep!.completed).toBe(false)
+    expect(installStep!.href).toBe('/setup')
   })
 
   it('does not include a name step (handled by /welcome page)', () => {
