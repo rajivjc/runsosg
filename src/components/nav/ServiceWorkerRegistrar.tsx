@@ -7,6 +7,19 @@ import { useEffect } from 'react'
 let navigating = false
 
 /**
+ * Force a full page load to the given URL. If the URL matches the current
+ * page, window.location.href assignment is a no-op in WebKit, so we must
+ * use window.location.reload() instead.
+ */
+function forceNavigate(url: string) {
+  if (url === window.location.pathname || url === window.location.href) {
+    window.location.reload()
+  } else {
+    window.location.href = url
+  }
+}
+
+/**
  * Check for a pending navigation URL stored by the service worker's
  * notificationclick handler. This is the fallback for when postMessage
  * arrives before the listener is registered (cold start race condition).
@@ -19,13 +32,27 @@ async function consumePendingNavigation() {
     if (response) {
       const url = await response.text()
       await navCache.delete('/_pending')
-      if (url && url !== window.location.pathname) {
+      if (url) {
         navigating = true
-        window.location.href = url
+        forceNavigate(url)
       }
     }
   } catch {
     // Cache API unavailable — ignore
+  }
+}
+
+/**
+ * Detect DOM corruption from iOS WKWebView process restoration.
+ * When iOS terminates and restores a PWA's WebView process, orphaned DOM
+ * nodes from the previous page can persist across client-side navigations.
+ * We detect this by checking for multiple <main> elements (each page renders
+ * exactly one <main>).
+ */
+function checkDomIntegrity() {
+  const mainElements = document.querySelectorAll('main')
+  if (mainElements.length > 1) {
+    window.location.reload()
   }
 }
 
@@ -51,7 +78,7 @@ export default function ServiceWorkerRegistrar() {
         navigating = true
         // Clear the cache fallback since we're handling it now
         caches.open('sosg-pending-nav').then((c) => c.delete('/_pending')).catch(() => {})
-        window.location.href = event.data.url
+        forceNavigate(event.data.url)
       }
     }
 
@@ -64,6 +91,9 @@ export default function ServiceWorkerRegistrar() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         consumePendingNavigation()
+        // Also check for DOM corruption from iOS process restoration.
+        // Use a short delay to let the WebView finish re-compositing.
+        setTimeout(checkDomIntegrity, 300)
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)

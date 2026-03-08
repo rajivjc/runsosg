@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sosg-v7'
+const CACHE_NAME = 'sosg-v8'
 const NAV_CACHE = 'sosg-pending-nav'
 const SHELL_ASSETS = ['/api/manifest.json', '/icon-192.png', '/icon-512.png']
 
