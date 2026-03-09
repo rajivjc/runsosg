@@ -28,11 +28,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en">
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="h-full pb-16">
+      <body className="min-h-dvh pb-16">
         {/* Inline PWA splash screen — renders before React hydrates */}
         <div
           id="pwa-splash"
