@@ -38,6 +38,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
     celebrationMilestones,
     weeklyRecap,
     weeklyStats,
+    athleteStreak,
     allowPublicSharing,
     onboarding,
   } = data
@@ -73,6 +74,17 @@ export default function CaregiverFeed({ data, userId }: Props) {
         </p>
         {caregiverAthlete ? (
           <>
+            {athleteStreak && athleteStreak.current > 0 && (
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="text-sm">🔥</span>
+                <span className="text-sm font-semibold text-amber-700">
+                  {caregiverAthlete.name} is on a {athleteStreak.current}-week streak!
+                </span>
+                {athleteStreak.longest > athleteStreak.current && (
+                  <span className="text-[10px] text-amber-500">Best: {athleteStreak.longest}w</span>
+                )}
+              </div>
+            )}
             {caregiverRecentSessions.length === 0 ? (
               <p className="text-sm text-amber-700 mb-3">
                 No runs logged for {caregiverAthlete.name} this month yet — stay tuned!

@@ -9,6 +9,7 @@ import WeeklyRecapCard from '@/components/feed/WeeklyRecapCard'
 import SessionGroup from '@/components/feed/SessionGroup'
 import BetaBanner from '@/components/feed/BetaBanner'
 import type { CoachFeedData } from '@/lib/feed/types'
+import StreakCalendar from '@/components/account/StreakCalendar'
 
 interface Props {
   data: CoachFeedData
@@ -67,13 +68,15 @@ export default function CoachFeed({ data, userId }: Props) {
             {greeting}, {firstName}
           </p>
           {coachFocus && coachFocus.streak.current > 0 && (
-            <div className="flex items-center gap-1.5 mb-2">
-              <span className="text-sm">🔥</span>
-              <span className="text-sm font-semibold text-teal-700">
-                {coachFocus.streak.current}-week streak
-              </span>
+            <div className="mb-3">
+              <StreakCalendar
+                weeklyActivity={coachFocus.streak.weeklyActivity}
+                current={coachFocus.streak.current}
+                longest={coachFocus.streak.longest}
+                variant="teal"
+              />
               {!coachFocus.streak.activeThisWeek && (
-                <span className="text-xs text-teal-500/70">· Log a run to keep it!</span>
+                <p className="text-xs text-teal-500/70 mt-1">Log a run to keep your streak!</p>
               )}
             </div>
           )}

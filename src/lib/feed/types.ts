@@ -10,6 +10,8 @@ import type { CoachFocusData, CaregiverFocusData } from '@/lib/feed/today-focus'
 import type { WeeklyRecap } from '@/lib/feed/weekly-recap'
 import type { OnboardingState } from '@/lib/onboarding'
 import type { BadgeDefinition } from '@/lib/badges'
+import type { StreakDetails } from '@/lib/streaks'
+import type { ClubBestWeek } from '@/lib/analytics/club-records'
 
 // ─── Session & Milestone shapes ──────────────────────────────────
 
@@ -78,6 +80,11 @@ export interface CoachFeedData {
     milestones: number
     coaches: number
     caregivers: number
+    thisMonthSessions: number
+    thisMonthKm: number
+    lastMonthSessions: number
+    lastMonthKm: number
+    bestWeek: ClubBestWeek | null
   }
   coachStats: {
     monthSessions: number
@@ -117,11 +124,17 @@ export interface CaregiverFeedData {
     milestones: number
     coaches: number
     caregivers: number
+    thisMonthSessions: number
+    thisMonthKm: number
+    lastMonthSessions: number
+    lastMonthKm: number
+    bestWeek: ClubBestWeek | null
   }
   milestonesBySession: Record<string, MilestoneBadge[]>
   celebrationMilestones: CelebrationMilestone[]
   weeklyRecap: WeeklyRecap
   weeklyStats: { count: number; km: number; athletes: number }
+  athleteStreak: StreakDetails | null
   // Caregiver sharing control (Feature A)
   allowPublicSharing: boolean
   sharingDisabledByCaregiver: boolean

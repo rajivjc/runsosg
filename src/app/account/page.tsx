@@ -13,6 +13,10 @@ import { formatDate, formatDistance } from '@/lib/utils/dates'
 import { BADGE_DEFINITIONS } from '@/lib/badges'
 import { calculateGoalProgress } from '@/lib/goals'
 import type { GoalType } from '@/lib/goals'
+import { calculateStreakDetails } from '@/lib/streaks'
+import { getMilestoneDefinitions } from '@/lib/feed/shared-queries'
+import StreakCalendar from '@/components/account/StreakCalendar'
+import MilestoneTimeline from '@/components/account/MilestoneTimeline'
 
 const FEEL_EMOJI: Record<number, string> = {
   1: '😰', 2: '😐', 3: '🙂', 4: '😊', 5: '🔥',
@@ -56,6 +60,9 @@ export default async function AccountPage({
   const totalSessions = (statsData ?? []).length
   const totalAthletes = new Set((statsData ?? []).map((s: any) => s.athlete_id)).size
   const coachThisMonth = (statsData ?? []).filter((s: any) => s.date >= monthStart).length
+  const coachStreak = !isCaregiver && totalSessions > 0
+    ? calculateStreakDetails((statsData ?? []).map((s: any) => s.date).filter(Boolean))
+    : null
 
   // Coach badges
   const { data: earnedBadges } = !isCaregiver
@@ -69,6 +76,8 @@ export default async function AccountPage({
   let athleteMilestones: any[] = []
   let athleteCoachNames: string[] = []
   let lastMonthRuns = 0
+  let athleteAllSessionDates: string[] = []
+  let athleteMilestoneDefs: Awaited<ReturnType<typeof getMilestoneDefinitions>> = []
 
   if (isCaregiver) {
     const { data: athlete } = await adminClient
@@ -84,6 +93,8 @@ export default async function AccountPage({
         { data: sessions },
         { data: milestones },
         { data: lastMonthSessions },
+        { data: allSessionDates },
+        milestoneDefs,
       ] = await Promise.all([
         adminClient
           .from('sessions')
@@ -104,11 +115,19 @@ export default async function AccountPage({
           .eq('status', 'completed')
           .gte('date', lastMonthStart)
           .lt('date', monthStart),
+        adminClient
+          .from('sessions')
+          .select('date')
+          .eq('athlete_id', athlete.id)
+          .eq('status', 'completed'),
+        getMilestoneDefinitions(),
       ])
 
       athleteSessions = sessions ?? []
       athleteMilestones = milestones ?? []
       lastMonthRuns = (lastMonthSessions ?? []).length
+      athleteAllSessionDates = (allSessionDates ?? []).map((s: any) => s.date).filter(Boolean)
+      athleteMilestoneDefs = milestoneDefs
 
       // Fetch unique coach names
       const coachIds = [...new Set(athleteSessions.map((s: any) => s.coach_user_id).filter(Boolean))]
@@ -129,6 +148,11 @@ export default async function AccountPage({
   const thisMonthRuns = thisMonthSessions.length
   const runsTrend = thisMonthRuns - lastMonthRuns
   const latestSession = athleteSessions[0] ?? null
+
+  // Athlete streak (for caregiver)
+  const athleteStreak = isCaregiver && athleteAllSessionDates.length > 0
+    ? calculateStreakDetails(athleteAllSessionDates)
+    : null
 
   // Goal progress (no new query — uses already-fetched sessions)
   const goalProgress = caregiverAthlete?.goal_type && caregiverAthlete?.goal_target
@@ -206,6 +230,16 @@ export default async function AccountPage({
                 <span className="text-[11px] text-teal-700 font-medium mt-0.5">this month</span>
               </div>
             </div>
+            {coachStreak && (
+              <div className="mt-4 pt-4 border-t border-teal-200/60">
+                <StreakCalendar
+                  weeklyActivity={coachStreak.weeklyActivity}
+                  current={coachStreak.current}
+                  longest={coachStreak.longest}
+                  variant="teal"
+                />
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -321,6 +355,18 @@ export default async function AccountPage({
               </div>
             )}
 
+            {/* Athlete activity streak */}
+            {athleteStreak && (
+              <div className="bg-white/60 rounded-xl px-4 py-3 mb-4">
+                <StreakCalendar
+                  weeklyActivity={athleteStreak.weeklyActivity}
+                  current={athleteStreak.current}
+                  longest={athleteStreak.longest}
+                  variant="amber"
+                />
+              </div>
+            )}
+
             {/* Coaches */}
             {athleteCoachNames.length > 0 && (
               <p className="text-xs text-amber-600">
@@ -352,27 +398,18 @@ export default async function AccountPage({
             </div>
           )}
 
-          {/* Milestones gallery */}
-          {athleteMilestones.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-4">
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">
-                Milestones ({athleteMilestones.length})
-              </p>
-              <div className="space-y-2">
-                {athleteMilestones.map((m: any) => (
-                  <Link key={m.id} href={`/milestone/${m.id}`}>
-                    <div className="flex items-center gap-3 bg-amber-50/50 hover:bg-amber-50 rounded-lg px-3 py-2.5 transition-colors">
-                      <span className="text-xl flex-shrink-0">{m.milestone_definitions?.icon ?? '🏆'}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900">{m.label}</p>
-                        <p className="text-[10px] text-amber-500">{formatDate(m.achieved_at)}</p>
-                      </div>
-                      <span className="text-xs text-amber-400">Share ↗</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
+          {/* Milestone timeline */}
+          {(athleteMilestones.length > 0 || athleteMilestoneDefs.length > 0) && (
+            <MilestoneTimeline
+              earned={athleteMilestones.map((m: any) => ({
+                id: m.id,
+                label: m.label,
+                icon: m.milestone_definitions?.icon ?? '🏆',
+                achieved_at: m.achieved_at,
+              }))}
+              definitions={athleteMilestoneDefs}
+              currentSessionCount={totalAthleteSessions}
+            />
           )}
         </section>
       )}

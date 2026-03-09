@@ -11,6 +11,7 @@ import { computeWeeklyRecap } from '@/lib/feed/weekly-recap'
 import { computeCaregiverOnboardingState } from '@/lib/onboarding'
 import { groupByDate } from '@/lib/feed/utils'
 import { loadClubStats } from '@/lib/feed/shared-queries'
+import { calculateStreakDetails } from '@/lib/streaks'
 import type {
   CaregiverFeedData,
   FeedSession,
@@ -75,6 +76,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     { data: cgNotes },
     { count: cheerTodayCount },
     { data: sentCheers },
+    { data: athleteSessionDates },
   ] = await Promise.all([
     // Kudos counts
     sessionIds.length > 0
@@ -100,6 +102,10 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     adminClient.from('cheers').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', todayStart.toISOString()),
     // Sent cheers
     adminClient.from('cheers').select('id, athlete_id, message, created_at, viewed_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
+    // All athlete session dates (for streak calculation)
+    caregiverAthlete
+      ? adminClient.from('sessions').select('date').eq('athlete_id', caregiverAthlete.id).eq('status', 'completed')
+      : Promise.resolve({ data: [] }),
   ])
 
   // ─── Build enriched feed (names extracted from joins) ──────────
@@ -189,6 +195,11 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
 
   const caregiverFocus = await caregiverFocusPromise
 
+  // Athlete activity streak
+  const athleteStreak = caregiverAthlete && (athleteSessionDates ?? []).length > 0
+    ? calculateStreakDetails((athleteSessionDates as { date: string }[]).map(s => s.date).filter(Boolean))
+    : null
+
   // ─── Caregiver onboarding ────────────────────────────────────
   const caregiverOnboarding = computeCaregiverOnboardingState({
     hasLinkedAthlete: !!caregiverAthlete,
@@ -214,6 +225,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     celebrationMilestones,
     weeklyRecap,
     weeklyStats,
+    athleteStreak,
     allowPublicSharing: (caregiverAthlete as Record<string, unknown>)?.allow_public_sharing === true,
     sharingDisabledByCaregiver: (caregiverAthlete as Record<string, unknown>)?.sharing_disabled_by_caregiver === true,
     onboarding: caregiverOnboarding.isNewUser ? caregiverOnboarding : null,

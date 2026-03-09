@@ -1,5 +1,5 @@
 import { adminClient } from '@/lib/supabase/admin'
-import { calculateWeeklyStreak } from '@/lib/streaks'
+import { calculateStreakDetails, type StreakDetails } from '@/lib/streaks'
 import {
   detectFeelDecline,
   detectRecentPersonalBest,
@@ -18,7 +18,7 @@ export interface FocusItem {
 }
 
 export interface CoachFocusData {
-  streak: { current: number; activeThisWeek: boolean }
+  streak: StreakDetails
   items: FocusItem[]
 }
 
@@ -52,11 +52,11 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
     .gte('date', ninetyDaysAgoStr)
 
   if (!coachSessions || coachSessions.length === 0) {
-    return { streak: { current: 0, activeThisWeek: false }, items: [] }
+    return { streak: { current: 0, longest: 0, activeThisWeek: false, weeklyActivity: [] }, items: [] }
   }
 
   // 2. Calculate streak (filter out sessions with null/empty dates)
-  const streak = calculateWeeklyStreak(coachSessions.map(s => s.date).filter((d): d is string => d != null && d !== ''))
+  const streak = calculateStreakDetails(coachSessions.map(s => s.date).filter((d): d is string => d != null && d !== ''))
 
   // 3. Unique athlete IDs this coach has worked with (recent)
   const athleteIds = [...new Set(coachSessions.map(s => s.athlete_id))]
