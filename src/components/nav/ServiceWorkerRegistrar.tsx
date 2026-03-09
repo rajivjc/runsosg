@@ -56,6 +56,27 @@ async function consumePendingNavigation() {
   }
 }
 
+/**
+ * Fetch the PWA manifest and cache the PWA token so the service worker
+ * can use it in notificationclick to open authenticated windows.
+ */
+async function cachePwaToken() {
+  try {
+    const res = await fetch('/api/manifest.json')
+    const manifest = await res.json()
+    const startUrl: string = manifest.start_url || ''
+    const match = startUrl.match(/token=([^&]+)/)
+    if (match) {
+      const tokenCache = await caches.open('sosg-pwa-token')
+      await tokenCache.put('/_token', new Response(match[1]))
+    }
+  } catch {
+    // Non-critical — notification cold starts will fall back to bare URL
+  }
+}
+
+// BroadcastChannel name for duplicate PWA instance detection
+const INSTANCE_CHANNEL = 'sosg-pwa-instance'
 
 export default function ServiceWorkerRegistrar() {
   useEffect(() => {
@@ -68,6 +89,30 @@ export default function ServiceWorkerRegistrar() {
     navigator.serviceWorker.register('/sw.js').catch(() => {
       // Service worker registration failed — non-critical, ignore silently
     })
+
+    // Cache the PWA token for the service worker to use in notificationclick
+    cachePwaToken()
+
+    // Duplicate instance detection via BroadcastChannel.
+    // When a notification opens a second PWA window (iOS frozen window bug),
+    // the original instance broadcasts a claim. The newer instance closes itself.
+    let bc: BroadcastChannel | null = null
+    if (typeof BroadcastChannel !== 'undefined') {
+      bc = new BroadcastChannel(INSTANCE_CHANNEL)
+      // Announce this instance
+      bc.postMessage({ type: 'INSTANCE_PING', ts: Date.now() })
+      bc.onmessage = (event) => {
+        if (event.data?.type === 'INSTANCE_PING') {
+          // Another instance just opened — tell it we're already here
+          bc?.postMessage({ type: 'INSTANCE_PONG' })
+        }
+        if (event.data?.type === 'INSTANCE_PONG') {
+          // An older instance is already running — close this duplicate.
+          // The pending nav URL is cached, so the original will pick it up.
+          window.close()
+        }
+      }
+    }
 
     // Fast path: listen for NAVIGATE messages from the SW's notificationclick.
     // We use postMessage + full page reload instead of client.navigate()
@@ -102,6 +147,7 @@ export default function ServiceWorkerRegistrar() {
     return () => {
       navigator.serviceWorker.removeEventListener('message', handleMessage)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      bc?.close()
     }
   }, [])
 

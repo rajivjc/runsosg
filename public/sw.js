@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sosg-v8'
+const CACHE_NAME = 'sosg-v9'
 const NAV_CACHE = 'sosg-pending-nav'
 const SHELL_ASSETS = ['/api/manifest.json', '/icon-192.png', '/icon-512.png']
 
@@ -14,7 +14,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== CACHE_NAME && k !== NAV_CACHE)
+          .filter((k) => k !== CACHE_NAME && k !== NAV_CACHE && k !== 'sosg-pwa-token')
           .map((k) => caches.delete(k))
       )
     )
@@ -69,8 +69,27 @@ self.addEventListener('notificationclick', (event) => {
           return
         }
       }
-      // No existing window — open a new one
-      return self.clients.openWindow(url)
+      // No existing window found — it may be frozen (iOS) or truly dead.
+      // Pending URL is already cached above for the frozen case.
+      // Open via pwa-launch with token so the new window has auth.
+      let launchUrl = url
+      try {
+        const tokenCache = await caches.open('sosg-pwa-token')
+        const tokenResp = await tokenCache.match('/_token')
+        if (tokenResp) {
+          const token = await tokenResp.text()
+          if (token) {
+            launchUrl =
+              '/auth/pwa-launch?token=' +
+              encodeURIComponent(token) +
+              '&redirect=' +
+              encodeURIComponent(url)
+          }
+        }
+      } catch {
+        // Token cache unavailable — fall back to bare URL
+      }
+      return self.clients.openWindow(launchUrl)
     })()
   )
 })

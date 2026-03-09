@@ -5,16 +5,22 @@ import { adminClient } from '@/lib/supabase/admin'
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
+  const redirectParam = searchParams.get('redirect')
+  // Validate redirect is a safe relative path (prevent open redirect)
+  const destination =
+    redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+      ? redirectParam
+      : '/feed'
 
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? ''
   const proto = request.headers.get('x-forwarded-proto') ?? 'https'
   const baseUrl = `${proto}://${host}`
 
-  // If user already has a valid session, just go to feed
+  // If user already has a valid session, go to destination
   const supabase = await createClient()
   const { data: { user: existingUser } } = await supabase.auth.getUser()
   if (existingUser) {
-    return NextResponse.redirect(`${baseUrl}/feed`)
+    return NextResponse.redirect(`${baseUrl}${destination}`)
   }
 
   // No session — try to bootstrap from PWA token
@@ -78,5 +84,5 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  return NextResponse.redirect(`${baseUrl}/feed`)
+  return NextResponse.redirect(`${baseUrl}${destination}`)
 }
