@@ -19,5 +19,24 @@ export default function ScrollRestorer() {
     })
   }, [pathname])
 
+  // Proactive DOM cleanup: watch for orphaned <main> elements from iOS
+  // WKWebView process restoration / DOM corruption. A MutationObserver
+  // fires synchronously on DOM changes — no timing race like useEffect.
+  useEffect(() => {
+    const removeStaleMains = () => {
+      const mains = document.querySelectorAll('main')
+      if (mains.length > 1) {
+        // Keep the last <main> (the current page), remove older orphans
+        Array.from(mains).slice(0, -1).forEach((el) => el.remove())
+      }
+    }
+
+    const observer = new MutationObserver(removeStaleMains)
+    observer.observe(document.body, { childList: true, subtree: true })
+    removeStaleMains() // initial check on mount
+
+    return () => observer.disconnect()
+  }, [])
+
   return null
 }
