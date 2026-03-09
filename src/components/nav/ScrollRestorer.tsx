@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 export default function ScrollRestorer() {
   const pathname = usePathname()
 
+  // Scroll to top and flush compositor on every route change
   useEffect(() => {
     window.scrollTo(0, 0)
 
@@ -16,16 +17,26 @@ export default function ScrollRestorer() {
     requestAnimationFrame(() => {
       document.body.style.transform = ''
     })
-
-    // Detect DOM corruption from iOS WKWebView process restoration.
-    // If orphaned <main> elements exist from a previous page, force a
-    // full reload so React can rebuild the DOM from scratch.
-    const mainElements = document.querySelectorAll('main')
-    if (mainElements.length > 1) {
-      window.location.reload()
-      return
-    }
   }, [pathname])
+
+  // Proactive DOM cleanup: watch for orphaned <main> elements from iOS
+  // WKWebView process restoration / DOM corruption. A MutationObserver
+  // fires synchronously on DOM changes — no timing race like useEffect.
+  useEffect(() => {
+    const removeStaleMains = () => {
+      const mains = document.querySelectorAll('main')
+      if (mains.length > 1) {
+        // Keep the last <main> (the current page), remove older orphans
+        Array.from(mains).slice(0, -1).forEach((el) => el.remove())
+      }
+    }
+
+    const observer = new MutationObserver(removeStaleMains)
+    observer.observe(document.body, { childList: true, subtree: true })
+    removeStaleMains() // initial check on mount
+
+    return () => observer.disconnect()
+  }, [])
 
   return null
 }

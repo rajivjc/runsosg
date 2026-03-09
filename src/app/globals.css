@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* iOS WKWebView DOM corruption guard: if orphaned <main> elements persist
+   after push-notification navigation, hide all but the last (current) one.
+   Pure CSS — applies before paint, no JS timing issues. */
+main:has(~ main) {
+  display: none !important;
+}
+
 /* Smooth page entrance — opacity only (no transform) to avoid creating a
    CSS containing block for position:fixed descendants and to prevent iOS
    WebKit from retaining orphaned GPU compositing layers across navigations. */

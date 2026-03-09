@@ -42,19 +42,6 @@ async function consumePendingNavigation() {
   }
 }
 
-/**
- * Detect DOM corruption from iOS WKWebView process restoration.
- * When iOS terminates and restores a PWA's WebView process, orphaned DOM
- * nodes from the previous page can persist across client-side navigations.
- * We detect this by checking for multiple <main> elements (each page renders
- * exactly one <main>).
- */
-function checkDomIntegrity() {
-  const mainElements = document.querySelectorAll('main')
-  if (mainElements.length > 1) {
-    window.location.reload()
-  }
-}
 
 export default function ServiceWorkerRegistrar() {
   useEffect(() => {
@@ -91,9 +78,6 @@ export default function ServiceWorkerRegistrar() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         consumePendingNavigation()
-        // Also check for DOM corruption from iOS process restoration.
-        // Use a short delay to let the WebView finish re-compositing.
-        setTimeout(checkDomIntegrity, 300)
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
