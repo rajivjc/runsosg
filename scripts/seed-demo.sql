@@ -42,7 +42,7 @@ SELECT * FROM (VALUES
   ('First 3K',       'automatic', '{"metric":"distance_km","threshold":3}'::jsonb,    '📍', 6),
   ('First 5K',       'automatic', '{"metric":"distance_km","threshold":5}'::jsonb,    '🎯', 7),
   ('First 10K',      'automatic', '{"metric":"distance_km","threshold":10}'::jsonb,   '🏆', 8),
-  ('Personal Best',  'manual',    null,                                                '⚡', 9),
+  ('Personal Best',  'automatic', '{"metric":"longest_run"}'::jsonb,                    '⚡', 9),
   ('Great Attitude', 'manual',    null,                                                '❤️', 10)
 ) AS v(label, type, condition, icon, display_order)
 WHERE NOT EXISTS (SELECT 1 FROM public.milestone_definitions);
