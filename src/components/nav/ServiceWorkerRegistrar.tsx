@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 
 // Module-level flag to prevent the postMessage handler and the Cache API
-// fallback from both firing window.location.href in rapid succession.
+// fallback from both firing navigation in rapid succession.
 let navigating = false
 
 /**
@@ -16,28 +17,40 @@ let navigating = false
  */
 function checkDomIntegrity() {
   if (document.querySelectorAll('main').length > 1) {
-    // Route through trampoline to force full compositor teardown
-    window.location.href =
-      '/go?to=' + encodeURIComponent(window.location.pathname + window.location.search)
+    window.location.reload()
   }
 }
 
 /**
- * Force a full page load to the given URL via a server-side redirect trampoline.
+ * Handle navigation from a push notification tap.
  *
- * After 10+ attempts to fix iOS WKWebView PWA compositor corruption (reload(),
- * cache-busting params, DOM integrity checks, CSS guardrails, MutationObservers),
- * the root cause is clear: when iOS restores a frozen PWA via client.focus(),
- * stale compositor layers are painted BEFORE any JavaScript runs. No JS-level
- * navigation trick can prevent that initial stale paint.
+ * After 10+ failed attempts to fix iOS WKWebView PWA compositor corruption
+ * using various full-page navigation strategies (reload(), cache-busting
+ * params, DOM integrity checks, CSS guardrails, MutationObservers, redirect
+ * trampolines), this takes a radically different approach:
  *
- * The trampoline approach works because it forces a navigation to a genuinely
- * different pathname (/go). This guarantees iOS tears down the old compositor
- * context. The server responds with a 302 redirect to the actual target,
- * loading it with a completely clean slate.
+ * - **Same page**: Don't navigate at all. Use router.refresh() to re-fetch
+ *   server component data in-place. This completely sidesteps the iOS
+ *   compositor issue because the page is never unloaded or reloaded.
+ *
+ * - **Different page**: Use window.location.href for a full navigation.
+ *   This works reliably because navigating to a different pathname forces
+ *   iOS to fully tear down the old compositor context (same reason bottom
+ *   nav <a> tags work).
  */
-function forceNavigate(url: string) {
-  window.location.href = '/go?to=' + encodeURIComponent(url)
+function handleNotificationNav(
+  url: string,
+  routerRef: React.RefObject<ReturnType<typeof useRouter> | null>,
+) {
+  if (url === window.location.pathname) {
+    // Same page — refresh data in-place, no page navigation.
+    window.scrollTo(0, 0)
+    routerRef.current?.refresh()
+  } else {
+    // Different page — full navigation works fine (different pathname
+    // guarantees iOS tears down old compositor, same as <a> tags).
+    window.location.href = url
+  }
 }
 
 /**
@@ -45,7 +58,9 @@ function forceNavigate(url: string) {
  * notificationclick handler. This is the fallback for when postMessage
  * arrives before the listener is registered (cold start race condition).
  */
-async function consumePendingNavigation() {
+async function consumePendingNavigation(
+  routerRef: React.RefObject<ReturnType<typeof useRouter> | null>,
+) {
   if (navigating) return
   try {
     const navCache = await caches.open('sosg-pending-nav')
@@ -55,9 +70,7 @@ async function consumePendingNavigation() {
       await navCache.delete('/_pending')
       if (url) {
         navigating = true
-        // Hide stale content immediately before navigating
-        document.body.style.visibility = 'hidden'
-        forceNavigate(url)
+        handleNotificationNav(url, routerRef)
       }
     }
   } catch {
@@ -87,6 +100,10 @@ async function cachePwaToken() {
 const INSTANCE_CHANNEL = 'sosg-pwa-instance'
 
 export default function ServiceWorkerRegistrar() {
+  const router = useRouter()
+  const routerRef = useRef<ReturnType<typeof useRouter> | null>(router)
+  routerRef.current = router
+
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
 
@@ -122,20 +139,14 @@ export default function ServiceWorkerRegistrar() {
       }
     }
 
-    // Fast path: listen for NAVIGATE messages from the SW's notificationclick.
-    // We use postMessage + full page reload instead of client.navigate()
-    // because client.navigate() corrupts the React tree on iOS PWAs, causing
-    // stale content to persist across all routes.
+    // Listen for NAVIGATE messages from the SW's notificationclick handler.
     const handleMessage = (event: MessageEvent) => {
       if (navigating) return
       if (event.data?.type === 'NAVIGATE' && typeof event.data.url === 'string') {
         navigating = true
-        // Hide stale content immediately — iOS WKWebView may have already
-        // painted old compositor layers when client.focus() woke the app.
-        document.body.style.visibility = 'hidden'
         // Clear the cache fallback since we're handling it now
         caches.open('sosg-pending-nav').then((c) => c.delete('/_pending')).catch(() => {})
-        forceNavigate(event.data.url)
+        handleNotificationNav(event.data.url, routerRef)
       }
     }
 
@@ -143,7 +154,7 @@ export default function ServiceWorkerRegistrar() {
 
     // Fallback: check for pending navigation on mount (cold start) and
     // when the page becomes visible (frozen → unfrozen transition).
-    consumePendingNavigation()
+    consumePendingNavigation(routerRef)
 
     // Safety net: check for DOM corruption on mount (e.g., after iOS
     // process restoration during navigation). Delay lets the page finish
@@ -152,7 +163,7 @@ export default function ServiceWorkerRegistrar() {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        consumePendingNavigation()
+        consumePendingNavigation(routerRef)
         // Check for DOM corruption after iOS process restoration.
         // One-frame delay lets the WebView finish re-compositing.
         requestAnimationFrame(checkDomIntegrity)
@@ -166,7 +177,7 @@ export default function ServiceWorkerRegistrar() {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       bc?.close()
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null
 }

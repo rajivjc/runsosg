@@ -280,6 +280,9 @@ export async function createManualSession(
   // Sync coach badges
   await syncBadges(user.id)
 
+  // Invalidate caches BEFORE sending push notifications so that when the
+  // recipient taps the notification and router.refresh() re-fetches data,
+  // the Next.js cache already has the fresh version.
   revalidatePath(`/athletes/${athleteId}`)
   revalidatePath('/feed')
   return {}
