@@ -1,15 +1,12 @@
 import Link from 'next/link'
-import { BADGE_DEFINITIONS } from '@/lib/badges'
 import MilestoneDetector from '@/components/milestone/MilestoneDetector'
 import OnboardingCard from '@/components/feed/OnboardingCard'
 import CheerViewTracker from '@/components/feed/CheerViewTracker'
 import { formatDate } from '@/lib/utils/dates'
 import ClubStats from '@/components/feed/ClubStats'
-import WeeklyRecapCard from '@/components/feed/WeeklyRecapCard'
-import SessionGroup from '@/components/feed/SessionGroup'
+import CoachSessionFeed from '@/components/feed/CoachSessionFeed'
 import BetaBanner from '@/components/feed/BetaBanner'
 import type { CoachFeedData } from '@/lib/feed/types'
-import StreakCalendar from '@/components/account/StreakCalendar'
 
 interface Props {
   data: CoachFeedData
@@ -28,7 +25,6 @@ export default function CoachFeed({ data, userId }: Props) {
     clubStats,
     coachStats,
     coachFocus,
-    badges,
     recentBadge,
     recentCheers,
     onboarding,
@@ -40,7 +36,6 @@ export default function CoachFeed({ data, userId }: Props) {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const firstName = user.name?.split(' ')[0] ?? 'Coach'
   const showOnboarding = onboarding != null
-  const badgeCount = badges.length
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
@@ -63,50 +58,36 @@ export default function CoachFeed({ data, userId }: Props) {
 
       {/* Coach greeting card — hidden during onboarding */}
       {!showOnboarding && (
-        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200/60 rounded-2xl px-5 py-5 mb-5 shadow-sm">
-          <p className="text-lg font-bold text-gray-900 mb-1">
-            {greeting}, {firstName}
-          </p>
-          {coachFocus && coachFocus.streak.current > 0 && (
-            <div className="mb-3">
-              <StreakCalendar
-                weeklyActivity={coachFocus.streak.weeklyActivity}
-                current={coachFocus.streak.current}
-                longest={coachFocus.streak.longest}
-                variant="teal"
-              />
-              {!coachFocus.streak.activeThisWeek && (
-                <p className="text-xs text-teal-500/70 mt-1">Log a run to keep your streak!</p>
-              )}
-            </div>
+        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200/60 rounded-2xl px-5 py-4 mb-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-lg font-bold text-gray-900">
+              {greeting}, {firstName}
+            </p>
+            {coachFocus && coachFocus.streak.current > 0 && (
+              <Link href="/account" className="flex items-center gap-1 text-sm font-semibold text-teal-700 hover:text-teal-800">
+                🔥 {coachFocus.streak.current}-week streak
+              </Link>
+            )}
+          </div>
+          {coachFocus && !coachFocus.streak.activeThisWeek && coachFocus.streak.current > 0 && (
+            <p className="text-xs text-teal-500/70 mt-0.5">Log a run to keep your streak!</p>
           )}
           {coachStats.monthSessions === 0 ? (
-            <p className="text-sm text-teal-700">
+            <p className="text-sm text-teal-700 mt-1">
               No sessions this month yet — let&apos;s get out there!
             </p>
           ) : (
-            <p className="text-sm text-teal-700">
+            <p className="text-sm text-teal-700 mt-1">
               {coachStats.monthSessions} session{coachStats.monthSessions !== 1 ? 's' : ''} coached this month with {coachStats.monthAthletes} athlete{coachStats.monthAthletes !== 1 ? 's' : ''}
             </p>
           )}
           {recentBadge && (
-            <div className="mt-3 bg-white/50 rounded-lg px-3 py-2 flex items-center gap-2">
+            <div className="mt-2 bg-white/50 rounded-lg px-3 py-2 flex items-center gap-2">
               <span className="text-xl">{recentBadge.icon}</span>
               <div className="flex-1">
                 <p className="text-xs font-semibold text-teal-800">New badge: {recentBadge.label}!</p>
                 <p className="text-[10px] text-teal-600">{recentBadge.description}</p>
               </div>
-            </div>
-          )}
-          {!recentBadge && badgeCount > 0 && (
-            <div className="mt-3 flex items-center gap-1.5">
-              {badges.slice(0, 6).map(b => {
-                const def = BADGE_DEFINITIONS.find(d => d.key === b.badge_key)
-                return def ? <span key={b.badge_key} className="text-sm" title={def.label}>{def.icon}</span> : null
-              })}
-              <Link href="/account" className="text-[10px] text-teal-600 hover:text-teal-700 font-medium ml-1">
-                {badgeCount} badge{badgeCount !== 1 ? 's' : ''} earned
-              </Link>
             </div>
           )}
         </div>
@@ -162,34 +143,18 @@ export default function CoachFeed({ data, userId }: Props) {
         </div>
       )}
 
-      {/* Weekly club summary */}
-      <WeeklyRecapCard weeklyStats={weeklyStats} weeklyRecap={weeklyRecap} />
+      {/* Club statistics (with weekly recap merged in) */}
+      <ClubStats stats={clubStats} weeklyStats={weeklyStats} weeklyRecap={weeklyRecap} />
 
-      {/* Club statistics */}
-      <ClubStats stats={clubStats} />
-
-      {/* Empty state */}
-      {sessions.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-4xl mb-3">👟</p>
-          <p className="text-base font-semibold text-gray-900 mb-1">The club is quiet today</p>
-          <p className="text-sm text-gray-500">Be the first to log a run!</p>
-        </div>
-      )}
-
-      {/* Session groups */}
-      {Object.entries(groups).map(([label, items]) => (
-        <SessionGroup
-          key={label}
-          label={label}
-          sessions={items}
-          milestonesBySession={milestonesBySession}
-          kudosCounts={kudosCounts}
-          myKudos={myKudos}
-          isReadOnly={false}
-          userId={userId}
-        />
-      ))}
+      {/* Session timeline with athlete filtering */}
+      <CoachSessionFeed
+        sessions={sessions}
+        groups={groups}
+        milestonesBySession={milestonesBySession}
+        kudosCounts={kudosCounts}
+        myKudos={myKudos}
+        userId={userId}
+      />
     </main>
   )
 }

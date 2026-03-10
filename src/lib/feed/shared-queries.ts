@@ -72,7 +72,7 @@ export async function loadClubStats(): Promise<ClubStats> {
 
   return {
     sessions: totalSessionCount ?? 0,
-    km: (totalKmResult as unknown as number) ?? 0,
+    km: Number(totalKmResult) || 0,
     athletes: totalAthleteCount ?? 0,
     milestones: totalMilestoneCount ?? 0,
     coaches: coachCount ?? 0,
