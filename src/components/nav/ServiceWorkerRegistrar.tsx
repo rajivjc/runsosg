@@ -16,31 +16,28 @@ let navigating = false
  */
 function checkDomIntegrity() {
   if (document.querySelectorAll('main').length > 1) {
-    // Use cache-busting navigation instead of reload() to ensure
-    // iOS WKWebView fully tears down stale compositing layers.
-    const separator = window.location.search ? '&' : '?'
+    // Route through trampoline to force full compositor teardown
     window.location.href =
-      window.location.pathname + window.location.search + separator + '_r=' + Date.now()
+      '/go?to=' + encodeURIComponent(window.location.pathname + window.location.search)
   }
 }
 
 /**
- * Force a full page load to the given URL. If the URL matches the current
- * page, window.location.href assignment is a no-op in WebKit, so we append
- * a cache-busting query param to force a true navigation (reload() leaves
- * stale compositing layers on iOS WKWebView PWAs).
+ * Force a full page load to the given URL via a server-side redirect trampoline.
+ *
+ * After 10+ attempts to fix iOS WKWebView PWA compositor corruption (reload(),
+ * cache-busting params, DOM integrity checks, CSS guardrails, MutationObservers),
+ * the root cause is clear: when iOS restores a frozen PWA via client.focus(),
+ * stale compositor layers are painted BEFORE any JavaScript runs. No JS-level
+ * navigation trick can prevent that initial stale paint.
+ *
+ * The trampoline approach works because it forces a navigation to a genuinely
+ * different pathname (/go). This guarantees iOS tears down the old compositor
+ * context. The server responds with a 302 redirect to the actual target,
+ * loading it with a completely clean slate.
  */
 function forceNavigate(url: string) {
-  if (url === window.location.pathname || url === window.location.href) {
-    // Avoid reload() — on iOS WKWebView PWAs, it can leave stale
-    // compositing layers visible, causing content from the previous
-    // render to appear above the fresh page. Navigate with a
-    // cache-busting param instead to force a full page transition.
-    const separator = url.includes('?') ? '&' : '?'
-    window.location.href = url + separator + '_r=' + Date.now()
-  } else {
-    window.location.href = url
-  }
+  window.location.href = '/go?to=' + encodeURIComponent(url)
 }
 
 /**
@@ -58,6 +55,8 @@ async function consumePendingNavigation() {
       await navCache.delete('/_pending')
       if (url) {
         navigating = true
+        // Hide stale content immediately before navigating
+        document.body.style.visibility = 'hidden'
         forceNavigate(url)
       }
     }
@@ -131,6 +130,9 @@ export default function ServiceWorkerRegistrar() {
       if (navigating) return
       if (event.data?.type === 'NAVIGATE' && typeof event.data.url === 'string') {
         navigating = true
+        // Hide stale content immediately — iOS WKWebView may have already
+        // painted old compositor layers when client.focus() woke the app.
+        document.body.style.visibility = 'hidden'
         // Clear the cache fallback since we're handling it now
         caches.open('sosg-pending-nav').then((c) => c.delete('/_pending')).catch(() => {})
         forceNavigate(event.data.url)
