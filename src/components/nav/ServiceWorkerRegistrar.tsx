@@ -16,18 +16,28 @@ let navigating = false
  */
 function checkDomIntegrity() {
   if (document.querySelectorAll('main').length > 1) {
-    window.location.reload()
+    // Use cache-busting navigation instead of reload() to ensure
+    // iOS WKWebView fully tears down stale compositing layers.
+    const separator = window.location.search ? '&' : '?'
+    window.location.href =
+      window.location.pathname + window.location.search + separator + '_r=' + Date.now()
   }
 }
 
 /**
  * Force a full page load to the given URL. If the URL matches the current
- * page, window.location.href assignment is a no-op in WebKit, so we must
- * use window.location.reload() instead.
+ * page, window.location.href assignment is a no-op in WebKit, so we append
+ * a cache-busting query param to force a true navigation (reload() leaves
+ * stale compositing layers on iOS WKWebView PWAs).
  */
 function forceNavigate(url: string) {
   if (url === window.location.pathname || url === window.location.href) {
-    window.location.reload()
+    // Avoid reload() — on iOS WKWebView PWAs, it can leave stale
+    // compositing layers visible, causing content from the previous
+    // render to appear above the fresh page. Navigate with a
+    // cache-busting param instead to force a full page transition.
+    const separator = url.includes('?') ? '&' : '?'
+    window.location.href = url + separator + '_r=' + Date.now()
   } else {
     window.location.href = url
   }
@@ -133,6 +143,11 @@ export default function ServiceWorkerRegistrar() {
     // when the page becomes visible (frozen → unfrozen transition).
     consumePendingNavigation()
 
+    // Safety net: check for DOM corruption on mount (e.g., after iOS
+    // process restoration during navigation). Delay lets the page finish
+    // rendering before checking for orphaned <main> elements.
+    const integrityTimer = setTimeout(() => checkDomIntegrity(), 500)
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         consumePendingNavigation()
@@ -144,6 +159,7 @@ export default function ServiceWorkerRegistrar() {
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
+      clearTimeout(integrityTimer)
       navigator.serviceWorker.removeEventListener('message', handleMessage)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       bc?.close()
