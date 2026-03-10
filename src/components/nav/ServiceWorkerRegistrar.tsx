@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useRouter, type AppRouterInstance } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 // Module-level flag to prevent the postMessage handler and the Cache API
 // fallback from both firing navigation in rapid succession.
@@ -40,7 +40,7 @@ function checkDomIntegrity() {
  */
 function handleNotificationNav(
   url: string,
-  routerRef: React.RefObject<AppRouterInstance | null>,
+  routerRef: React.RefObject<ReturnType<typeof useRouter> | null>,
 ) {
   if (url === window.location.pathname) {
     // Same page — refresh data in-place, no page navigation.
@@ -59,7 +59,7 @@ function handleNotificationNav(
  * arrives before the listener is registered (cold start race condition).
  */
 async function consumePendingNavigation(
-  routerRef: React.RefObject<AppRouterInstance | null>,
+  routerRef: React.RefObject<ReturnType<typeof useRouter> | null>,
 ) {
   if (navigating) return
   try {
@@ -101,7 +101,7 @@ const INSTANCE_CHANNEL = 'sosg-pwa-instance'
 
 export default function ServiceWorkerRegistrar() {
   const router = useRouter()
-  const routerRef = useRef<AppRouterInstance | null>(router)
+  const routerRef = useRef<ReturnType<typeof useRouter> | null>(router)
   routerRef.current = router
 
   useEffect(() => {
