@@ -7,6 +7,12 @@ import { useRouter } from 'next/navigation'
 // fallback from both firing navigation in rapid succession.
 let navigating = false
 
+// Tracks whether the page was hidden (app backgrounded/frozen) since the
+// last notification was handled. Used to distinguish warm vs frozen state
+// when a notification arrives.
+let appWasHidden = false
+let hiddenResetTimer: ReturnType<typeof setTimeout> | null = null
+
 /**
  * Detect DOM corruption from iOS WKWebView process restoration.
  * When iOS terminates and restores a PWA's WebView process, orphaned DOM
@@ -17,6 +23,7 @@ let navigating = false
  */
 function checkDomIntegrity() {
   if (document.querySelectorAll('main').length > 1) {
+    document.body.style.display = 'none'
     window.location.reload()
   }
 }
@@ -24,31 +31,46 @@ function checkDomIntegrity() {
 /**
  * Handle navigation from a push notification tap.
  *
- * After 10+ failed attempts to fix iOS WKWebView PWA compositor corruption
- * using various full-page navigation strategies (reload(), cache-busting
- * params, DOM integrity checks, CSS guardrails, MutationObservers, redirect
- * trampolines), this takes a radically different approach:
+ * Two strategies based on app state:
  *
- * - **Same page**: Don't navigate at all. Use router.refresh() to re-fetch
- *   server component data in-place. This completely sidesteps the iOS
- *   compositor issue because the page is never unloaded or reloaded.
+ * - **Warm (app was active/visible)**: Use router.refresh() to re-fetch
+ *   server data in-place. No page navigation = no iOS compositor issue.
+ *   Confirmed working.
+ *
+ * - **Frozen (app was backgrounded/closed)**: iOS WKWebView restores stale
+ *   compositor layers when the app is foregrounded. router.refresh() updates
+ *   data but can't clear those stale visual layers. For this case, hide the
+ *   body to release stale layers, then reload for a clean render.
  *
  * - **Different page**: Use window.location.href for a full navigation.
- *   This works reliably because navigating to a different pathname forces
- *   iOS to fully tear down the old compositor context (same reason bottom
- *   nav <a> tags work).
+ *   Always works because different pathname forces full compositor teardown.
  */
 function handleNotificationNav(
   url: string,
   routerRef: React.RefObject<ReturnType<typeof useRouter> | null>,
 ) {
+  // Capture and reset the frozen flag
+  const wasFrozen = appWasHidden || document.visibilityState === 'hidden'
+  appWasHidden = false
+  if (hiddenResetTimer) {
+    clearTimeout(hiddenResetTimer)
+    hiddenResetTimer = null
+  }
+
   if (url === window.location.pathname) {
-    // Same page — refresh data in-place, no page navigation.
-    window.scrollTo(0, 0)
-    routerRef.current?.refresh()
+    if (wasFrozen) {
+      // Frozen case: iOS WKWebView painted stale compositor layers when
+      // restoring the app. Hide the body to force the compositor to release
+      // those layers, then reload to get a completely fresh render.
+      document.body.style.display = 'none'
+      window.location.reload()
+    } else {
+      // Warm case: app was active, no stale layers. Refresh data in-place.
+      window.scrollTo(0, 0)
+      routerRef.current?.refresh()
+    }
   } else {
-    // Different page — full navigation works fine (different pathname
-    // guarantees iOS tears down old compositor, same as <a> tags).
+    // Different page — full navigation always works.
     window.location.href = url
   }
 }
@@ -162,17 +184,30 @@ export default function ServiceWorkerRegistrar() {
     const integrityTimer = setTimeout(() => checkDomIntegrity(), 500)
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'hidden') {
+        // Track that the app was backgrounded. This flag is consumed by
+        // handleNotificationNav to distinguish warm vs frozen state.
+        appWasHidden = true
+        if (hiddenResetTimer) clearTimeout(hiddenResetTimer)
+        hiddenResetTimer = null
+      } else if (document.visibilityState === 'visible') {
         consumePendingNavigation(routerRef)
         // Check for DOM corruption after iOS process restoration.
-        // One-frame delay lets the WebView finish re-compositing.
         requestAnimationFrame(checkDomIntegrity)
+        // Reset the hidden flag after a delay. If a notification-driven
+        // NAVIGATE message arrives within this window, it's from a frozen
+        // restoration. After the window, it's treated as a warm state.
+        hiddenResetTimer = setTimeout(() => {
+          appWasHidden = false
+          hiddenResetTimer = null
+        }, 5000)
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       clearTimeout(integrityTimer)
+      if (hiddenResetTimer) clearTimeout(hiddenResetTimer)
       navigator.serviceWorker.removeEventListener('message', handleMessage)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       bc?.close()
