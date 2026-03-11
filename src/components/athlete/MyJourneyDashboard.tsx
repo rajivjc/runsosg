@@ -160,7 +160,7 @@ export default function MyJourneyDashboard({
             maxValue={Math.max(stats.totalKm, 10)}
           />
           <StatCard
-            icon="🔥"
+            icon="📅"
             value={stats.currentStreak}
             label={stats.currentStreak === 1 ? 'week' : 'weeks'}
             maxValue={Math.max(stats.currentStreak, 4)}
@@ -233,9 +233,10 @@ export default function MyJourneyDashboard({
                     className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex items-center gap-4 shadow-sm"
                   >
                     {feel && (
-                      <span className="text-2xl flex-shrink-0" title={feel.label}>
-                        {feel.emoji}
-                      </span>
+                      <div className="flex flex-col items-center flex-shrink-0 w-10">
+                        <span className="text-2xl">{feel.emoji}</span>
+                        <span className="text-[10px] text-gray-500 mt-0.5">{feel.label}</span>
+                      </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900">
