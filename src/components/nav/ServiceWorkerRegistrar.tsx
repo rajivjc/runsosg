@@ -7,11 +7,44 @@ import { useRouter } from 'next/navigation'
 // fallback from both firing navigation in rapid succession.
 let navigating = false
 
-// Tracks whether the page was hidden (app backgrounded/frozen) since the
-// last notification was handled. Used to distinguish warm vs frozen state
-// when a notification arrives.
-let appWasHidden = false
-let hiddenResetTimer: ReturnType<typeof setTimeout> | null = null
+// ID for the freeze overlay element
+const FREEZE_OVERLAY_ID = 'sosg-freeze-overlay'
+
+/**
+ * Show a full-screen overlay that matches the app background.
+ *
+ * Called when the app goes to background (`visibilitychange → hidden`).
+ * iOS takes a screenshot of the page for the app switcher at this point.
+ * By covering the page, the screenshot shows the overlay instead of
+ * page content — so when the app is restored from a frozen state,
+ * the user sees the overlay (not stale/corrupted compositor layers)
+ * while we reload or refresh the page underneath.
+ */
+function showFreezeOverlay() {
+  if (document.getElementById(FREEZE_OVERLAY_ID)) return
+  const overlay = document.createElement('div')
+  overlay.id = FREEZE_OVERLAY_ID
+  overlay.setAttribute(
+    'style',
+    'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;' +
+      'background:#FBF9F7;transition:opacity 0.3s ease;',
+  )
+  document.body.appendChild(overlay)
+}
+
+/**
+ * Remove the freeze overlay, optionally with a fade-out.
+ */
+function hideFreezeOverlay(immediate?: boolean) {
+  const overlay = document.getElementById(FREEZE_OVERLAY_ID)
+  if (!overlay) return
+  if (immediate) {
+    overlay.remove()
+    return
+  }
+  overlay.style.opacity = '0'
+  setTimeout(() => overlay.remove(), 300)
+}
 
 /**
  * Detect DOM corruption from iOS WKWebView process restoration.
@@ -23,7 +56,7 @@ let hiddenResetTimer: ReturnType<typeof setTimeout> | null = null
  */
 function checkDomIntegrity() {
   if (document.querySelectorAll('main').length > 1) {
-    document.body.style.display = 'none'
+    showFreezeOverlay()
     window.location.reload()
   }
 }
@@ -35,12 +68,11 @@ function checkDomIntegrity() {
  *
  * - **Warm (app was active/visible)**: Use router.refresh() to re-fetch
  *   server data in-place. No page navigation = no iOS compositor issue.
- *   Confirmed working.
  *
- * - **Frozen (app was backgrounded/closed)**: iOS WKWebView restores stale
- *   compositor layers when the app is foregrounded. router.refresh() updates
- *   data but can't clear those stale visual layers. For this case, hide the
- *   body to release stale layers, then reload for a clean render.
+ * - **Frozen (app was backgrounded/closed)**: The freeze overlay is already
+ *   covering the page (applied on visibilitychange→hidden), hiding any
+ *   stale compositor layers. Force a full reload to get a clean render.
+ *   The overlay persists until the reload completes.
  *
  * - **Different page**: Use window.location.href for a full navigation.
  *   Always works because different pathname forces full compositor teardown.
@@ -49,20 +81,14 @@ function handleNotificationNav(
   url: string,
   routerRef: React.RefObject<ReturnType<typeof useRouter> | null>,
 ) {
-  // Capture and reset the frozen flag
-  const wasFrozen = appWasHidden || document.visibilityState === 'hidden'
-  appWasHidden = false
-  if (hiddenResetTimer) {
-    clearTimeout(hiddenResetTimer)
-    hiddenResetTimer = null
-  }
+  const hasOverlay = !!document.getElementById(FREEZE_OVERLAY_ID)
 
   if (url === window.location.pathname) {
-    if (wasFrozen) {
-      // Frozen case: iOS WKWebView painted stale compositor layers when
-      // restoring the app. Hide the body to force the compositor to release
-      // those layers, then reload to get a completely fresh render.
-      document.body.style.display = 'none'
+    if (hasOverlay) {
+      // Frozen case: overlay is already covering stale content.
+      // Reload to get a completely fresh render. The overlay persists
+      // through the reload because it's in the current DOM — the new
+      // page load starts clean without it.
       window.location.reload()
     } else {
       // Warm case: app was active, no stale layers. Refresh data in-place.
@@ -71,6 +97,8 @@ function handleNotificationNav(
     }
   } else {
     // Different page — full navigation always works.
+    // Show overlay to cover any flash during navigation.
+    showFreezeOverlay()
     window.location.href = url
   }
 }
@@ -133,6 +161,10 @@ export default function ServiceWorkerRegistrar() {
     // that didn't trigger location.href, the flag should be cleared.
     navigating = false
 
+    // If the page loaded with a freeze overlay still in the DOM (shouldn't
+    // happen since reload clears it, but defensive), remove it.
+    hideFreezeOverlay(true)
+
     navigator.serviceWorker.register('/sw.js').catch(() => {
       // Service worker registration failed — non-critical, ignore silently
     })
@@ -185,29 +217,30 @@ export default function ServiceWorkerRegistrar() {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        // Track that the app was backgrounded. This flag is consumed by
-        // handleNotificationNav to distinguish warm vs frozen state.
-        appWasHidden = true
-        if (hiddenResetTimer) clearTimeout(hiddenResetTimer)
-        hiddenResetTimer = null
+        // App is going to background. Show the freeze overlay so that
+        // iOS's app-switcher screenshot captures the overlay instead of
+        // page content. This prevents stale compositor layers from being
+        // visible when the app is restored.
+        showFreezeOverlay()
       } else if (document.visibilityState === 'visible') {
+        // App restored from background.
         consumePendingNavigation(routerRef)
         // Check for DOM corruption after iOS process restoration.
         requestAnimationFrame(checkDomIntegrity)
-        // Reset the hidden flag after a delay. If a notification-driven
-        // NAVIGATE message arrives within this window, it's from a frozen
-        // restoration. After the window, it's treated as a warm state.
-        hiddenResetTimer = setTimeout(() => {
-          appWasHidden = false
-          hiddenResetTimer = null
-        }, 5000)
+        // If there's no pending notification navigation, remove the
+        // overlay after a short delay (let any pending nav message
+        // arrive first via postMessage).
+        setTimeout(() => {
+          if (!navigating) {
+            hideFreezeOverlay()
+          }
+        }, 500)
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       clearTimeout(integrityTimer)
-      if (hiddenResetTimer) clearTimeout(hiddenResetTimer)
       navigator.serviceWorker.removeEventListener('message', handleMessage)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       bc?.close()
