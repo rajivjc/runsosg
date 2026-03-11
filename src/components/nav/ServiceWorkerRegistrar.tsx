@@ -187,7 +187,7 @@ export default function ServiceWorkerRegistrar() {
         }
         if (event.data?.type === 'INSTANCE_PONG') {
           // An older instance is already running — close this duplicate.
-          // The pending nav URL is cached, so the original will pick it up.
+          // The pending nav url is cached, so the original will pick it up.
           window.close()
         }
       }
