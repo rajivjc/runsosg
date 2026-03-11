@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Camera, X } from 'lucide-react'
 import { compressPhoto } from '@/lib/media-client'
@@ -36,9 +36,17 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+      className="bg-teal-600 hover:bg-teal-700 active:scale-[0.97] disabled:opacity-60 text-white text-sm font-medium rounded-lg px-4 py-2 transition-all duration-150"
     >
-      {pending ? 'Saving…' : 'Save run'}
+      {pending ? (
+        <span className="inline-flex items-center gap-1.5">
+          <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Saving…
+        </span>
+      ) : 'Save run'}
     </button>
   )
 }
@@ -50,8 +58,35 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [compressing, setCompressing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [visible, setVisible] = useState(false)
+  const [closing, setClosing] = useState(false)
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (isOpen) {
+      // Trigger enter animation on next frame
+      requestAnimationFrame(() => setVisible(true))
+      setClosing(false)
+    } else {
+      setVisible(false)
+    }
+  }, [isOpen])
+
+  const animateClose = useCallback(() => {
+    setClosing(true)
+    setVisible(false)
+    setTimeout(() => {
+      setClosing(false)
+      setSelectedFeel(null)
+      setError(null)
+      if (photoPreview) URL.revokeObjectURL(photoPreview)
+      setPhotoFile(null)
+      setPhotoPreview(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      onClose()
+    }, 300)
+  }, [onClose, photoPreview])
+
+  if (!isOpen && !closing) return null
 
   async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -85,16 +120,12 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
       setError(result.error)
       return
     }
-    setSelectedFeel(null)
-    removePhoto()
     onSaved()
+    animateClose()
   }
 
   function handleClose() {
-    setSelectedFeel(null)
-    setError(null)
-    removePhoto()
-    onClose()
+    animateClose()
   }
 
   // Default date to today in YYYY-MM-DD format
@@ -108,13 +139,13 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 z-40"
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
         onClick={handleClose}
         aria-hidden="true"
       />
 
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 max-w-2xl mx-auto shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 max-w-2xl mx-auto shadow-2xl max-h-[90vh] overflow-y-auto transition-transform duration-300 ease-out ${visible ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="p-6">
           {/* Handle bar */}
           <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
@@ -131,7 +162,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                 name="title"
                 defaultValue={defaultTitle}
                 placeholder="e.g. Sunday long run"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
               />
             </div>
 
@@ -147,7 +178,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                 defaultValue={today}
                 max={today}
                 onKeyDown={(e) => e.preventDefault()}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
               />
             </div>
 
@@ -164,7 +195,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                   step="0.01"
                   required
                   placeholder="e.g. 3.5"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
                 />
               </div>
               <div className="flex-1">
@@ -177,7 +208,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                   min="0"
                   required
                   placeholder="e.g. 30"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
                 />
               </div>
             </div>
@@ -194,7 +225,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                   min="30"
                   max="250"
                   placeholder="e.g. 145"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
                 />
               </div>
               <div className="flex-1">
@@ -207,7 +238,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                   min="30"
                   max="250"
                   placeholder="e.g. 170"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
                 />
               </div>
             </div>
@@ -223,10 +254,10 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                     key={value}
                     type="button"
                     onClick={() => setSelectedFeel(value)}
-                    className={`flex-1 flex flex-col items-center py-2 rounded-xl text-2xl transition-all ${
+                    className={`flex-1 flex flex-col items-center py-2 rounded-xl text-2xl transition-all duration-200 ${
                       selectedFeel === value
-                        ? 'bg-teal-50 ring-2 ring-teal-400'
-                        : 'bg-white border border-gray-200 hover:bg-gray-50'
+                        ? 'bg-teal-50 ring-2 ring-teal-400 scale-105'
+                        : 'bg-white border border-gray-200 hover:bg-gray-50 active:scale-95'
                     }`}
                     aria-label={label}
                     aria-pressed={selectedFeel === value}

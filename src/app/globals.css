@@ -40,6 +40,31 @@ nav.fixed.bottom-0 {
   }
 }
 
+/* Notification badge pop-in */
+@keyframes badge-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-badge-pop {
+  animation: badge-pop 300ms ease-out;
+}
+
+/* Staggered list entrance */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-list-item {
+  animation: fadeSlideIn 300ms ease-out both;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   main {
@@ -50,5 +75,11 @@ nav.fixed.bottom-0 {
   .btn-primary:hover,
   button.primary:hover {
     transform: none;
+  }
+  .animate-badge-pop {
+    animation: none;
+  }
+  .animate-list-item {
+    animation: none;
   }
 }
