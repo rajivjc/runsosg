@@ -37,7 +37,7 @@ export default function CancelInviteButton({
           <button
             onClick={handleConfirm}
             disabled={busy}
-            className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-2.5 py-1 transition-colors"
+            className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 active:scale-[0.97] disabled:opacity-60 rounded-lg px-2.5 py-1 transition-all duration-150"
           >
             {busy ? 'Removing…' : 'Yes, remove'}
           </button>
@@ -58,7 +58,7 @@ export default function CancelInviteButton({
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-100 rounded-lg px-2.5 py-1 transition-colors"
+      className="text-xs font-medium text-red-500 hover:text-red-700 active:scale-[0.97] border border-red-100 rounded-lg px-2.5 py-1 transition-all duration-150"
     >
       Cancel
     </button>

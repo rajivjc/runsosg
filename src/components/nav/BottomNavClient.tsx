@@ -81,7 +81,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
             <span className="relative inline-flex">
               <Icon size={20} strokeWidth={active ? 2.5 : 2} />
               {isNotifTab && unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full leading-none">
+                <span className="absolute -top-1.5 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full leading-none animate-badge-pop">
                   {unreadCount >= 10 ? '9+' : unreadCount}
                 </span>
               )}
@@ -90,7 +90,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
           </>
         )
 
-        const baseClasses = `flex flex-1 flex-col items-center justify-center min-h-[44px] py-3 gap-1 font-medium transition-all rounded-lg mx-0.5 ${
+        const baseClasses = `flex flex-1 flex-col items-center justify-center min-h-[44px] py-3 gap-1 font-medium transition-all duration-150 rounded-lg mx-0.5 active:scale-95 ${
           active
             ? 'text-teal-600 bg-teal-50'
             : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'

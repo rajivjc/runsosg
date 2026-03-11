@@ -78,7 +78,7 @@ export default function CheerBox({ athleteId, athleteFirstName, cheersToday: ini
             key={i}
             onClick={() => handleSend(msg)}
             disabled={isPending}
-            className="bg-white/70 hover:bg-white border border-amber-200 text-amber-700 text-xs font-medium px-2.5 py-1.5 rounded-full transition-colors disabled:opacity-50"
+            className="bg-white/70 hover:bg-white active:scale-95 border border-amber-200 text-amber-700 text-xs font-medium px-2.5 py-1.5 rounded-full transition-all duration-150 disabled:opacity-50"
           >
             {msg}
           </button>
@@ -100,12 +100,12 @@ export default function CheerBox({ athleteId, athleteFirstName, cheersToday: ini
             placeholder="Type your cheer..."
             maxLength={100}
             autoFocus
-            className="flex-1 border border-amber-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white/70"
+            className="flex-1 border border-amber-200 rounded-lg px-3 py-2 text-xs transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300 focus:shadow-[0_0_0_3px_rgba(251,146,60,0.08)] bg-white/70"
           />
           <button
             onClick={() => handleSend(customText)}
             disabled={isPending || !customText.trim()}
-            className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg px-3 py-2 transition-colors disabled:opacity-50 flex-shrink-0"
+            className="bg-amber-500 hover:bg-amber-600 active:scale-[0.97] text-white text-xs font-semibold rounded-lg px-3 py-2 transition-all duration-150 disabled:opacity-50 flex-shrink-0"
           >
             {isPending ? '...' : 'Send'}
           </button>

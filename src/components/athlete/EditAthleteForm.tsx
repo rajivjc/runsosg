@@ -29,9 +29,17 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+      className="w-full bg-teal-600 hover:bg-teal-700 active:scale-[0.97] disabled:opacity-60 text-white text-sm font-medium rounded-lg px-4 py-2 transition-all duration-150"
     >
-      {pending ? 'Saving…' : 'Save changes'}
+      {pending ? (
+        <span className="inline-flex items-center justify-center gap-1.5">
+          <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Saving…
+        </span>
+      ) : 'Save changes'}
     </button>
   )
 }
@@ -62,7 +70,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
           name="name"
           required
           defaultValue={athlete.name}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
         />
       </div>
 
@@ -77,7 +85,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
           defaultValue={athlete.date_of_birth ?? ''}
           max={new Date().toISOString().split('T')[0]}
           onKeyDown={(e) => e.preventDefault()}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
         />
       </div>
 
@@ -91,7 +99,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
           name="running_goal"
           defaultValue={athlete.running_goal ?? ''}
           placeholder="e.g. Complete 5km without stopping"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
         />
       </div>
 
@@ -104,7 +112,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
             <select
               name="goal_type"
               defaultValue={athlete.goal_type ?? ''}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] bg-white"
             >
               <option value="">None</option>
               <option value="distance_total">Total distance (km)</option>
@@ -121,7 +129,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
               min="0"
               defaultValue={athlete.goal_target ?? ''}
               placeholder="e.g. 25"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
             />
           </div>
         </div>
@@ -138,7 +146,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
           rows={2}
           defaultValue={athlete.communication_notes ?? ''}
           placeholder="e.g. Responds well to visual cues, prefers short instructions"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] resize-none"
         />
       </div>
 
@@ -152,7 +160,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
           rows={2}
           defaultValue={athlete.medical_notes ?? ''}
           placeholder="e.g. Asthma — carry inhaler, no running in high humidity"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] resize-none"
         />
       </div>
 
@@ -166,7 +174,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
           name="emergency_contact"
           defaultValue={athlete.emergency_contact ?? ''}
           placeholder="e.g. Mum — +65 9123 4567"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
         />
       </div>
 
@@ -188,7 +196,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
                 onChange={(e) => setSharingEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600" />
+              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600" />
             </label>
           )}
         </div>

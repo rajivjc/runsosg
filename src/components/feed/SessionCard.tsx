@@ -31,7 +31,7 @@ export default function SessionCard({ session: s, badges, kudosCount, myKudos, i
   const cardBg = hasMilestone ? 'bg-amber-50/40' : 'bg-white'
 
   const card = (
-    <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-3.5 py-3 border-l-[5px] ${feelColor} hover:shadow-md transition-shadow`}>
+    <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-3.5 py-3 border-l-[5px] ${feelColor} hover:shadow-md active:scale-[0.98] transition-all duration-200`}>
       {s.strava_title && (
         <p className="text-xs font-semibold text-orange-600 mb-1 truncate">{s.strava_title}</p>
       )}

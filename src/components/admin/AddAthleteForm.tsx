@@ -13,9 +13,17 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+      className="w-full bg-teal-600 hover:bg-teal-700 active:scale-[0.97] disabled:opacity-60 text-white text-sm font-medium rounded-lg px-4 py-2 transition-all duration-150"
     >
-      {pending ? 'Creating…' : 'Create athlete'}
+      {pending ? (
+        <span className="inline-flex items-center justify-center gap-1.5">
+          <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Creating…
+        </span>
+      ) : 'Create athlete'}
     </button>
   )
 }
@@ -46,7 +54,7 @@ export default function AddAthleteForm() {
           name="name"
           required
           placeholder="e.g. Ali Hassan"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
         />
       </div>
 
@@ -60,7 +68,7 @@ export default function AddAthleteForm() {
           name="date_of_birth"
           max={new Date().toISOString().split('T')[0]}
           onKeyDown={(e) => e.preventDefault()}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
         />
       </div>
 
@@ -73,7 +81,7 @@ export default function AddAthleteForm() {
           type="text"
           name="running_goal"
           placeholder="e.g. Complete 5km without stopping"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
         />
       </div>
 
@@ -86,7 +94,7 @@ export default function AddAthleteForm() {
           name="communication_notes"
           rows={2}
           placeholder="e.g. Responds well to visual cues, prefers short instructions"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] resize-none"
         />
       </div>
 
@@ -99,7 +107,7 @@ export default function AddAthleteForm() {
           name="medical_notes"
           rows={2}
           placeholder="e.g. Asthma — carry inhaler, no running in high humidity"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] resize-none"
         />
       </div>
 
@@ -112,7 +120,7 @@ export default function AddAthleteForm() {
           type="text"
           name="emergency_contact"
           placeholder="e.g. Mum — +65 9123 4567"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
         />
       </div>
 

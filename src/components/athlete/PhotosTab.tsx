@@ -210,7 +210,7 @@ export default function PhotosTab({
               <button
                 onClick={() => handleShare(Array.from(selectedIds))}
                 disabled={downloading}
-                className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg px-3 py-2 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 active:scale-[0.97] text-gray-700 text-xs font-medium rounded-lg px-3 py-2 transition-all duration-150 disabled:opacity-50"
               >
                 <Share2 size={14} />
                 Share
@@ -220,7 +220,7 @@ export default function PhotosTab({
               <button
                 onClick={() => handleDownload(Array.from(selectedIds))}
                 disabled={downloading}
-                className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg px-3 py-2 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 active:scale-[0.97] text-white text-xs font-medium rounded-lg px-3 py-2 transition-all duration-150 disabled:opacity-50"
               >
                 <Download size={14} />
                 {downloading ? downloadProgress || 'Downloading...' : `Download (${selectedCount})`}
@@ -244,7 +244,7 @@ export default function PhotosTab({
               <button
                 onClick={() => handleDownload(photos.map(p => p.id))}
                 disabled={downloading}
-                className="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 text-xs font-medium rounded-lg px-3 py-2 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 active:scale-[0.97] border border-gray-200 text-gray-600 text-xs font-medium rounded-lg px-3 py-2 transition-all duration-150 disabled:opacity-50"
               >
                 <Download size={14} />
                 {downloading ? downloadProgress || 'Downloading...' : 'Download all'}

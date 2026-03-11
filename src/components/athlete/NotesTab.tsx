@@ -66,7 +66,7 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-teal-500 focus:outline-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none transition-shadow duration-200 focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] focus:outline-none"
           />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <div className="flex justify-end gap-3">
@@ -79,7 +79,7 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
             <button
               onClick={handleSaveEdit}
               disabled={saving || !editText.trim()}
-              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-colors"
+              className="bg-teal-600 hover:bg-teal-700 active:scale-[0.97] disabled:opacity-60 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-all duration-150"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>
@@ -90,7 +90,7 @@ function NoteCard({ note, isOwner, athleteId, onChanged }: NoteCardProps) {
           <span className="text-sm text-red-600 font-medium">Delete this note?</span>
           <div className="flex items-center gap-2">
             <button onClick={handleDelete} disabled={saving}
-              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors">
+              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 active:scale-[0.97] disabled:opacity-60 rounded-lg px-3 py-1.5 transition-all duration-150">
               {saving ? 'Deleting…' : 'Yes, delete'}
             </button>
             <button onClick={() => setConfirmingDelete(false)} disabled={saving}
@@ -163,7 +163,7 @@ export default function NotesTab({
                 onChange={(e) => onNoteTextChange?.(e.target.value)}
                 placeholder="Write a coach note about this athlete…"
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none transition-shadow duration-200 focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] focus:outline-none"
               />
               <div className="flex justify-end gap-3">
                 <button onClick={onCancelNote} className="text-sm text-gray-500 px-3 py-1.5">
@@ -172,7 +172,7 @@ export default function NotesTab({
                 <button
                   onClick={onSaveNote}
                   disabled={savingNote || !noteText.trim()}
-                  className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-colors"
+                  className="bg-teal-600 hover:bg-teal-700 active:scale-[0.97] disabled:opacity-60 text-white text-sm font-medium rounded-lg px-4 py-1.5 transition-all duration-150"
                 >
                   {savingNote ? 'Saving…' : 'Save note'}
                 </button>
@@ -181,7 +181,7 @@ export default function NotesTab({
           ) : (
             <button
               onClick={onToggleNoteInput}
-              className="w-full bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 hover:text-teal-800 rounded-xl py-3.5 text-sm font-semibold transition-colors"
+              className="w-full bg-teal-50 hover:bg-teal-100 active:scale-[0.98] border border-teal-200 text-teal-700 hover:text-teal-800 rounded-xl py-3.5 text-sm font-semibold transition-all duration-150"
             >
               + Add note
             </button>

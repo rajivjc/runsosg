@@ -50,7 +50,7 @@ export default function AthleteCard({
   return (
     <Link
       href={`/athletes/${id}`}
-      className={`flex items-center gap-4 rounded-xl shadow-sm p-4 hover:shadow-md transition-all ${
+      className={`flex items-center gap-4 rounded-xl shadow-sm p-4 hover:shadow-md active:scale-[0.98] transition-all duration-200 ${
         needsAttention
           ? 'bg-amber-50/60 border border-amber-200/80 hover:border-amber-300'
           : 'bg-white border border-gray-100 hover:border-gray-200'

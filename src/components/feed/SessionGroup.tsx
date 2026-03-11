@@ -26,16 +26,17 @@ export default function SessionGroup({
     <div className="mb-6">
       <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 mt-1">{label}</p>
       <div className="space-y-3">
-        {sessions.map(s => (
-          <SessionCard
-            key={s.id}
-            session={s}
-            badges={milestonesBySession[s.id] ?? []}
-            kudosCount={kudosCounts[s.id] ?? 0}
-            myKudos={myKudos.has(s.id)}
-            isReadOnly={isReadOnly}
-            userId={userId}
-          />
+        {sessions.map((s, i) => (
+          <div key={s.id} className="animate-list-item" style={{ animationDelay: `${i * 50}ms` }}>
+            <SessionCard
+              session={s}
+              badges={milestonesBySession[s.id] ?? []}
+              kudosCount={kudosCounts[s.id] ?? 0}
+              myKudos={myKudos.has(s.id)}
+              isReadOnly={isReadOnly}
+              userId={userId}
+            />
+          </div>
         ))}
       </div>
     </div>

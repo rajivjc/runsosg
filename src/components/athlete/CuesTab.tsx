@@ -189,7 +189,7 @@ export default function CuesTab({ athleteId, athleteName, initialCues }: CuesTab
                   {tag}
                   <button
                     onClick={() => removeTag(section, i)}
-                    className="ml-1.5 hover:opacity-70 leading-none font-bold"
+                    className="ml-1.5 hover:opacity-70 active:scale-90 leading-none font-bold transition-transform"
                     aria-label={`Remove ${tag}`}
                   >
                     ×
@@ -206,12 +206,12 @@ export default function CuesTab({ athleteId, athleteName, initialCues }: CuesTab
                 onChange={(e) => setInputValues((prev) => ({ ...prev, [section]: e.target.value }))}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(section) } }}
                 placeholder={placeholder}
-                className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)]"
               />
               <button
                 onClick={() => addTag(section)}
                 disabled={!inputValues[section].trim() || isPending}
-                className="bg-teal-600 hover:bg-teal-700 disabled:opacity-40 text-white text-sm font-medium rounded-lg px-3 py-1.5 transition-colors"
+                className="bg-teal-600 hover:bg-teal-700 active:scale-[0.97] disabled:opacity-40 text-white text-sm font-medium rounded-lg px-3 py-1.5 transition-all duration-150"
               >
                 Add
               </button>

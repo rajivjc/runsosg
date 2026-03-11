@@ -26,7 +26,7 @@ export default function AthleteSearch({ athletes }: AthleteSearchProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search athletes..."
-          className="block w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 pr-10 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-colors [&::-webkit-search-cancel-button]:hidden"
+          className="block w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 pr-10 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:bg-white focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] transition-all duration-200 [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
@@ -45,8 +45,10 @@ export default function AthleteSearch({ athletes }: AthleteSearchProps) {
         </p>
       ) : (
         <div className="space-y-3">
-          {filtered.map((athlete) => (
-            <AthleteCard key={athlete.id} {...athlete} />
+          {filtered.map((athlete, i) => (
+            <div key={athlete.id} className="animate-list-item" style={{ animationDelay: `${i * 50}ms` }}>
+              <AthleteCard {...athlete} />
+            </div>
           ))}
         </div>
       )}

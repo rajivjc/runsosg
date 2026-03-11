@@ -41,7 +41,7 @@ export default function DeleteAthleteButton({ athleteId, athleteName }: Props) {
             <button
               onClick={handleConfirm}
               disabled={busy}
-              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors"
+              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 active:scale-[0.97] disabled:opacity-60 rounded-lg px-3 py-1.5 transition-all duration-150"
             >
               {busy ? 'Deleting…' : 'Yes, delete permanently'}
             </button>
@@ -63,7 +63,7 @@ export default function DeleteAthleteButton({ athleteId, athleteName }: Props) {
     <div>
       <button
         onClick={() => setConfirming(true)}
-        className="text-sm text-red-500 hover:text-red-700 border border-red-200 rounded-lg px-3 py-1.5 transition-colors"
+        className="text-sm text-red-500 hover:text-red-700 active:scale-[0.97] border border-red-200 rounded-lg px-3 py-1.5 transition-all duration-150"
       >
         Delete athlete
       </button>

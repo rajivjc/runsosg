@@ -25,7 +25,7 @@ export default function StravaStatus({ connection }: { connection: Connection })
         </p>
         <a
           href="/api/strava/connect"
-          className="inline-block bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
+          className="inline-block bg-orange-500 hover:bg-orange-600 active:scale-[0.97] text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-all duration-150"
         >
           Connect Strava
         </a>
@@ -67,7 +67,7 @@ export default function StravaStatus({ connection }: { connection: Connection })
                 await disconnectStrava()
               }}
               disabled={busy}
-              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors"
+              className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 active:scale-[0.97] disabled:opacity-60 rounded-lg px-3 py-1.5 transition-all duration-150"
             >
               {busy ? 'Disconnecting…' : 'Yes, disconnect'}
             </button>
@@ -84,14 +84,14 @@ export default function StravaStatus({ connection }: { connection: Connection })
         <div className="flex gap-2 mt-3">
           <a
             href="/api/strava/connect"
-            className="text-xs font-medium text-gray-600 hover:text-teal-600 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+            className="text-xs font-medium text-gray-600 hover:text-teal-600 active:scale-[0.97] border border-gray-200 rounded-lg px-3 py-1.5 transition-all duration-150"
           >
             Reconnect
           </a>
           <button
             type="button"
             onClick={() => setConfirming(true)}
-            className="text-xs font-medium text-red-500 hover:text-red-700 border border-red-100 rounded-lg px-3 py-1.5 transition-colors"
+            className="text-xs font-medium text-red-500 hover:text-red-700 active:scale-[0.97] border border-red-100 rounded-lg px-3 py-1.5 transition-all duration-150"
           >
             Disconnect
           </button>
