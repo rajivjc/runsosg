@@ -15,7 +15,10 @@ type CelebrationOverlayProps = {
  * Full-screen celebration overlay for milestone achievements.
  * Shows confetti animation (CSS-only, respects prefers-reduced-motion),
  * large milestone icon, athlete name, and share link.
- * Auto-dismisses after 8 seconds or on tap.
+ * Auto-dismisses after 8 seconds or on tap/Escape.
+ *
+ * When prefers-reduced-motion is active, shows a static celebration
+ * (no confetti, no bounce) so users still get their moment.
  */
 export default function CelebrationOverlay({
   milestoneId,
@@ -88,7 +91,7 @@ export default function CelebrationOverlay({
 
       {/* Content */}
       <div className="relative text-center px-8">
-        <div className="text-7xl mb-4 animate-bounce-slow">{milestoneIcon}</div>
+        <div className="text-7xl mb-4 celebration-icon">{milestoneIcon}</div>
         <p className="text-white/70 text-sm font-medium uppercase tracking-widest mb-2">
           Milestone unlocked
         </p>
@@ -116,7 +119,7 @@ export default function CelebrationOverlay({
             opacity: 1;
           }
           100% {
-            transform: translateY(110vh) rotate(720deg);
+            transform: translateY(110vh) rotate(180deg);
             opacity: 0;
           }
         }
@@ -133,7 +136,7 @@ export default function CelebrationOverlay({
           animation: confettiFall 3s ease-in forwards;
         }
 
-        .animate-bounce-slow {
+        .celebration-icon {
           animation: bounceSlow 2s ease-in-out infinite;
         }
 
@@ -141,7 +144,7 @@ export default function CelebrationOverlay({
           .celebration-confetti {
             display: none;
           }
-          .animate-bounce-slow {
+          .celebration-icon {
             animation: none;
           }
         }
@@ -153,7 +156,7 @@ export default function CelebrationOverlay({
 const CONFETTI_COLORS = [
   '#F59E0B', // amber
   '#14B8A6', // teal
-  '#EF4444', // red
+  '#FB923C', // soft coral (replaces saturated red — seizure risk)
   '#8B5CF6', // purple
   '#3B82F6', // blue
   '#EC4899', // pink

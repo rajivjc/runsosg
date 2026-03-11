@@ -1,3 +1,5 @@
+'use client'
+
 import type { WeeklyRecap } from '@/lib/feed/weekly-recap'
 
 interface Props {
@@ -10,7 +12,7 @@ export default function WeeklyRecapCard({ weeklyStats, weeklyRecap }: Props) {
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 recap-stat recap-stat-1">
         <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
           <span className="text-lg">🏃</span>
         </div>
@@ -26,17 +28,35 @@ export default function WeeklyRecapCard({ weeklyStats, weeklyRecap }: Props) {
       {(weeklyRecap.starMoment || weeklyRecap.milestonesEarned > 0) && (
         <div className="mt-2 pt-2 border-t border-gray-50 space-y-1">
           {weeklyRecap.starMoment && (
-            <p className="text-xs text-teal-600">
+            <p className="text-xs text-teal-600 recap-stat recap-stat-2">
               ⭐ {weeklyRecap.starMoment.athleteName} {weeklyRecap.starMoment.value}
             </p>
           )}
           {weeklyRecap.milestonesEarned > 0 && (
-            <p className="text-xs text-amber-600">
+            <p className="text-xs text-amber-600 recap-stat recap-stat-3">
               🏆 {weeklyRecap.milestonesEarned} milestone{weeklyRecap.milestonesEarned !== 1 ? 's' : ''} earned this week
             </p>
           )}
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes recapFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .recap-stat {
+          animation: recapFadeIn 300ms ease-out both;
+        }
+        .recap-stat-1 { animation-delay: 0ms; }
+        .recap-stat-2 { animation-delay: 150ms; }
+        .recap-stat-3 { animation-delay: 300ms; }
+        @media (prefers-reduced-motion: reduce) {
+          .recap-stat {
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   )
 }

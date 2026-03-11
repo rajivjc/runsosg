@@ -23,6 +23,7 @@ const PUBLIC_PATHS = [
   '/api/strava/webhook',
   '/api/health',
   '/api/manifest.json',
+  '/my',
   '/',
 ]
 

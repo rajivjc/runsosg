@@ -27,6 +27,7 @@ export default function CoachFeed({ data, userId }: Props) {
     coachFocus,
     recentBadge,
     recentCheers,
+    athleteMessages,
     onboarding,
     weeklyRecap,
     weeklyStats,
@@ -108,6 +109,29 @@ export default function CoachFeed({ data, userId }: Props) {
                     <p className="text-sm text-amber-800">&ldquo;{c.message}&rdquo;</p>
                     <p className="text-[10px] text-amber-400">
                       {formatDate(c.created_at)}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Athlete messages */}
+      {athleteMessages.length > 0 && (
+        <div className="bg-teal-50/40 border border-teal-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
+          <p className="text-[11px] font-bold text-teal-500 uppercase tracking-widest mb-2.5">Messages from athletes ✉️</p>
+          <div className="space-y-2">
+            {athleteMessages.map(m => (
+              <Link key={m.id} href={`/athletes/${m.athlete_id}`}>
+                <div className="flex items-start gap-2 rounded-lg px-2 py-1.5 hover:bg-teal-50 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm text-teal-800">
+                      <span className="font-medium">{m.athlete_name}:</span> &ldquo;{m.message}&rdquo;
+                    </p>
+                    <p className="text-[10px] text-teal-400">
+                      {formatDate(m.created_at)}
                     </p>
                   </div>
                 </div>

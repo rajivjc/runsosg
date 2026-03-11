@@ -19,6 +19,7 @@ import type {
   MilestoneBadge,
   CelebrationMilestone,
   FeedCheer,
+  FeedAthleteMessage,
 } from '@/lib/feed/types'
 
 export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> {
@@ -44,6 +45,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     { count: myTotalSessionCount },
     clubStats,
     { data: weeklyStatsResult },
+    { data: rawAthleteMessages },
   ] = await Promise.all([
     adminClient.from('users').select('role, name').eq('id', userId).single(),
     // Issue 3: Supabase joins fetch athlete + coach names in one query
@@ -72,6 +74,14 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     loadClubStats(),
     // Issue 8: DB-level weekly stats instead of JS filtering
     adminClient.rpc('get_weekly_stats', { since: weekAgoStr }),
+    // Athlete messages (unviewed, last 7 days)
+    adminClient
+      .from('athlete_messages')
+      .select('id, athlete_id, message, created_at, athletes(name)')
+      .is('viewed_by_coach_at', null)
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(10),
   ])
 
   // ─── Batch 2: Only kudos lookups (athlete/coach names come from joins) ──
@@ -185,6 +195,15 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     hasStravaConnection: !!stravaConnection,
   })
 
+  // ─── Athlete messages ──────────────────────────────────────────
+  const athleteMessages: FeedAthleteMessage[] = (rawAthleteMessages ?? []).map(m => ({
+    id: m.id,
+    athlete_id: m.athlete_id,
+    athlete_name: (m as unknown as { athletes?: { name?: string } }).athletes?.name ?? 'An athlete',
+    message: m.message,
+    created_at: m.created_at,
+  }))
+
   // ─── Await focus data ──────────────────────────────────────────
   const coachFocus = await coachFocusPromise
 
@@ -206,6 +225,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     badges,
     recentBadge: recentBadgeDef,
     recentCheers: (rawCheers ?? []) as FeedCheer[],
+    athleteMessages,
     hasStrava: !!stravaConnection,
     onboarding: onboarding.isNewUser ? onboarding : null,
     weeklyRecap,

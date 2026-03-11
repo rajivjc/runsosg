@@ -23,7 +23,7 @@ export interface Database {
       }
       athletes: {
         Row: Athlete & Record<string, unknown>
-        Insert: Omit<Athlete, 'id' | 'created_at' | 'updated_at' | 'updated_by' | 'goal_type' | 'goal_target' | 'allow_public_sharing' | 'sharing_disabled_by_caregiver'> & { id?: string; created_at?: string | null; updated_at?: string | null; updated_by?: string | null; goal_type?: Athlete['goal_type']; goal_target?: number | null; allow_public_sharing?: boolean; sharing_disabled_by_caregiver?: boolean }
+        Insert: Omit<Athlete, 'id' | 'created_at' | 'updated_at' | 'updated_by' | 'goal_type' | 'goal_target' | 'allow_public_sharing' | 'sharing_disabled_by_caregiver' | 'athlete_pin' | 'pin_attempts' | 'pin_locked_until'> & { id?: string; created_at?: string | null; updated_at?: string | null; updated_by?: string | null; goal_type?: Athlete['goal_type']; goal_target?: number | null; allow_public_sharing?: boolean; sharing_disabled_by_caregiver?: boolean; athlete_pin?: string | null; pin_attempts?: number; pin_locked_until?: string | null }
         Update: Partial<Athlete>
         Relationships: []
       }
@@ -177,6 +177,12 @@ export interface Database {
         Update: Partial<PushSubscriptionRow>
         Relationships: []
       }
+      athlete_messages: {
+        Row: AthleteMessage & Record<string, unknown>
+        Insert: Omit<AthleteMessage, 'id' | 'created_at' | 'viewed_by_coach_at'> & { id?: string; created_at?: string; viewed_by_coach_at?: string | null }
+        Update: Partial<AthleteMessage>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -238,6 +244,9 @@ export interface Athlete {
   caregiver_user_id: string | null
   allow_public_sharing: boolean
   sharing_disabled_by_caregiver: boolean
+  athlete_pin: string | null
+  pin_attempts: number
+  pin_locked_until: string | null
   updated_by: string | null
   updated_at: string | null
   created_at: string | null
@@ -428,4 +437,12 @@ export interface PushSubscriptionRow {
   p256dh: string
   auth: string
   created_at: string
+}
+
+export interface AthleteMessage {
+  id: string
+  athlete_id: string
+  message: string
+  created_at: string
+  viewed_by_coach_at: string | null
 }

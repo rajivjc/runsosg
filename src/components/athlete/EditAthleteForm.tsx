@@ -1,7 +1,8 @@
 'use client'
 
 import { useFormStatus } from 'react-dom'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { setAthletePin } from '@/app/my/[athleteId]/actions'
 
 type AthleteProfile = {
   id: string
@@ -47,6 +48,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
   }
 
   return (
+    <>
     <form action={handleAction} className="space-y-5">
       <p className="text-sm text-gray-500">
         Changes are saved immediately and visible to all coaches.
@@ -231,5 +233,90 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
 
       <SubmitButton />
     </form>
+
+    {/* Athlete Access — separate from main form */}
+    <AthletePinSection athleteId={athlete.id} athleteName={athlete.name} />
+    </>
+  )
+}
+
+// ─── Athlete PIN Setup Section ────────────────────────────────
+
+function AthletePinSection({ athleteId, athleteName }: { athleteId: string; athleteName: string }) {
+  const [pin, setPin] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [result, setResult] = useState<{ error?: string; success?: boolean } | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
+
+  const journeyUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/my/${athleteId}`
+    : `/my/${athleteId}`
+
+  const handleSavePin = useCallback(async () => {
+    setSaving(true)
+    setResult(null)
+    const res = await setAthletePin(athleteId, pin)
+    setSaving(false)
+    setResult(res)
+    if (res.success) setPin('')
+  }, [athleteId, pin])
+
+  const handleCopyLink = useCallback(async () => {
+    await navigator.clipboard.writeText(journeyUrl)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }, [journeyUrl])
+
+  return (
+    <div className="mt-6 bg-teal-50/50 border border-teal-100 rounded-lg px-4 py-3 space-y-3">
+      <p className="text-xs font-semibold text-teal-700">🏃 Athlete access page</p>
+      <p className="text-[10px] text-teal-600">
+        Set a 4-digit PIN so {athleteName} can view their own running journey at a personal page.
+      </p>
+
+      <div className="flex items-end gap-3">
+        <div className="flex-1">
+          <label className="block text-xs text-gray-500 mb-1">4-digit PIN</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]{4}"
+            maxLength={4}
+            value={pin}
+            onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            placeholder="e.g. 1234"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleSavePin}
+          disabled={pin.length !== 4 || saving}
+          className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+        >
+          {saving ? 'Saving…' : 'Save PIN'}
+        </button>
+      </div>
+
+      {result?.success && (
+        <p className="text-[10px] text-emerald-600 font-medium">PIN saved. {athleteName} can use it to access their page.</p>
+      )}
+      {result?.error && (
+        <p className="text-[10px] text-red-600 font-medium">{result.error}</p>
+      )}
+
+      <div className="pt-2 border-t border-teal-100 space-y-2">
+        <p className="text-[10px] text-gray-500">
+          Page link: <span className="font-mono text-teal-700">/my/{athleteId.slice(0, 8)}…</span>
+        </p>
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          className="text-[10px] text-teal-700 hover:text-teal-900 font-medium underline"
+        >
+          {linkCopied ? 'Copied!' : 'Copy link to clipboard'}
+        </button>
+      </div>
+    </div>
   )
 }

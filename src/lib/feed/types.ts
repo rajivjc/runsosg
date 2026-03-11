@@ -63,6 +63,16 @@ export interface FeedCheer {
   viewed_at: string | null
 }
 
+// ─── Athlete message shapes ─────────────────────────────────────
+
+export interface FeedAthleteMessage {
+  id: string
+  athlete_id: string
+  athlete_name: string
+  message: string
+  created_at: string
+}
+
 // ─── Coach feed data ─────────────────────────────────────────────
 
 export interface CoachFeedData {
@@ -95,6 +105,7 @@ export interface CoachFeedData {
   badges: { badge_key: string; earned_at: string }[]
   recentBadge: BadgeDefinition | null
   recentCheers: FeedCheer[]
+  athleteMessages: FeedAthleteMessage[]
   hasStrava: boolean
   onboarding: OnboardingState | null
   weeklyRecap: WeeklyRecap
