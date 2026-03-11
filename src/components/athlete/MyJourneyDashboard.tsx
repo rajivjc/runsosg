@@ -104,7 +104,11 @@ export default function MyJourneyDashboard({
   }, [athlete.id])
 
   const formatRunDate = (dateStr: string) => {
-    const date = new Date(dateStr + 'T00:00:00')
+    // dateStr may be a full ISO timestamp (timestamptz) or YYYY-MM-DD
+    const date = dateStr.includes('T')
+      ? new Date(dateStr)
+      : new Date(dateStr + 'T12:00:00+08:00')
+    if (isNaN(date.getTime())) return '—'
     return date.toLocaleDateString('en-SG', {
       weekday: 'short',
       day: 'numeric',

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Plus, ChevronRight } from 'lucide-react'
-import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
+import { formatDate, formatDistance, formatDuration, toDateOnly } from '@/lib/utils/dates'
 import type { SessionData, MilestoneData, PhotoData } from './AthleteTabs'
 import type { WeeklyVolume, FeelPoint, DistancePoint, MilestonePin } from '@/lib/analytics/session-trends'
 import { updateManualSession, updateSessionFeel, deleteSession } from '@/app/athletes/[id]/actions'
@@ -108,7 +108,7 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
   const [expanded, setExpanded] = useState(false)
   const [feel, setFeel] = useState<Feel | null>(s.feel as Feel | null)
   const [note, setNote] = useState(s.note ?? '')
-  const [date, setDate] = useState(s.date)
+  const [date, setDate] = useState(toDateOnly(s.date))
   const [distanceKm, setDistanceKm] = useState(s.distance_km != null ? String(s.distance_km) : '')
   const [durationMins, setDurationMins] = useState(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '')
   const [saving, setSaving] = useState(false)
@@ -377,7 +377,7 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
               </div>
             )}
             <div className="flex gap-3">
-              <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? ''); setDate(s.date); setDistanceKm(s.distance_km != null ? String(s.distance_km) : ''); setDurationMins(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '') }}
+              <button onClick={() => { setExpanded(false); setFeel(s.feel as Feel | null); setNote(s.note ?? ''); setDate(toDateOnly(s.date)); setDistanceKm(s.distance_km != null ? String(s.distance_km) : ''); setDurationMins(s.duration_seconds != null ? String(Math.round(s.duration_seconds / 60)) : '') }}
                 className="text-sm text-gray-500 px-4 py-2 hover:text-gray-700 transition-colors">Cancel</button>
               <button onClick={handleSave} disabled={saving}
                 className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-5 py-2 transition-colors shadow-sm">

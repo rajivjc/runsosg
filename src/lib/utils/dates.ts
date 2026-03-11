@@ -39,6 +39,28 @@ export function formatDistance(metres: number): string {
 }
 
 /**
+ * Extract a YYYY-MM-DD string from a date value that may be either
+ * a plain date string or a full ISO timestamp (from timestamptz columns).
+ * Uses Asia/Singapore timezone for consistent date extraction.
+ */
+export function toDateOnly(value: string | null | undefined): string {
+  if (!value) return ''
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) return value.trim()
+  // Full ISO timestamp — extract date in SGT
+  const d = new Date(value)
+  if (isNaN(d.getTime())) return ''
+  // Format as YYYY-MM-DD in Singapore timezone
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: SGT,
+  }).format(d)
+  return parts
+}
+
+/**
  * Validate that a string is a valid YYYY-MM-DD date.
  * Returns the validated date string or null if invalid.
  */

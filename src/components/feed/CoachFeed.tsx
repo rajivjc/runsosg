@@ -118,28 +118,44 @@ export default function CoachFeed({ data, userId }: Props) {
         </div>
       )}
 
-      {/* Athlete messages */}
-      {athleteMessages.length > 0 && (
-        <div className="bg-teal-50/40 border border-teal-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
-          <p className="text-[11px] font-bold text-teal-500 uppercase tracking-widest mb-2.5">Messages from athletes ✉️</p>
-          <div className="space-y-2">
-            {athleteMessages.map(m => (
-              <Link key={m.id} href={`/athletes/${m.athlete_id}`}>
-                <div className="flex items-start gap-2 rounded-lg px-2 py-1.5 hover:bg-teal-50 transition-colors">
-                  <div className="min-w-0">
-                    <p className="text-sm text-teal-800">
-                      <span className="font-medium">{m.athlete_name}:</span> &ldquo;{m.message}&rdquo;
-                    </p>
-                    <p className="text-[10px] text-teal-400">
-                      {formatDate(m.created_at)}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
+      {/* Athlete messages — collapsed summary */}
+      {athleteMessages.length > 0 && (() => {
+        const uniqueAthletes = new Set(athleteMessages.map(m => m.athlete_name))
+        const names = Array.from(uniqueAthletes)
+        const nameText = names.length <= 2
+          ? names.join(' and ')
+          : `${names.slice(0, 2).join(', ')} and ${names.length - 2} more`
+        return (
+          <div className="bg-teal-50/40 border border-teal-100 rounded-xl px-4 py-3 mb-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold text-teal-500 uppercase tracking-widest">Messages from athletes ✉️</p>
+              <span className="bg-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {athleteMessages.length}
+              </span>
+            </div>
+            <p className="text-sm text-teal-800 mt-1.5">
+              {athleteMessages.length === 1
+                ? `${athleteMessages[0].athlete_name} sent a message`
+                : `${athleteMessages.length} new messages from ${nameText}`}
+            </p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {names.map(name => {
+                const athleteMsg = athleteMessages.find(m => m.athlete_name === name)!
+                return (
+                  <Link
+                    key={name}
+                    href={`/athletes/${athleteMsg.athlete_id}`}
+                    className="inline-flex items-center gap-1 bg-white/70 hover:bg-white text-teal-700 text-xs font-medium px-2.5 py-1 rounded-full border border-teal-200 transition-colors"
+                  >
+                    {name}
+                    <span className="text-teal-400">&#x203A;</span>
+                  </Link>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Today's Focus */}
       {coachFocus && coachFocus.items.length > 0 && (
