@@ -119,6 +119,14 @@ async function consumePendingNavigation(
       const url = await response.text()
       await navCache.delete('/_pending')
       if (url) {
+        if (url === window.location.pathname) {
+          // The page already loaded at the correct URL (from SW navigate()
+          // or openWindow()). No need to trigger another navigation or
+          // refresh — the data is already fresh from the server render.
+          // Just remove the overlay if present.
+          hideFreezeOverlay()
+          return
+        }
         navigating = true
         handleNotificationNav(url, routerRef)
       }

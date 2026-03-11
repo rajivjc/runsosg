@@ -55,23 +55,50 @@ self.addEventListener('notificationclick', (event) => {
         includeUncontrolled: true,
       })
 
-      for (const client of allClients) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          // Use postMessage instead of client.navigate() — on iOS PWAs,
-          // client.navigate() corrupts the React tree, leaving stale
-          // content from the previous page visible across all routes.
-          client.postMessage({ type: 'NAVIGATE', url })
-          try {
-            await client.focus()
-          } catch {
-            // focus() can fail on frozen/discarded tabs
-          }
+      // Separate visible (warm) clients from hidden (frozen/backgrounded) ones.
+      // On iOS, "closing" a PWA doesn't kill the client — it stays frozen and
+      // clients.matchAll() still returns it. Reusing a frozen client via
+      // postMessage + focus() causes iOS to restore stale compositor layers,
+      // producing the misaligned page rendering bug.
+      const originClients = allClients.filter(
+        (c) => c.url.includes(self.location.origin) && 'focus' in c
+      )
+      const visibleClient = originClients.find((c) => c.visibilityState === 'visible')
+      const frozenClient = originClients.find((c) => c.visibilityState !== 'visible')
+
+      if (visibleClient) {
+        // WARM CASE: App is in the foreground. Send a message so the client
+        // can do an in-place router.refresh() without any page navigation.
+        // This completely avoids the iOS compositor issue.
+        visibleClient.postMessage({ type: 'NAVIGATE', url })
+        try {
+          await visibleClient.focus()
+        } catch {
+          // focus() can fail — non-critical
+        }
+        return
+      }
+
+      if (frozenClient) {
+        // FROZEN CASE: App was backgrounded/closed but iOS kept the client.
+        // Do NOT use postMessage + focus() — that restores the frozen page
+        // with stale compositor layers (the root cause of the rendering bug).
+        // Instead, use navigate() to force a full fresh page load, which
+        // discards the frozen state entirely.
+        try {
+          await frozenClient.navigate(url)
+          await frozenClient.focus()
+          // Clear the pending nav since navigate() already went to the URL
+          await navCache.delete('/_pending')
           return
+        } catch {
+          // navigate() can fail on some browsers for hidden clients.
+          // Fall through to openWindow() below.
         }
       }
-      // No existing window found — it may be frozen (iOS) or truly dead.
-      // Pending URL is already cached above for the frozen case.
-      // Open via pwa-launch with token so the new window has auth.
+
+      // NO CLIENT or navigate() failed — open a fresh window.
+      // Use pwa-launch with token so the new window has auth.
       let launchUrl = url
       try {
         const tokenCache = await caches.open('sosg-pwa-token')
