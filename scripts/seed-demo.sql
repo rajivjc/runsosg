@@ -279,73 +279,73 @@ BEGIN
 
   -- Wei Jie: First Session, 5 Sessions, 10 Sessions, First 3K, First 5K, Great Attitude
   INSERT INTO public.milestones (athlete_id, milestone_definition_id, label, achieved_at, awarded_by, session_id) VALUES
-    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session'),
+    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session' LIMIT 1),
      'First Session', '2025-10-05T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_wj AND date = '2025-10-05T07:30:00+08:00' LIMIT 1)),
-    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = '5 Sessions'),
+    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = '5 Sessions' LIMIT 1),
      '5 Sessions', '2025-11-09T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_wj AND date = '2025-11-09T07:30:00+08:00' LIMIT 1)),
-    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = '10 Sessions'),
+    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = '10 Sessions' LIMIT 1),
      '10 Sessions', '2025-12-28T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_wj AND date = '2025-12-28T07:30:00+08:00' LIMIT 1)),
-    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = 'First 3K'),
+    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = 'First 3K' LIMIT 1),
      'First 3K', '2025-10-26T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_wj AND date = '2025-10-26T07:30:00+08:00' LIMIT 1)),
-    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = 'First 5K'),
+    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = 'First 5K' LIMIT 1),
      'First 5K', '2026-02-22T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_wj AND date = '2026-02-22T07:30:00+08:00' LIMIT 1)),
-    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = 'Great Attitude'),
+    (v_wj, (SELECT id FROM public.milestone_definitions WHERE label = 'Great Attitude' LIMIT 1),
      'Great Attitude', '2026-02-15T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_wj AND date = '2026-02-15T07:30:00+08:00' LIMIT 1));
 
   -- Sarah: First Session, 5 Sessions, First 3K
   INSERT INTO public.milestones (athlete_id, milestone_definition_id, label, achieved_at, awarded_by, session_id) VALUES
-    (v_sc, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session'),
+    (v_sc, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session' LIMIT 1),
      'First Session', '2025-10-12T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_sc AND date = '2025-10-12T07:30:00+08:00' LIMIT 1)),
-    (v_sc, (SELECT id FROM public.milestone_definitions WHERE label = '5 Sessions'),
+    (v_sc, (SELECT id FROM public.milestone_definitions WHERE label = '5 Sessions' LIMIT 1),
      '5 Sessions', '2025-11-30T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_sc AND date = '2025-11-30T07:30:00+08:00' LIMIT 1)),
-    (v_sc, (SELECT id FROM public.milestone_definitions WHERE label = 'First 3K'),
+    (v_sc, (SELECT id FROM public.milestone_definitions WHERE label = 'First 3K' LIMIT 1),
      'First 3K', '2026-01-25T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_sc AND date = '2026-01-25T07:30:00+08:00' LIMIT 1));
 
   -- Arun: First Session
   INSERT INTO public.milestones (athlete_id, milestone_definition_id, label, achieved_at, awarded_by, session_id) VALUES
-    (v_ak, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session'),
+    (v_ak, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session' LIMIT 1),
      'First Session', '2025-12-07T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_ak AND date = '2025-12-07T07:30:00+08:00' LIMIT 1));
 
   -- Mei Lin: First Session, 5 Sessions, First 3K
   INSERT INTO public.milestones (athlete_id, milestone_definition_id, label, achieved_at, awarded_by, session_id) VALUES
-    (v_ml, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session'),
+    (v_ml, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session' LIMIT 1),
      'First Session', '2025-10-19T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_ml AND date = '2025-10-19T07:30:00+08:00' LIMIT 1)),
-    (v_ml, (SELECT id FROM public.milestone_definitions WHERE label = '5 Sessions'),
+    (v_ml, (SELECT id FROM public.milestone_definitions WHERE label = '5 Sessions' LIMIT 1),
      '5 Sessions', '2025-11-30T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_ml AND date = '2025-11-30T07:30:00+08:00' LIMIT 1)),
-    (v_ml, (SELECT id FROM public.milestone_definitions WHERE label = 'First 3K'),
+    (v_ml, (SELECT id FROM public.milestone_definitions WHERE label = 'First 3K' LIMIT 1),
      'First 3K', '2025-12-28T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_ml AND date = '2025-12-28T07:30:00+08:00' LIMIT 1));
 
   -- Danish: First Session
   INSERT INTO public.milestones (athlete_id, milestone_definition_id, label, achieved_at, awarded_by, session_id) VALUES
-    (v_dr, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session'),
+    (v_dr, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session' LIMIT 1),
      'First Session', '2026-02-08T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_dr AND date = '2026-02-08T07:30:00+08:00' LIMIT 1));
 
   -- Rachel: First Session, 5 Sessions, First 3K, Personal Best
   INSERT INTO public.milestones (athlete_id, milestone_definition_id, label, achieved_at, awarded_by, session_id) VALUES
-    (v_rl, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session'),
+    (v_rl, (SELECT id FROM public.milestone_definitions WHERE label = 'First Session' LIMIT 1),
      'First Session', '2025-11-02T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_rl AND date = '2025-11-02T07:30:00+08:00' LIMIT 1)),
-    (v_rl, (SELECT id FROM public.milestone_definitions WHERE label = '5 Sessions'),
+    (v_rl, (SELECT id FROM public.milestone_definitions WHERE label = '5 Sessions' LIMIT 1),
      '5 Sessions', '2025-12-21T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_rl AND date = '2025-12-21T07:30:00+08:00' LIMIT 1)),
-    (v_rl, (SELECT id FROM public.milestone_definitions WHERE label = 'First 3K'),
+    (v_rl, (SELECT id FROM public.milestone_definitions WHERE label = 'First 3K' LIMIT 1),
      'First 3K', '2026-02-08T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_rl AND date = '2026-02-08T07:30:00+08:00' LIMIT 1)),
-    (v_rl, (SELECT id FROM public.milestone_definitions WHERE label = 'Personal Best'),
+    (v_rl, (SELECT id FROM public.milestone_definitions WHERE label = 'Personal Best' LIMIT 1),
      'Personal Best', '2026-02-08T07:30:00+08:00', v_admin,
      (SELECT id FROM public.sessions WHERE athlete_id = v_rl AND date = '2026-02-08T07:30:00+08:00' LIMIT 1));
 
