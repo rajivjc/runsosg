@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import KudosButton from '@/components/feed/KudosButton'
-import MilestoneShareLink from '@/components/feed/MilestoneShareLink'
 import type { FeedSession, MilestoneBadge } from '@/lib/feed/types'
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -66,9 +65,26 @@ export default function SessionCard({ session: s, badges, kudosCount, kudosGiver
       {badges.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
           {badges.map((m, i) => (
-            <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded-full">
+            <span
+              key={i}
+              className={`inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded-full ${m.id ? 'cursor-pointer hover:bg-amber-100 transition-colors' : ''}`}
+              onClick={m.id ? (e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                window.open(`/milestone/${m.id}`, '_blank', 'noopener,noreferrer')
+              } : undefined}
+              role={m.id ? 'link' : undefined}
+              tabIndex={m.id ? 0 : undefined}
+              onKeyDown={m.id ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  window.open(`/milestone/${m.id}`, '_blank', 'noopener,noreferrer')
+                }
+              } : undefined}
+            >
               {m.icon || '🏆'} {m.label}
-              {m.id && <MilestoneShareLink milestoneId={m.id} />}
+              {m.id && <span className="ml-0.5 text-amber-400">↗</span>}
             </span>
           ))}
         </div>

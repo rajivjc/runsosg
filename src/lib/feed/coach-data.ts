@@ -94,12 +94,19 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     { data: myKudosRows },
   ] = await Promise.all([
     sessionIds.length > 0
-      ? adminClient.from('kudos').select('session_id, users(name)').in('session_id', sessionIds)
-      : Promise.resolve({ data: [] as { session_id: string; users: { name: string | null } | null }[] }),
+      ? adminClient.from('kudos').select('session_id, user_id').in('session_id', sessionIds)
+      : Promise.resolve({ data: [] as { session_id: string; user_id: string }[] }),
     sessionIds.length > 0
       ? adminClient.from('kudos').select('session_id').in('session_id', sessionIds).eq('user_id', userId)
       : Promise.resolve({ data: [] as { session_id: string }[] }),
   ])
+
+  // Fetch giver names separately (kudos.user_id → auth.users, not public.users, so join fails)
+  const giverUserIds = [...new Set((kudosRows ?? []).map(k => k.user_id))]
+  const { data: giverUsers } = giverUserIds.length > 0
+    ? await adminClient.from('users').select('id, name').in('id', giverUserIds)
+    : { data: [] as { id: string; name: string | null }[] }
+  const giverNameMap = Object.fromEntries((giverUsers ?? []).map(u => [u.id, u.name]))
 
   // ─── Build enriched feed (names extracted from joins) ──────────
   const feed: FeedSession[] = sessions.map(s => ({
@@ -156,7 +163,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
   const kudosGivers: Record<string, string[]> = {}
   for (const k of kudosRows ?? []) {
     kudosCounts[k.session_id] = (kudosCounts[k.session_id] ?? 0) + 1
-    const name = (k as any).users?.name
+    const name = giverNameMap[k.user_id]
     if (name) {
       if (!kudosGivers[k.session_id]) kudosGivers[k.session_id] = []
       kudosGivers[k.session_id].push(name.split(' ')[0]) // first name only

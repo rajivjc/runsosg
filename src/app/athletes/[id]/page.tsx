@@ -124,16 +124,23 @@ export default async function AthleteHubPage({ params }: PageProps) {
     getAthletePhotoCount(id),
     getAthletePhotos(id), // for session→photo mapping (all photos needed for run cards)
     sessionIds.length > 0
-      ? adminClient.from('kudos').select('session_id, users(name)').in('session_id', sessionIds)
-      : Promise.resolve({ data: [] as { session_id: string; users: { name: string | null } | null }[] }),
+      ? adminClient.from('kudos').select('session_id, user_id').in('session_id', sessionIds)
+      : Promise.resolve({ data: [] as { session_id: string; user_id: string }[] }),
   ])
 
   // Build kudos data maps
+  // Fetch giver names separately (kudos.user_id → auth.users, not public.users, so join fails)
+  const kudosGiverIds = [...new Set((kudosRows ?? []).map((k: any) => k.user_id as string))]
+  const { data: kudosGiverUsers } = kudosGiverIds.length > 0
+    ? await adminClient.from('users').select('id, name').in('id', kudosGiverIds)
+    : { data: [] as { id: string; name: string | null }[] }
+  const kudosGiverNameMap = Object.fromEntries((kudosGiverUsers ?? []).map((u: any) => [u.id, u.name]))
+
   const kudosCounts: Record<string, number> = {}
   const kudosGivers: Record<string, string[]> = {}
   for (const k of kudosRows ?? []) {
     kudosCounts[k.session_id] = (kudosCounts[k.session_id] ?? 0) + 1
-    const name = (k as any).users?.name
+    const name = kudosGiverNameMap[k.user_id]
     if (name) {
       if (!kudosGivers[k.session_id]) kudosGivers[k.session_id] = []
       kudosGivers[k.session_id].push(name.split(' ')[0])
