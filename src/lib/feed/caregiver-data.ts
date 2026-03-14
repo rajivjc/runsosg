@@ -97,7 +97,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       : Promise.resolve({ data: [] }),
     // Caregiver's athlete — recent public notes
     caregiverAthlete
-      ? adminClient.from('coach_notes').select('content, created_at').eq('athlete_id', caregiverAthlete.id).eq('visibility', 'all').order('created_at', { ascending: false }).limit(3)
+      ? adminClient.from('coach_notes').select('content, created_at, users(name)').eq('athlete_id', caregiverAthlete.id).eq('visibility', 'all').order('created_at', { ascending: false }).limit(3)
       : Promise.resolve({ data: [] }),
     // Cheer sent today?
     adminClient.from('cheers').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', todayStart.toISOString()),
@@ -213,7 +213,11 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     athlete: caregiverAthlete ? { id: caregiverAthlete.id, name: caregiverAthlete.name } : null,
     recentSessions: (cgSessions ?? []) as { id: string; date: string; distance_km: number | null; feel: number | null }[],
     milestones: formattedCgMilestones,
-    recentNotes: (cgNotes ?? []) as { content: string; created_at: string }[],
+    recentNotes: (cgNotes ?? []).map((n: any) => ({
+      content: n.content,
+      created_at: n.created_at,
+      coach_name: (n.users as any)?.name ?? null,
+    })),
     cheersToday: cheerTodayCount ?? 0,
     sentCheers: (sentCheers ?? []) as FeedCheer[],
     caregiverFocus,
