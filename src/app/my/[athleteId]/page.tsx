@@ -77,12 +77,14 @@ export default async function MyJourneyPage({ params }: PageProps) {
       .from('sessions')
       .select('*', { count: 'exact', head: true })
       .eq('athlete_id', athleteId)
-      .eq('status', 'completed'),
+      .eq('status', 'completed')
+      .is('strava_deleted_at', null),
     adminClient
       .from('sessions')
       .select('date, distance_km')
       .eq('athlete_id', athleteId)
-      .eq('status', 'completed'),
+      .eq('status', 'completed')
+      .is('strava_deleted_at', null),
     adminClient
       .from('athlete_moods')
       .select('mood')

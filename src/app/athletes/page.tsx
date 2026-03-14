@@ -49,11 +49,13 @@ export default async function AthletesPage({
     adminClient
       .from('sessions')
       .select('athlete_id, date')
+      .is('strava_deleted_at', null)
       .order('date', { ascending: false }),
     adminClient
       .from('sessions')
       .select('athlete_id, feel, date')
       .eq('status', 'completed')
+      .is('strava_deleted_at', null)
       .not('feel', 'is', null)
       .order('date', { ascending: false }),
   ])

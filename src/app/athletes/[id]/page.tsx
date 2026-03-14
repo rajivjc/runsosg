@@ -115,14 +115,30 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
   // Build a map of coach user_id -> display name from the users we already fetched
   const coachIds = [...new Set((sessions ?? []).map((s: any) => s.coach_user_id).filter(Boolean))]
-  const [{ data: coachUsers }, { photos: paginatedPhotos, nextCursor }, photoCount, rawSessionPhotos] = await Promise.all([
+  const sessionIds = (sessions ?? []).map((s: any) => s.id)
+  const [{ data: coachUsers }, { photos: paginatedPhotos, nextCursor }, photoCount, rawSessionPhotos, { data: kudosRows }] = await Promise.all([
     coachIds.length > 0
       ? adminClient.from('users').select('id, name, email').in('id', coachIds)
       : Promise.resolve({ data: [] }),
     getAthletePhotosPaginated(id, 24),
     getAthletePhotoCount(id),
     getAthletePhotos(id), // for session→photo mapping (all photos needed for run cards)
+    sessionIds.length > 0
+      ? adminClient.from('kudos').select('session_id, users(name)').in('session_id', sessionIds)
+      : Promise.resolve({ data: [] as { session_id: string; users: { name: string | null } | null }[] }),
   ])
+
+  // Build kudos data maps
+  const kudosCounts: Record<string, number> = {}
+  const kudosGivers: Record<string, string[]> = {}
+  for (const k of kudosRows ?? []) {
+    kudosCounts[k.session_id] = (kudosCounts[k.session_id] ?? 0) + 1
+    const name = (k as any).users?.name
+    if (name) {
+      if (!kudosGivers[k.session_id]) kudosGivers[k.session_id] = []
+      kudosGivers[k.session_id].push(name.split(' ')[0])
+    }
+  }
   const coachMap = Object.fromEntries(
     (coachUsers ?? []).map((u: any) => [u.id, u.name ?? u.email?.split('@')[0] ?? null])
   )
@@ -332,6 +348,8 @@ export default async function AthleteHubPage({ params }: PageProps) {
         feelTrend={feelTrend}
         distanceTimeline={distanceTimeline}
         milestonePins={milestonePins}
+        kudosCounts={kudosCounts}
+        kudosGivers={kudosGivers}
         addCoachNote={addCoachNote}
         isReadOnly={isReadOnly}
         currentUserId={user?.id}

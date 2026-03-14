@@ -6,6 +6,7 @@ interface Props {
   sessions: FeedSession[]
   milestonesBySession: Record<string, MilestoneBadge[]>
   kudosCounts: Record<string, number>
+  kudosGivers?: Record<string, string[]>
   myKudos: Set<string>
   isReadOnly: boolean
   userId: string | null
@@ -16,6 +17,7 @@ export default function SessionGroup({
   sessions,
   milestonesBySession,
   kudosCounts,
+  kudosGivers,
   myKudos,
   isReadOnly,
   userId,
@@ -32,6 +34,7 @@ export default function SessionGroup({
               session={s}
               badges={milestonesBySession[s.id] ?? []}
               kudosCount={kudosCounts[s.id] ?? 0}
+              kudosGivers={kudosGivers?.[s.id]}
               myKudos={myKudos.has(s.id)}
               isReadOnly={isReadOnly}
               userId={userId}

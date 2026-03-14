@@ -10,6 +10,7 @@ interface Props {
   groups: Record<string, FeedSession[]>
   milestonesBySession: Record<string, MilestoneBadge[]>
   kudosCounts: Record<string, number>
+  kudosGivers?: Record<string, string[]>
   myKudos: Set<string>
   userId: string
 }
@@ -40,7 +41,7 @@ function groupByDate(sessions: FeedSession[]): Record<string, FeedSession[]> {
   return groups
 }
 
-export default function CoachSessionFeed({ sessions, groups, milestonesBySession, kudosCounts, myKudos, userId }: Props) {
+export default function CoachSessionFeed({ sessions, groups, milestonesBySession, kudosCounts, kudosGivers, myKudos, userId }: Props) {
   const [selectedAthlete, setSelectedAthlete] = useState<string | null>(null)
 
   const athletes = useMemo(() => {
@@ -87,6 +88,7 @@ export default function CoachSessionFeed({ sessions, groups, milestonesBySession
           sessions={items}
           milestonesBySession={milestonesBySession}
           kudosCounts={kudosCounts}
+          kudosGivers={kudosGivers}
           myKudos={myKudos}
           isReadOnly={false}
           userId={userId}

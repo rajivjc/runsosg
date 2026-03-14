@@ -20,12 +20,13 @@ interface Props {
   session: FeedSession
   badges: MilestoneBadge[]
   kudosCount: number
+  kudosGivers?: string[]
   myKudos: boolean
   isReadOnly: boolean
   userId: string | null
 }
 
-export default function SessionCard({ session: s, badges, kudosCount, myKudos, isReadOnly, userId }: Props) {
+export default function SessionCard({ session: s, badges, kudosCount, kudosGivers, myKudos, isReadOnly, userId }: Props) {
   const hasMilestone = badges.length > 0
   const feelColor = s.feel ? (FEEL_BORDER[s.feel] ?? 'border-l-gray-200') : 'border-l-gray-200'
   const cardBg = hasMilestone ? 'bg-amber-50/40' : 'bg-white'
@@ -71,11 +72,12 @@ export default function SessionCard({ session: s, badges, kudosCount, myKudos, i
         </div>
       )}
       {userId && (
-        <div className="mt-2 pt-1.5 border-t border-gray-100">
+        <div className="mt-2 pt-1.5 border-t border-gray-100" onClick={e => e.preventDefault()}>
           <KudosButton
             sessionId={s.id}
             initialCount={kudosCount}
             initialGiven={myKudos}
+            giverNames={kudosGivers}
           />
         </div>
       )}

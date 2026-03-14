@@ -94,8 +94,8 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     { data: myKudosRows },
   ] = await Promise.all([
     sessionIds.length > 0
-      ? adminClient.from('kudos').select('session_id').in('session_id', sessionIds)
-      : Promise.resolve({ data: [] as { session_id: string }[] }),
+      ? adminClient.from('kudos').select('session_id, users(name)').in('session_id', sessionIds)
+      : Promise.resolve({ data: [] as { session_id: string; users: { name: string | null } | null }[] }),
     sessionIds.length > 0
       ? adminClient.from('kudos').select('session_id').in('session_id', sessionIds).eq('user_id', userId)
       : Promise.resolve({ data: [] as { session_id: string }[] }),
@@ -153,8 +153,14 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
 
   // ─── Kudos ─────────────────────────────────────────────────────
   const kudosCounts: Record<string, number> = {}
+  const kudosGivers: Record<string, string[]> = {}
   for (const k of kudosRows ?? []) {
     kudosCounts[k.session_id] = (kudosCounts[k.session_id] ?? 0) + 1
+    const name = (k as any).users?.name
+    if (name) {
+      if (!kudosGivers[k.session_id]) kudosGivers[k.session_id] = []
+      kudosGivers[k.session_id].push(name.split(' ')[0]) // first name only
+    }
   }
   const myKudos = new Set((myKudosRows ?? []).map(k => k.session_id))
 
@@ -215,6 +221,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     milestonesBySession,
     celebrationMilestones,
     kudosCounts,
+    kudosGivers,
     myKudos,
     clubStats,
     coachStats: {

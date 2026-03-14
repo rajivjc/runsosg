@@ -82,6 +82,7 @@ export interface CoachFeedData {
   milestonesBySession: Record<string, MilestoneBadge[]>
   celebrationMilestones: CelebrationMilestone[]
   kudosCounts: Record<string, number>
+  kudosGivers: Record<string, string[]>
   myKudos: Set<string>
   clubStats: {
     sessions: number
@@ -119,7 +120,7 @@ export interface CaregiverFeedData {
   athlete: { id: string; name: string } | null
   recentSessions: { id: string; date: string; distance_km: number | null; feel: number | null }[]
   milestones: { id: string; label: string; icon: string; achieved_at: string }[]
-  recentNotes: { content: string; created_at: string }[]
+  recentNotes: { content: string; created_at: string; coach_name: string | null }[]
   cheersToday: number
   sentCheers: FeedCheer[]
   caregiverFocus: CaregiverFocusData | null
@@ -127,6 +128,7 @@ export interface CaregiverFeedData {
   sessions: FeedSession[]
   groups: Record<string, FeedSession[]>
   kudosCounts: Record<string, number>
+  kudosGivers: Record<string, string[]>
   myKudos: Set<string>
   clubStats: {
     sessions: number

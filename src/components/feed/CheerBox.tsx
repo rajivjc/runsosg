@@ -6,10 +6,10 @@ import { sendCheer } from '@/app/feed/cheer-actions'
 const MAX_CHEERS_PER_DAY = 3
 
 const PRESETS = [
-  'Go {name}! 🎉',
-  'You got this! 💪',
-  'We\'re cheering from home! 🏠',
-  'Have a great run! 🏃',
+  { text: 'Go {name}!', emoji: '🎉' },
+  { text: 'You got this!', emoji: '💪' },
+  { text: 'We\'re cheering from home!', emoji: '🏠' },
+  { text: 'Have a great run!', emoji: '🏃' },
 ]
 
 type Props = {
@@ -19,7 +19,6 @@ type Props = {
 }
 
 export default function CheerBox({ athleteId, athleteFirstName, cheersToday: initialCheersToday }: Props) {
-  const [showCustom, setShowCustom] = useState(false)
   const [customText, setCustomText] = useState('')
   const [cheersUsed, setCheersUsed] = useState(initialCheersToday)
   const [justSent, setJustSent] = useState(false)
@@ -37,80 +36,81 @@ export default function CheerBox({ athleteId, athleteFirstName, cheersToday: ini
       } else {
         setCheersUsed(prev => prev + 1)
         setJustSent(true)
-        setShowCustom(false)
         setCustomText('')
-        // Reset "just sent" after a moment so they can send another
-        setTimeout(() => setJustSent(false), 2000)
+        setTimeout(() => setJustSent(false), 2500)
       }
     })
   }
 
   if (remaining <= 0 || (justSent && remaining <= 1)) {
     return (
-      <div className="bg-white/50 rounded-lg px-3 py-2.5 text-center">
-        <p className="text-xs text-amber-700 font-medium">🎉 All cheers sent today! Come back tomorrow.</p>
+      <div className="bg-gradient-to-br from-amber-50/60 to-orange-50/30 rounded-xl px-4 py-5 text-center border border-amber-100/60">
+        <p className="text-2xl mb-1">🎉</p>
+        <p className="text-sm font-medium text-gray-700">All cheers sent today!</p>
+        <p className="text-xs text-gray-500 mt-0.5">Come back tomorrow to send more.</p>
       </div>
     )
   }
 
   if (justSent) {
     return (
-      <div className="bg-white/50 rounded-lg px-3 py-2.5 text-center">
-        <p className="text-xs text-amber-700 font-medium">🎉 Cheer sent! You have {remaining - 1} left today.</p>
+      <div className="bg-gradient-to-br from-amber-50/60 to-orange-50/30 rounded-xl px-4 py-5 text-center border border-amber-100/60">
+        <p className="text-2xl mb-1">🎉</p>
+        <p className="text-sm font-medium text-gray-700">Cheer sent!</p>
+        <p className="text-xs text-gray-500 mt-0.5">{remaining - 1} left today.</p>
       </div>
     )
   }
 
-  const presets = PRESETS.map(p => p.replace('{name}', athleteFirstName))
+  const presets = PRESETS.map(p => ({
+    text: p.text.replace('{name}', athleteFirstName),
+    emoji: p.emoji,
+    full: p.text.replace('{name}', athleteFirstName) + ' ' + p.emoji,
+  }))
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Send a cheer</p>
-        <p className="text-[10px] text-amber-400">{remaining} left today</p>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs text-gray-500">{remaining} left today</p>
       </div>
+
       {error && (
-        <p className="text-xs text-red-600 mb-2">{error}</p>
+        <p className="text-xs text-red-600 mb-2 px-1">{error}</p>
       )}
-      <div className="flex flex-wrap gap-1.5 mb-2">
+
+      {/* Preset buttons — 2-column grid for larger touch targets */}
+      <div className="grid grid-cols-2 gap-2 mb-3">
         {presets.map((msg, i) => (
           <button
             key={i}
-            onClick={() => handleSend(msg)}
+            onClick={() => handleSend(msg.full)}
             disabled={isPending}
-            className="bg-white/70 hover:bg-white active:scale-95 border border-amber-200 text-amber-700 text-xs font-medium px-2.5 py-1.5 rounded-full transition-all duration-150 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 bg-gradient-to-br from-amber-50 to-orange-50/60 hover:from-amber-100 hover:to-orange-100/60 active:scale-[0.97] border border-amber-200/80 text-gray-700 text-sm font-medium px-3 py-3 rounded-xl transition-all duration-150 disabled:opacity-50 min-h-[48px]"
           >
-            {msg}
+            <span className="text-base">{msg.emoji}</span>
+            <span>{msg.text}</span>
           </button>
         ))}
       </div>
-      {!showCustom ? (
+
+      {/* Custom message input — always visible */}
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={customText}
+          onChange={(e) => setCustomText(e.target.value.slice(0, 100))}
+          placeholder="Write your own message..."
+          maxLength={100}
+          className="flex-1 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300 focus:shadow-[0_0_0_3px_rgba(251,146,60,0.08)] bg-white placeholder:text-gray-400"
+        />
         <button
-          onClick={() => setShowCustom(true)}
-          className="text-[10px] text-amber-500 hover:text-amber-700 font-medium transition-colors"
+          onClick={() => handleSend(customText)}
+          disabled={isPending || !customText.trim()}
+          className="bg-amber-500 hover:bg-amber-600 active:scale-[0.97] text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition-all duration-150 disabled:opacity-40 flex-shrink-0 min-h-[44px]"
         >
-          Write your own...
+          {isPending ? '...' : 'Send'}
         </button>
-      ) : (
-        <div className="flex gap-1.5">
-          <input
-            type="text"
-            value={customText}
-            onChange={(e) => setCustomText(e.target.value.slice(0, 100))}
-            placeholder="Type your cheer..."
-            maxLength={100}
-            autoFocus
-            className="flex-1 border border-amber-200 rounded-lg px-3 py-2 text-xs transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300 focus:shadow-[0_0_0_3px_rgba(251,146,60,0.08)] bg-white/70"
-          />
-          <button
-            onClick={() => handleSend(customText)}
-            disabled={isPending || !customText.trim()}
-            className="bg-amber-500 hover:bg-amber-600 active:scale-[0.97] text-white text-xs font-semibold rounded-lg px-3 py-2 transition-all duration-150 disabled:opacity-50 flex-shrink-0"
-          >
-            {isPending ? '...' : 'Send'}
-          </button>
-        </div>
-      )}
+      </div>
     </div>
   )
 }

@@ -42,9 +42,9 @@ export async function toggleKudos(sessionId: string): Promise<{ given: boolean; 
     .select('id', { count: 'exact', head: true })
     .eq('session_id', sessionId)
 
-  // Sync coach badges (cheerleader badge for both add and remove)
-  await syncBadges(user.id)
-
+  // Fire-and-forget: sync badges and revalidate without blocking the response
+  syncBadges(user.id).catch(() => {})
   revalidatePath('/feed')
+
   return { given: !existing, count: count ?? 0 }
 }

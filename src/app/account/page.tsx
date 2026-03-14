@@ -55,6 +55,7 @@ export default async function AccountPage({
     .select('id, athlete_id, date')
     .eq('coach_user_id', user.id)
     .eq('status', 'completed')
+    .is('strava_deleted_at', null)
     : { data: [] }
 
   const totalSessions = (statsData ?? []).length
@@ -101,6 +102,7 @@ export default async function AccountPage({
           .select('id, date, distance_km, duration_seconds, feel, note, coach_user_id')
           .eq('athlete_id', athlete.id)
           .eq('status', 'completed')
+          .is('strava_deleted_at', null)
           .order('date', { ascending: false })
           .limit(50),
         adminClient
@@ -113,13 +115,15 @@ export default async function AccountPage({
           .select('id')
           .eq('athlete_id', athlete.id)
           .eq('status', 'completed')
+          .is('strava_deleted_at', null)
           .gte('date', lastMonthStart)
           .lt('date', monthStart),
         adminClient
           .from('sessions')
           .select('date')
           .eq('athlete_id', athlete.id)
-          .eq('status', 'completed'),
+          .eq('status', 'completed')
+          .is('strava_deleted_at', null),
         getMilestoneDefinitions(),
       ])
 

@@ -102,6 +102,8 @@ type AthleteTabsProps = {
   feelTrend?: FeelPoint[]
   distanceTimeline?: DistancePoint[]
   milestonePins?: MilestonePin[]
+  kudosCounts?: Record<string, number>
+  kudosGivers?: Record<string, string[]>
   addCoachNote: (athleteId: string, content: string) => Promise<{ error?: string }>
   isReadOnly?: boolean
   currentUserId?: string
@@ -125,6 +127,8 @@ export default function AthleteTabs({
   feelTrend,
   distanceTimeline,
   milestonePins,
+  kudosCounts,
+  kudosGivers,
   addCoachNote,
   isReadOnly = false,
   currentUserId,
@@ -195,6 +199,8 @@ export default function AthleteTabs({
           milestonePins={milestonePins}
           athleteId={athlete.id}
           athleteName={athlete.name}
+          kudosCounts={kudosCounts}
+          kudosGivers={kudosGivers}
           isReadOnly={isReadOnly}
           onSessionUpdated={() => router.refresh()}
           onLogRun={() => setLogRunOpen(true)}

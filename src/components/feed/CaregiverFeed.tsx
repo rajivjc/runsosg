@@ -32,6 +32,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
     sessions,
     groups,
     kudosCounts,
+    kudosGivers,
     myKudos,
     clubStats,
     milestonesBySession,
@@ -185,6 +186,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
           sessions={items}
           milestonesBySession={milestonesBySession}
           kudosCounts={kudosCounts}
+          kudosGivers={kudosGivers}
           myKudos={myKudos}
           isReadOnly={true}
           userId={userId}

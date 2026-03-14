@@ -21,6 +21,7 @@ export default function CoachFeed({ data, userId }: Props) {
     milestonesBySession,
     celebrationMilestones,
     kudosCounts,
+    kudosGivers,
     myKudos,
     clubStats,
     coachStats,
@@ -192,6 +193,7 @@ export default function CoachFeed({ data, userId }: Props) {
         groups={groups}
         milestonesBySession={milestonesBySession}
         kudosCounts={kudosCounts}
+        kudosGivers={kudosGivers}
         myKudos={myKudos}
         userId={userId}
       />
