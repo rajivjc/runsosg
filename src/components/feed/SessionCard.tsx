@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
 import KudosButton from '@/components/feed/KudosButton'
