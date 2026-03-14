@@ -83,6 +83,7 @@ export const getStoryData = cache(async (athleteId: string): Promise<StoryPageDa
       .select('id, date, distance_km, feel')
       .eq('athlete_id', athleteId)
       .eq('status', 'completed')
+      .is('strava_deleted_at', null)
       .order('date', { ascending: true }),
     adminClient
       .from('milestones')

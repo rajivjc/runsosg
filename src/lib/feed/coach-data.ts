@@ -53,6 +53,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
       .from('sessions')
       .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, athletes(name), users!sessions_coach_user_id_fkey(name)')
       .eq('status', 'completed')
+      .is('strava_deleted_at', null)
       .order('date', { ascending: false })
       .limit(30),
     adminClient
@@ -60,7 +61,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
       .select('id, athlete_id, session_id, label, achieved_at, athletes(name), milestone_definitions(icon)')
       .order('achieved_at', { ascending: false })
       .limit(20),
-    adminClient.from('sessions').select('athlete_id, distance_km').eq('coach_user_id', userId).gte('date', monthStart).eq('status', 'completed'),
+    adminClient.from('sessions').select('athlete_id, distance_km').eq('coach_user_id', userId).gte('date', monthStart).eq('status', 'completed').is('strava_deleted_at', null),
     adminClient.from('coach_badges').select('badge_key, earned_at').eq('user_id', userId).order('earned_at', { ascending: false }),
     adminClient
       .from('cheers')
@@ -69,7 +70,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
       .order('created_at', { ascending: false })
       .limit(10),
     adminClient.from('strava_connections').select('user_id').eq('user_id', userId).maybeSingle(),
-    adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('coach_user_id', userId).eq('status', 'completed'),
+    adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('coach_user_id', userId).eq('status', 'completed').is('strava_deleted_at', null),
     // Issue 1 & 2: Shared helper for club stats (includes get_total_km RPC)
     loadClubStats(),
     // Issue 8: DB-level weekly stats instead of JS filtering

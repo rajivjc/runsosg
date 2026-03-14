@@ -78,6 +78,7 @@ export async function getCoachDigests(
     .from('sessions')
     .select('coach_user_id, athletes!inner(name)')
     .eq('status', 'completed')
+    .is('strava_deleted_at', null)
     .gte('date', weekStart)
     .lte('date', weekEnd)
     .not('coach_user_id', 'is', null)
@@ -147,6 +148,7 @@ export async function getCaregiverDigests(
     .from('sessions')
     .select('athlete_id, distance_km')
     .eq('status', 'completed')
+    .is('strava_deleted_at', null)
     .gte('date', weekStart)
     .lte('date', weekEnd)
     .in('athlete_id', athleteIds)
@@ -177,6 +179,7 @@ export async function getCaregiverDigests(
     .from('sessions')
     .select('athlete_id')
     .eq('status', 'completed')
+    .is('strava_deleted_at', null)
     .in('athlete_id', athleteIds)
 
   const sessionCountMap = new Map<string, number>()

@@ -60,6 +60,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
       .from('sessions')
       .select('id, date, created_at, distance_km, duration_seconds, feel, note, sync_source, coach_user_id, strava_activity_id, strava_title, avg_heart_rate, max_heart_rate')
       .eq('athlete_id', id)
+      .is('strava_deleted_at', null)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(50),

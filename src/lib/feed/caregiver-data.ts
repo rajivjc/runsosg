@@ -43,6 +43,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       .from('sessions')
       .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, athletes(name), users!sessions_coach_user_id_fkey(name)')
       .eq('status', 'completed')
+      .is('strava_deleted_at', null)
       .order('date', { ascending: false })
       .limit(30),
     adminClient
@@ -88,7 +89,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       : Promise.resolve({ data: [] as { session_id: string }[] }),
     // Caregiver's athlete — recent sessions this month
     caregiverAthlete
-      ? adminClient.from('sessions').select('id, date, distance_km, feel').eq('athlete_id', caregiverAthlete.id).eq('status', 'completed').gte('date', monthStart).order('date', { ascending: false })
+      ? adminClient.from('sessions').select('id, date, distance_km, feel').eq('athlete_id', caregiverAthlete.id).eq('status', 'completed').is('strava_deleted_at', null).gte('date', monthStart).order('date', { ascending: false })
       : Promise.resolve({ data: [] }),
     // Caregiver's athlete — milestones
     caregiverAthlete
@@ -104,7 +105,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     adminClient.from('cheers').select('id, athlete_id, message, created_at, viewed_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
     // All athlete session dates (for streak calculation)
     caregiverAthlete
-      ? adminClient.from('sessions').select('date').eq('athlete_id', caregiverAthlete.id).eq('status', 'completed')
+      ? adminClient.from('sessions').select('date').eq('athlete_id', caregiverAthlete.id).eq('status', 'completed').is('strava_deleted_at', null)
       : Promise.resolve({ data: [] }),
   ])
 

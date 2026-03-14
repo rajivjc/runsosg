@@ -39,26 +39,42 @@ export interface CaregiverFocusData {
  * Returns streak info + actionable focus items (max 3).
  */
 export async function getCoachFocusData(coachUserId: string): Promise<CoachFocusData> {
-  // Issue 4: Only fetch recent coach sessions (90 days is enough for streak calc)
   const ninetyDaysAgo = new Date()
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
   const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().split('T')[0]
 
-  const { data: coachSessions } = await adminClient
-    .from('sessions')
-    .select('date, athlete_id')
-    .eq('coach_user_id', coachUserId)
-    .eq('status', 'completed')
-    .gte('date', ninetyDaysAgoStr)
+  // Fetch all session dates for accurate streak calculation (lightweight: date column only)
+  // and recent sessions for focus items (90 days, with athlete_id)
+  const [{ data: allStreakDates }, { data: coachSessions }] = await Promise.all([
+    adminClient
+      .from('sessions')
+      .select('date')
+      .eq('coach_user_id', coachUserId)
+      .eq('status', 'completed')
+      .is('strava_deleted_at', null),
+    adminClient
+      .from('sessions')
+      .select('date, athlete_id')
+      .eq('coach_user_id', coachUserId)
+      .eq('status', 'completed')
+      .is('strava_deleted_at', null)
+      .gte('date', ninetyDaysAgoStr),
+  ])
 
   if (!coachSessions || coachSessions.length === 0) {
-    return { streak: { current: 0, longest: 0, activeThisWeek: false, weeklyActivity: [] }, items: [] }
+    // Still calculate streak from all dates even if no recent sessions
+    const streak = allStreakDates && allStreakDates.length > 0
+      ? calculateStreakDetails(allStreakDates.map(s => s.date).filter((d): d is string => d != null && d !== ''))
+      : { current: 0, longest: 0, activeThisWeek: false, weeklyActivity: [] }
+    return { streak, items: [] }
   }
 
-  // 2. Calculate streak (filter out sessions with null/empty dates)
-  const streak = calculateStreakDetails(coachSessions.map(s => s.date).filter((d): d is string => d != null && d !== ''))
+  // Calculate streak from all historical dates for accuracy
+  const streak = calculateStreakDetails(
+    (allStreakDates ?? []).map(s => s.date).filter((d): d is string => d != null && d !== '')
+  )
 
-  // 3. Unique athlete IDs this coach has worked with (recent)
+  // Unique athlete IDs this coach has worked with (recent)
   const athleteIds = [...new Set(coachSessions.map(s => s.athlete_id))]
 
   // 4. Parallel: athlete names, milestone defs (cached), earned milestones,
@@ -72,12 +88,12 @@ export async function getCoachFocusData(coachUserId: string): Promise<CoachFocus
   ] = await Promise.all([
     adminClient.from('athletes').select('id, name').in('id', athleteIds).eq('active', true),
     // Lightweight: only athlete_id column for session counting
-    adminClient.from('sessions').select('athlete_id').in('athlete_id', athleteIds).eq('status', 'completed'),
+    adminClient.from('sessions').select('athlete_id').in('athlete_id', athleteIds).eq('status', 'completed').is('strava_deleted_at', null),
     // Issue 5: Use cached milestone definitions
     getMilestoneDefinitions(),
     adminClient.from('milestones').select('athlete_id, milestone_definition_id').in('athlete_id', athleteIds),
-    // Issue 4: Limit insight data to last 90 days (feel trends, PBs, best weeks)
-    adminClient.from('sessions').select('athlete_id, date, distance_km, feel').in('athlete_id', athleteIds).eq('status', 'completed').gte('date', ninetyDaysAgoStr).order('date', { ascending: false }),
+    // Limit insight data to last 90 days (feel trends, PBs, best weeks)
+    adminClient.from('sessions').select('athlete_id, date, distance_km, feel').in('athlete_id', athleteIds).eq('status', 'completed').is('strava_deleted_at', null).gte('date', ninetyDaysAgoStr).order('date', { ascending: false }),
   ])
 
   const nameMap = Object.fromEntries((athleteRows ?? []).map(a => [a.id, a.name]))
@@ -241,7 +257,7 @@ export async function getCaregiverFocusData(athleteId: string): Promise<Caregive
     { data: earnedMilestones },
     { data: lastSession },
   ] = await Promise.all([
-    adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('athlete_id', athleteId).eq('status', 'completed'),
+    adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('athlete_id', athleteId).eq('status', 'completed').is('strava_deleted_at', null),
     // Issue 5: Use cached milestone definitions
     getMilestoneDefinitions(),
     adminClient.from('milestones').select('milestone_definition_id').eq('athlete_id', athleteId),
@@ -250,6 +266,7 @@ export async function getCaregiverFocusData(athleteId: string): Promise<Caregive
       .select('date, feel')
       .eq('athlete_id', athleteId)
       .eq('status', 'completed')
+      .is('strava_deleted_at', null)
       .order('date', { ascending: false })
       .limit(1),
   ])

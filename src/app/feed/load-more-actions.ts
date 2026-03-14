@@ -41,6 +41,7 @@ export async function loadMoreSessions(
     .from('sessions')
     .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, athletes(name), users!sessions_coach_user_id_fkey(name)')
     .eq('status', 'completed')
+    .is('strava_deleted_at', null)
     .lt('date', cursor)
     .order('date', { ascending: false })
     .limit(limit + 1)

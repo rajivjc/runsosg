@@ -33,6 +33,7 @@ export async function checkAndAwardMilestones(
       .select('id, date, distance_km')
       .eq('athlete_id', athleteId)
       .eq('status', 'completed')
+      .is('strava_deleted_at', null)
       .order('date', { ascending: true })
 
     const allSessions = sessions ?? []

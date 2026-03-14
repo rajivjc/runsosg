@@ -262,16 +262,16 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
                 <span key={i} className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                   {m.icon ?? '🏆'} {m.label}
                   {m.id && (
-                    <a
-                      href={`/milestone/${m.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-1 text-amber-400 hover:text-amber-600"
-                      onClick={e => e.stopPropagation()}
+                    <span
+                      role="link"
+                      tabIndex={0}
+                      className="ml-1 text-amber-400 hover:text-amber-600 cursor-pointer"
+                      onClick={e => { e.stopPropagation(); e.preventDefault(); window.open(`/milestone/${m.id}`, '_blank', 'noopener,noreferrer') }}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); window.open(`/milestone/${m.id}`, '_blank', 'noopener,noreferrer') } }}
                       title="Share this milestone"
                     >
                       ↗
-                    </a>
+                    </span>
                   )}
                 </span>
               ))}

@@ -32,6 +32,7 @@ const getCachedBestWeek = unstable_cache(
       .from('sessions')
       .select('date, distance_km')
       .eq('status', 'completed')
+      .is('strava_deleted_at', null)
     return findClubBestWeek((data ?? []) as { date: string; distance_km: number | null }[])
   },
   ['club-best-week'],
@@ -49,22 +50,23 @@ export async function loadClubStats(): Promise<ClubStats> {
     { count: totalMilestoneCount },
     { count: coachCount },
     { count: caregiverCount },
-    { data: totalKmResult },
+    { data: allKmData },
     { data: thisMonthData },
     { data: lastMonthData },
     bestWeek,
   ] = await Promise.all([
-    adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+    adminClient.from('sessions').select('*', { count: 'exact', head: true }).eq('status', 'completed').is('strava_deleted_at', null),
     adminClient.from('athletes').select('*', { count: 'exact', head: true }).eq('active', true),
     adminClient.from('milestones').select('*', { count: 'exact', head: true }),
     adminClient.from('users').select('*', { count: 'exact', head: true }).in('role', ['coach', 'admin']).eq('active', true),
     adminClient.from('users').select('*', { count: 'exact', head: true }).eq('role', 'caregiver').eq('active', true),
-    adminClient.rpc('get_total_km'),
-    adminClient.from('sessions').select('distance_km').eq('status', 'completed').gte('date', thisMonthStart),
-    adminClient.from('sessions').select('distance_km').eq('status', 'completed').gte('date', lastMonthStart).lt('date', thisMonthStart),
+    adminClient.from('sessions').select('distance_km').eq('status', 'completed').is('strava_deleted_at', null),
+    adminClient.from('sessions').select('distance_km').eq('status', 'completed').is('strava_deleted_at', null).gte('date', thisMonthStart),
+    adminClient.from('sessions').select('distance_km').eq('status', 'completed').is('strava_deleted_at', null).gte('date', lastMonthStart).lt('date', thisMonthStart),
     getCachedBestWeek(),
   ])
 
+  const totalKm = (allKmData ?? []).reduce((sum: number, s: any) => sum + (s.distance_km ?? 0), 0)
   const thisMonthSessions = (thisMonthData ?? []).length
   const thisMonthKm = (thisMonthData ?? []).reduce((sum: number, s: any) => sum + (s.distance_km ?? 0), 0)
   const lastMonthSessions = (lastMonthData ?? []).length
@@ -72,7 +74,7 @@ export async function loadClubStats(): Promise<ClubStats> {
 
   return {
     sessions: totalSessionCount ?? 0,
-    km: Number(totalKmResult) || 0,
+    km: Math.round(totalKm * 10) / 10,
     athletes: totalAthleteCount ?? 0,
     milestones: totalMilestoneCount ?? 0,
     coaches: coachCount ?? 0,
