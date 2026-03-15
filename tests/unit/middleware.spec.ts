@@ -102,7 +102,7 @@ describe('Middleware route classification', () => {
 
   const PUBLIC_PATHS = [
     '/login', '/auth/callback', '/auth/accept-invite', '/auth/pwa-launch',
-    '/api/strava/webhook', '/api/health', '/api/manifest.json', '/',
+    '/api/strava/webhook', '/api/health', '/api/pwa-token', '/',
   ]
 
   function isProtected(pathname: string): boolean {
@@ -177,9 +177,9 @@ describe('Middleware route classification', () => {
     expect(isProtected('/auth/pwa-launch')).toBe(false)
   })
 
-  it('classifies /api/manifest.json as public', () => {
-    expect(isPublic('/api/manifest.json')).toBe(true)
-    expect(isProtected('/api/manifest.json')).toBe(false)
+  it('classifies /api/pwa-token as public', () => {
+    expect(isPublic('/api/pwa-token')).toBe(true)
+    expect(isProtected('/api/pwa-token')).toBe(false)
   })
 
   it('classifies /api/strava/connect as protected', () => {
@@ -201,10 +201,10 @@ describe('Middleware skip behavior', () => {
   it('public paths should NOT require Supabase client creation', () => {
     // This validates the optimization: public paths return early
     // before createServerClient is called
-    const publicPaths = ['/login', '/auth/callback', '/auth/accept-invite', '/auth/pwa-launch', '/api/strava/webhook', '/api/health', '/api/manifest.json', '/']
+    const publicPaths = ['/login', '/auth/callback', '/auth/accept-invite', '/auth/pwa-launch', '/api/strava/webhook', '/api/health', '/api/pwa-token', '/']
 
     for (const path of publicPaths) {
-      const isPublic = ['/login', '/auth/callback', '/auth/accept-invite', '/auth/pwa-launch', '/api/strava/webhook', '/api/health', '/api/manifest.json', '/']
+      const isPublic = ['/login', '/auth/callback', '/auth/accept-invite', '/auth/pwa-launch', '/api/strava/webhook', '/api/health', '/api/pwa-token', '/']
         .some(p => path === p || path.startsWith(`${p}/`))
       expect(isPublic).toBe(true)
     }

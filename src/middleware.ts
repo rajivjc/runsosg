@@ -22,7 +22,7 @@ const PUBLIC_PATHS = [
   '/strava/connected',
   '/api/strava/webhook',
   '/api/health',
-  '/api/manifest.json',
+  '/api/pwa-token',
   '/my',
   '/',
 ]

@@ -142,9 +142,10 @@ async function consumePendingNavigation(
  */
 async function cachePwaToken() {
   try {
-    const res = await fetch('/api/manifest.json')
-    const manifest = await res.json()
-    const token: string | undefined = manifest._pwa_token
+    const res = await fetch('/api/pwa-token')
+    if (!res.ok) return
+    const data = await res.json()
+    const token: string | undefined = data.token
     if (token) {
       const tokenCache = await caches.open('sosg-pwa-token')
       await tokenCache.put('/_token', new Response(token))
