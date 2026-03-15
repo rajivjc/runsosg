@@ -29,7 +29,7 @@ function getInitials(name: string): string {
   )
 }
 
-function isInactive(lastSessionDate: string | null): boolean {
+export function isInactive(lastSessionDate: string | null): boolean {
   if (!lastSessionDate) return true
   const last = new Date(lastSessionDate)
   const twoWeeksAgo = new Date()

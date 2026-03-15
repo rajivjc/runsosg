@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import AthleteCard, { type AthleteCardProps } from './AthleteCard'
+import AthleteCard, { type AthleteCardProps, isInactive } from './AthleteCard'
 
 type AthleteSearchProps = {
   athletes: AthleteCardProps[]
@@ -38,6 +38,13 @@ export default function AthleteSearch({ athletes }: AthleteSearchProps) {
           </button>
         )}
       </div>
+
+      {filtered.some((a) => isInactive(a.lastSessionDate)) && (
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-300 flex-shrink-0" />
+          <span className="text-xs text-gray-500">Highlighted athletes have not run in the past 2 weeks</span>
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-8">
