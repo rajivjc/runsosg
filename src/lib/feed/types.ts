@@ -96,6 +96,7 @@ export interface CoachFeedData {
     lastMonthSessions: number
     lastMonthKm: number
     bestWeek: ClubBestWeek | null
+    totalDurationSeconds: number
   }
   coachStats: {
     monthSessions: number
@@ -142,6 +143,7 @@ export interface CaregiverFeedData {
     lastMonthSessions: number
     lastMonthKm: number
     bestWeek: ClubBestWeek | null
+    totalDurationSeconds: number
   }
   milestonesBySession: Record<string, MilestoneBadge[]>
   celebrationMilestones: CelebrationMilestone[]

@@ -18,12 +18,39 @@ interface Props {
     lastMonthSessions: number
     lastMonthKm: number
     bestWeek: ClubBestWeek | null
+    totalDurationSeconds: number
   }
   weeklyStats?: { count: number; km: number; athletes: number }
   weeklyRecap?: WeeklyRecap
 }
 
 const STORAGE_KEY = 'sosg_club_stats_expanded'
+
+const SINGAPORE_PERIMETER_KM = 140
+const EARTH_CIRCUMFERENCE_KM = 40075
+const SINGAPORE_LAPS_THRESHOLD = 4
+
+function getDistanceEquivalent(km: number) {
+  if (km < SINGAPORE_PERIMETER_KM * SINGAPORE_LAPS_THRESHOLD) {
+    const laps = km / SINGAPORE_PERIMETER_KM
+    const progressInCurrentLap = (km % SINGAPORE_PERIMETER_KM) / SINGAPORE_PERIMETER_KM
+    if (laps < 1) {
+      return {
+        label: `${Math.round(progressInCurrentLap * 100)}% of a lap around Singapore`,
+        progress: progressInCurrentLap,
+      }
+    }
+    return {
+      label: `${laps.toFixed(1)} laps around Singapore`,
+      progress: progressInCurrentLap,
+    }
+  }
+  const progress = km / EARTH_CIRCUMFERENCE_KM
+  return {
+    label: `${(progress * 100).toFixed(1)}% of the way around Earth`,
+    progress: Math.min(progress, 1),
+  }
+}
 
 function TrendArrow({ current, previous, label }: { current: number; previous: number; label: string }) {
   const diff = current - previous
@@ -118,6 +145,33 @@ export default function ClubStats({ stats, weeklyStats, weeklyRecap }: Props) {
               <p className="text-[10px] text-gray-400 font-medium mt-0.5">milestones</p>
             </div>
           </div>
+
+          {/* Distance equivalent */}
+          {(() => {
+            const equiv = getDistanceEquivalent(stats.km)
+            return (
+              <div className="mt-3 pt-3 border-t border-gray-200/60">
+                <p className="text-xs font-semibold text-gray-700">
+                  {stats.km.toFixed(1)} km — {equiv.label}
+                </p>
+                <div className="mt-1.5 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-teal-500 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.max(equiv.progress * 100, 2)}%` }}
+                  />
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Total training hours */}
+          {stats.totalDurationSeconds > 0 && (
+            <div className="mt-2">
+              <p className="text-xs font-semibold text-gray-700">
+                {(stats.totalDurationSeconds / 3600).toFixed(1)} hours of running together
+              </p>
+            </div>
+          )}
 
           {/* Monthly comparison */}
           {(stats.thisMonthSessions > 0 || stats.lastMonthSessions > 0) && (
