@@ -1,4 +1,4 @@
-import { formatDate, formatDateTime, formatDuration, formatDistance } from '@/lib/utils/dates'
+import { formatDate, formatDateTime, formatDuration, formatDistance, formatPace } from '@/lib/utils/dates'
 
 describe('formatDate', () => {
   it('formats a date string in en-GB short month format (SGT)', () => {
@@ -67,5 +67,48 @@ describe('formatDistance', () => {
     expect(formatDistance(5000)).toBe('5.00 km')
     expect(formatDistance(1500)).toBe('1.50 km')
     expect(formatDistance(42195)).toBe('42.20 km')
+  })
+})
+
+describe('formatPace', () => {
+  it('calculates pace from distance and duration', () => {
+    // 2km in 1200s = 600s/km = 10:00/km
+    expect(formatPace(2, 1200)).toBe('10:00/km')
+  })
+
+  it('formats seconds with leading zero', () => {
+    // 3km in 900s = 300s/km = 5:00/km
+    expect(formatPace(3, 900)).toBe('5:00/km')
+    // 1km in 365s = 6:05/km
+    expect(formatPace(1, 365)).toBe('6:05/km')
+  })
+
+  it('handles typical running paces', () => {
+    // 2.1km in 1200s (20min) = ~571s/km = 9:31/km
+    expect(formatPace(2.1, 1200)).toBe('9:31/km')
+  })
+
+  it('returns null for zero distance', () => {
+    expect(formatPace(0, 1200)).toBeNull()
+  })
+
+  it('returns null for zero duration', () => {
+    expect(formatPace(2, 0)).toBeNull()
+  })
+
+  it('returns null for null values', () => {
+    expect(formatPace(null, 1200)).toBeNull()
+    expect(formatPace(2, null)).toBeNull()
+    expect(formatPace(null, null)).toBeNull()
+  })
+
+  it('returns null for undefined values', () => {
+    expect(formatPace(undefined, 1200)).toBeNull()
+    expect(formatPace(2, undefined)).toBeNull()
+  })
+
+  it('returns null for negative values', () => {
+    expect(formatPace(-1, 1200)).toBeNull()
+    expect(formatPace(2, -100)).toBeNull()
   })
 })
