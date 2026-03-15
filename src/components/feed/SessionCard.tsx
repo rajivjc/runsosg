@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { formatDate, formatDistance, formatDuration } from '@/lib/utils/dates'
+import { formatDate, formatDistance, formatDuration, formatPace } from '@/lib/utils/dates'
 import KudosButton from '@/components/feed/KudosButton'
 import type { FeedSession, MilestoneBadge } from '@/lib/feed/types'
 
@@ -31,6 +31,7 @@ export default function SessionCard({ session: s, badges, kudosCount, kudosGiver
   const hasMilestone = badges.length > 0
   const feelColor = s.feel ? (FEEL_BORDER[s.feel] ?? 'border-l-gray-200') : 'border-l-gray-200'
   const cardBg = hasMilestone ? 'bg-amber-50/40' : 'bg-white'
+  const pace = formatPace(s.distance_km, s.duration_seconds)
 
   const card = (
     <div className={`${cardBg} rounded-xl border border-gray-100 shadow-sm px-3.5 py-3 border-l-[5px] ${feelColor} hover:shadow-md active:scale-[0.98] transition-all duration-200`}>
@@ -47,6 +48,9 @@ export default function SessionCard({ session: s, badges, kudosCount, kudosGiver
         <div className="flex items-center gap-2 flex-shrink-0">
           {s.distance_km != null && (
             <span className="text-lg font-bold text-gray-900 leading-none">{formatDistance(s.distance_km * 1000)}</span>
+          )}
+          {pace && (
+            <span className="text-xs font-medium text-gray-500 leading-none">{pace}</span>
           )}
           {s.feel != null && (
             <span className="text-lg flex-shrink-0">{FEEL_EMOJI[s.feel]}</span>

@@ -153,4 +153,16 @@ export interface CaregiverFeedData {
   sharingDisabledByCaregiver: boolean
   // Caregiver onboarding
   onboarding: OnboardingState | null
+  // Working on status (coach-written, caregiver-visible)
+  workingOn: {
+    text: string | null
+    recentProgress: string | null
+    updatedAt: string | null
+    coachName: string | null
+  }
+  // Auto-generated monthly summary
+  monthlySummary: {
+    thisMonth: { runs: number; km: number; durationSeconds: number }
+    lastMonth: { runs: number; km: number }
+  }
 }

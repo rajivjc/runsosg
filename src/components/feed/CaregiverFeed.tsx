@@ -8,6 +8,8 @@ import ClubStats from '@/components/feed/ClubStats'
 import WeeklyRecapCard from '@/components/feed/WeeklyRecapCard'
 import SessionGroup from '@/components/feed/SessionGroup'
 import BetaBanner from '@/components/feed/BetaBanner'
+import CaregiverWorkingOnCard from '@/components/feed/CaregiverWorkingOnCard'
+import CaregiverMonthlySummary from '@/components/feed/CaregiverMonthlySummary'
 import type { CaregiverFeedData } from '@/lib/feed/types'
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -42,6 +44,8 @@ export default function CaregiverFeed({ data, userId }: Props) {
     athleteStreak,
     allowPublicSharing,
     onboarding,
+    workingOn,
+    monthlySummary,
   } = data
 
   const hour = new Date().getHours()
@@ -134,6 +138,26 @@ export default function CaregiverFeed({ data, userId }: Props) {
           </p>
         )}
       </div>
+
+      {/* Card 1.5 — Working On status */}
+      {caregiverAthlete && workingOn.text && (
+        <CaregiverWorkingOnCard
+          athleteFirstName={athleteFirstName}
+          workingOn={workingOn.text}
+          recentProgress={workingOn.recentProgress}
+          updatedAt={workingOn.updatedAt}
+          coachName={workingOn.coachName}
+        />
+      )}
+
+      {/* Card 1.75 — Auto-generated monthly summary */}
+      {caregiverAthlete && (
+        <CaregiverMonthlySummary
+          athleteFirstName={athleteFirstName}
+          thisMonth={monthlySummary.thisMonth}
+          lastMonth={monthlySummary.lastMonth}
+        />
+      )}
 
       {/* Card 2 — Milestones & Progress */}
       {caregiverAthlete && (

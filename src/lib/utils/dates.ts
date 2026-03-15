@@ -64,6 +64,18 @@ export function toDateOnly(value: string | null | undefined): string {
  * Validate that a string is a valid YYYY-MM-DD date.
  * Returns the validated date string or null if invalid.
  */
+/**
+ * Format pace as m:ss/km from distance (km) and duration (seconds).
+ * Returns null if either value is missing or zero.
+ */
+export function formatPace(distanceKm: number | null | undefined, durationSeconds: number | null | undefined): string | null {
+  if (!distanceKm || !durationSeconds || distanceKm <= 0 || durationSeconds <= 0) return null
+  const paceSeconds = durationSeconds / distanceKm
+  const mins = Math.floor(paceSeconds / 60)
+  const secs = Math.round(paceSeconds % 60)
+  return `${mins}:${secs.toString().padStart(2, '0')}/km`
+}
+
 export function parseValidDate(value: string | null | undefined): string | null {
   if (!value || typeof value !== 'string') return null
   const trimmed = value.trim()
