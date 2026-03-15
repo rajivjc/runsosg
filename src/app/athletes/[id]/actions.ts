@@ -772,6 +772,40 @@ export async function addStoryUpdate(
   return {}
 }
 
+export async function updateWorkingOn(
+  athleteId: string,
+  workingOn: string | null,
+  recentProgress: string | null
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Your session has expired. Please sign in again.' }
+
+  const { data: callerUser } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (callerUser?.role !== 'admin' && callerUser?.role !== 'coach') {
+    return { error: 'Only coaches and admins can update this.' }
+  }
+
+  const { error } = await adminClient
+    .from('athletes')
+    .update({
+      working_on: workingOn?.trim() || null,
+      recent_progress: recentProgress?.trim() || null,
+      working_on_updated_at: new Date().toISOString(),
+      working_on_updated_by: user.id,
+    })
+    .eq('id', athleteId)
+
+  if (error) return { error: 'Could not save. Please try again.' }
+  revalidatePath(`/athletes/${athleteId}`)
+  revalidatePath('/feed')
+  return {}
+}
+
 export async function deleteStoryUpdate(
   updateId: string,
   athleteId: string

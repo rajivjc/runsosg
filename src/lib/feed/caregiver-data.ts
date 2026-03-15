@@ -51,7 +51,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       .select('id, athlete_id, session_id, label, achieved_at, athletes(name), milestone_definitions(icon)')
       .order('achieved_at', { ascending: false })
       .limit(20),
-    adminClient.from('athletes').select('id, name, allow_public_sharing, sharing_disabled_by_caregiver').eq('caregiver_user_id', userId).maybeSingle(),
+    adminClient.from('athletes').select('id, name, allow_public_sharing, sharing_disabled_by_caregiver, working_on, recent_progress, working_on_updated_at, working_on_updated_by').eq('caregiver_user_id', userId).maybeSingle(),
     // Issue 1 & 2: Shared helper for club stats (includes get_total_km RPC)
     loadClubStats(),
     // Issue 8: DB-level weekly stats instead of JS filtering
@@ -214,6 +214,57 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     ? calculateStreakDetails((athleteSessionDates as { date: string }[]).map(s => s.date).filter(Boolean))
     : null
 
+  // ─── Auto-generated monthly summary ──────────────────────────
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0) // last day of prev month
+  const lastMonthStart = new Date(lastMonthEnd.getFullYear(), lastMonthEnd.getMonth(), 1).toISOString().split('T')[0]
+  const lastMonthEndStr = lastMonthEnd.toISOString().split('T')[0]
+
+  let lastMonthSessions: { distance_km: number | null; duration_seconds: number | null }[] = []
+  if (caregiverAthlete) {
+    const { data: lmSessions } = await adminClient
+      .from('sessions')
+      .select('distance_km, duration_seconds')
+      .eq('athlete_id', caregiverAthlete.id)
+      .eq('status', 'completed')
+      .is('strava_deleted_at', null)
+      .gte('date', lastMonthStart)
+      .lte('date', lastMonthEndStr)
+    lastMonthSessions = (lmSessions ?? []) as typeof lastMonthSessions
+  }
+
+  const thisMonthSessions = (cgSessions ?? []) as { id: string; date: string; distance_km: number | null; feel: number | null }[]
+
+  // Compute summary stats
+  const thisMonthKm = thisMonthSessions.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
+  const thisMonthCount = thisMonthSessions.length
+  const lastMonthKm = lastMonthSessions.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
+  const lastMonthCount = lastMonthSessions.length
+
+  // We need duration_seconds for pace calculation — fetch this month's sessions with duration
+  let thisMonthDurationTotal = 0
+  if (caregiverAthlete && thisMonthCount > 0) {
+    const { data: durSessions } = await adminClient
+      .from('sessions')
+      .select('duration_seconds')
+      .eq('athlete_id', caregiverAthlete.id)
+      .eq('status', 'completed')
+      .is('strava_deleted_at', null)
+      .gte('date', monthStart)
+    thisMonthDurationTotal = (durSessions ?? []).reduce((sum: number, s: any) => sum + (s.duration_seconds ?? 0), 0)
+  }
+
+  // ─── Working on coach name lookup ────────────────────────────
+  const workingOnUpdatedBy = (caregiverAthlete as any)?.working_on_updated_by as string | null
+  let workingOnCoachName: string | null = null
+  if (workingOnUpdatedBy) {
+    const { data: coachRow } = await adminClient
+      .from('users')
+      .select('name')
+      .eq('id', workingOnUpdatedBy)
+      .single()
+    workingOnCoachName = coachRow?.name ?? null
+  }
+
   // ─── Caregiver onboarding ────────────────────────────────────
   const caregiverOnboarding = computeCaregiverOnboardingState({
     hasLinkedAthlete: !!caregiverAthlete,
@@ -248,5 +299,15 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     allowPublicSharing: (caregiverAthlete as Record<string, unknown>)?.allow_public_sharing === true,
     sharingDisabledByCaregiver: (caregiverAthlete as Record<string, unknown>)?.sharing_disabled_by_caregiver === true,
     onboarding: caregiverOnboarding.isNewUser ? caregiverOnboarding : null,
+    workingOn: {
+      text: (caregiverAthlete as any)?.working_on as string | null ?? null,
+      recentProgress: (caregiverAthlete as any)?.recent_progress as string | null ?? null,
+      updatedAt: (caregiverAthlete as any)?.working_on_updated_at as string | null ?? null,
+      coachName: workingOnCoachName,
+    },
+    monthlySummary: {
+      thisMonth: { runs: thisMonthCount, km: thisMonthKm, durationSeconds: thisMonthDurationTotal },
+      lastMonth: { runs: lastMonthCount, km: lastMonthKm },
+    },
   }
 }

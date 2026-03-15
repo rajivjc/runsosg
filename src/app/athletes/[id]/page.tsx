@@ -12,6 +12,7 @@ import { calculateGoalProgress } from '@/lib/goals'
 import type { GoalType } from '@/lib/goals'
 import { computeWeeklyVolume, computeFeelTrend, computeDistanceTimeline } from '@/lib/analytics/session-trends'
 import type { MilestonePin } from '@/lib/analytics/session-trends'
+import WorkingOnCard from '@/components/athlete/WorkingOnCard'
 import CheerViewTracker from '@/components/feed/CheerViewTracker'
 import { getAthletePhotosPaginated, getAthletePhotos, getAthletePhotoCount, withSignedUrls } from '@/lib/media'
 import { addCoachNote, deletePhoto } from './actions'
@@ -52,7 +53,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
   ] = await Promise.all([
     adminClient
       .from('athletes')
-      .select('id, name, photo_url, active, date_of_birth, running_goal, goal_type, goal_target, communication_notes, medical_notes, emergency_contact, athlete_pin')
+      .select('id, name, photo_url, active, date_of_birth, running_goal, goal_type, goal_target, communication_notes, medical_notes, emergency_contact, athlete_pin, working_on, recent_progress, working_on_updated_at, working_on_updated_by')
       .eq('id', id)
       .single(),
 
@@ -114,7 +115,8 @@ export default async function AthleteHubPage({ params }: PageProps) {
   }))
 
   // Build a map of coach user_id -> display name from the users we already fetched
-  const coachIds = [...new Set((sessions ?? []).map((s: any) => s.coach_user_id).filter(Boolean))]
+  const workingOnUpdatedBy = (athlete as any)?.working_on_updated_by as string | null
+  const coachIds = [...new Set([...(sessions ?? []).map((s: any) => s.coach_user_id), workingOnUpdatedBy].filter(Boolean))]
   const sessionIds = (sessions ?? []).map((s: any) => s.id)
   const [{ data: coachUsers }, { photos: paginatedPhotos, nextCursor }, photoCount, rawSessionPhotos, { data: kudosRows }] = await Promise.all([
     coachIds.length > 0
@@ -319,6 +321,21 @@ export default async function AthleteHubPage({ params }: PageProps) {
           )}
         </div>
       )}
+
+      {/* Working On status */}
+      <WorkingOnCard
+        athleteId={id}
+        athleteName={athlete.name}
+        workingOn={(athlete as any).working_on ?? null}
+        recentProgress={(athlete as any).recent_progress ?? null}
+        updatedAt={(athlete as any).working_on_updated_at ?? null}
+        updatedByName={
+          (athlete as any).working_on_updated_by
+            ? coachMap[(athlete as any).working_on_updated_by] ?? null
+            : null
+        }
+        isReadOnly={isReadOnly}
+      />
 
       {/* Cheers from home */}
       {(cheers ?? []).length > 0 && (
