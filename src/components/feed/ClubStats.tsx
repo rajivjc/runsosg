@@ -165,13 +165,17 @@ export default function ClubStats({ stats, weeklyStats, weeklyRecap }: Props) {
           })()}
 
           {/* Total training hours */}
-          {stats.totalDurationSeconds > 0 && (
-            <div className="mt-2">
-              <p className="text-xs font-semibold text-gray-700">
-                {(stats.totalDurationSeconds / 3600).toFixed(1)} hours of running together
-              </p>
-            </div>
-          )}
+          {stats.totalDurationSeconds > 0 && (() => {
+            const totalHours = stats.totalDurationSeconds / 3600
+            const movies = Math.floor(totalHours / 2)
+            return (
+              <div className="mt-2">
+                <p className="text-xs font-semibold text-gray-700">
+                  {totalHours.toFixed(1)} hours of running together{movies >= 1 && ` — that\u2019s ${movies} movie${movies !== 1 ? 's' : ''} 🎬`}
+                </p>
+              </div>
+            )
+          })()}
 
           {/* Monthly comparison */}
           {(stats.thisMonthSessions > 0 || stats.lastMonthSessions > 0) && (
