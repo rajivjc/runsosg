@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import ShareButton from '@/components/milestone/ShareButton'
+import CloseButton from '@/components/milestone/CloseButton'
 
 export const metadata: Metadata = {
   title: 'Why I Built This — SOSG Running Club',
@@ -18,6 +19,7 @@ export default function AboutPage() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6 py-12">
+      <CloseButton />
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl px-8 py-10 sm:px-12 sm:py-14">
         {/* Section label */}
         <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-4">
@@ -44,7 +46,7 @@ export default function AboutPage() {
           </p>
 
           {/* Standalone dramatic beat */}
-          <p className="text-xl font-semibold text-teal-700 !my-8">
+          <p>
             Recognition.
           </p>
 
