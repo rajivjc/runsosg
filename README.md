@@ -2,6 +2,8 @@
 
 A web application for managing a running club for athletes with special needs. Coaches log runs (manually or via Strava sync), track athlete progress through milestones, record coaching cues, write notes, and celebrate achievements. Caregivers get read-only access to their linked athlete with the ability to send cheers and view milestone celebrations. Athletes themselves can view their own running journey through a PIN-protected personal page.
 
+> **[Why I Built This](https://sosg.run/about)** — *It started with a moment I almost missed. An athlete finished a 5km run and looked around to see if anyone noticed. I could have built a special needs tracker. I built a running app instead.*
+
 ## Tech Stack
 
 - **Next.js 14** (App Router)
