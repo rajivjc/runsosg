@@ -157,7 +157,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
         {isRevoked && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-center">
@@ -352,6 +352,12 @@ export default function LoginPage() {
           </form>
         )}
       </div>
+      <a
+        href="/about"
+        className="mt-4 text-xs text-gray-400 hover:text-teal-600 transition-colors"
+      >
+        Why I Built This
+      </a>
     </main>
   )
 }
