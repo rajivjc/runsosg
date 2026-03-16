@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { adminClient } from '@/lib/supabase/admin'
 import ShareButton from '@/components/milestone/ShareButton'
 import CloseButton from '@/components/milestone/CloseButton'
 
@@ -14,7 +17,22 @@ export const metadata: Metadata = {
   },
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) redirect('/login')
+
+  const { data: userRow } = await adminClient
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!userRow || (userRow.role !== 'coach' && userRow.role !== 'admin')) {
+    redirect('/feed')
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
 
   return (
@@ -39,10 +57,10 @@ export default function AboutPage() {
 
           <p>
             An athlete finished a 5km run and looked around to see if anyone
-            noticed. They had. But the spreadsheet where I logged it wouldn&apos;t
-            remember by next week. The group chat had already moved on. And I
-            realized something was getting lost between the running and the
-            record of it.
+            was watching. We were. But the place where I logged it
+            wouldn&apos;t remember by next week. The group chat had already
+            moved on. And I realized something was getting lost between the
+            running and the record of it.
           </p>
 
           {/* Standalone dramatic beat */}
@@ -60,11 +78,20 @@ export default function AboutPage() {
           </p>
 
           <p>
+            And every week, coaches showed up too. Writing session notes on the
+            bus home. Remembering which athlete needs a warm-up routine and
+            which one needs to be left alone for the first five minutes.
+            Carrying all of it in their heads because there was nowhere else to
+            put it.
+          </p>
+
+          <p>
             Then a caregiver asked me a question that changed everything. Not
             how&apos;s her therapy going. Not how&apos;s her behaviour.
             Just &ldquo;how&apos;s she doing at running?&rdquo; The way any
             parent asks about their kid&apos;s sport. And I didn&apos;t have a
-            good answer.
+            good answer. Not because I didn&apos;t know. Because nothing I had
+            could show her.
           </p>
 
           <p className="!mb-8">
@@ -95,10 +122,22 @@ export default function AboutPage() {
           <p>
             I learned that &ldquo;you&apos;re on fire&rdquo; can frighten
             someone who takes language literally. That a number on a screen
-            means nothing without a progress bar beside it. Every one of these
-            lessons came from listening, from getting it wrong, from the
-            athletes and caregivers who trusted me enough to say &ldquo;that
-            doesn&apos;t work for me.&rdquo;
+            means nothing without a progress bar beside it. That when an
+            athlete&apos;s mood dips from session to session, a coach should
+            know before the next run, not after. These weren&apos;t things I
+            found in a handbook. They came from coaching, from watching what
+            worked and what didn&apos;t, and from thinking hard about what
+            I&apos;d want if this were my running app.
+          </p>
+
+          <p>
+            I built a way for caregivers to send cheers before a session.
+            Because a coach shouldn&apos;t be the only one who gets to
+            say &ldquo;go for it&rdquo; on race day. I built a mood check-in
+            with faces instead of words, because not everyone can name how they
+            feel, but everyone can point to a face that matches. I let athletes
+            pick their own colour in the app, because small choices matter when
+            so many choices are made for you.
           </p>
 
           <p>
@@ -113,19 +152,28 @@ export default function AboutPage() {
             them. That&apos;s not a feature. That&apos;s dignity.
           </p>
 
+          <p>
+            Coaches can finally see it all in one place. The session notes, the
+            personal bests, the athlete who hasn&apos;t smiled at a run in three
+            weeks. The things that used to live in your head now live somewhere
+            that remembers. And the app tracks your milestones too, because
+            fifty coached sessions is an achievement and someone should notice.
+          </p>
+
           <p className="!mt-8">
             Because here&apos;s what coaching this community has taught me. The
-            problem was never our athletes. The problem was that the tools we
-            had weren&apos;t built with them in mind. Spreadsheets don&apos;t
-            celebrate anyone. Group chats lose everything. Our runners deserved
-            the same experience any athlete gets when they open an app after a
-            good session and see proof that it mattered.
+            problem was never our athletes. And it was never our coaches. The
+            problem was that the tools we had weren&apos;t built with any of us
+            in mind. They were built for tracking, not for celebrating. They
+            could record a distance but they couldn&apos;t tell an
+            athlete&apos;s story. Our runners deserved better. And our coaches
+            deserved better than carrying it all alone.
           </p>
 
           <p>
-            I could have built a special needs tracker. I built a running app
-            instead. Because running 5km is hard. And it matters more when
-            someone is there to see it.
+            I could have built something defined by disability. I built
+            something defined by the sport. Because running 5km is hard. And it
+            matters more when someone is there to see it.
           </p>
         </div>
 

@@ -352,12 +352,6 @@ export default function LoginPage() {
           </form>
         )}
       </div>
-      <a
-        href="/about"
-        className="mt-4 text-xs text-gray-400 hover:text-teal-600 transition-colors"
-      >
-        Why I Built This
-      </a>
     </main>
   )
 }
