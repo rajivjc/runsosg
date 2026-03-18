@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { QrCode, X } from 'lucide-react'
+import { useState, useCallback, useEffect } from 'react'
+import { QrCode, X, Copy, Check } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 
 interface Props {
@@ -11,20 +11,65 @@ interface Props {
 
 export default function AthleteQrCode({ athleteId, athleteName }: Props) {
   const [open, setOpen] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [showHint, setShowHint] = useState(false)
   const url = typeof window !== 'undefined'
     ? `${window.location.origin}/my/${athleteId}`
     : `/my/${athleteId}`
 
+  useEffect(() => {
+    const key = `qr_hint_seen_${athleteId}`
+    if (typeof window !== 'undefined' && !localStorage.getItem(key)) {
+      setShowHint(true)
+    }
+  }, [athleteId])
+
+  const dismissHint = useCallback(() => {
+    const key = `qr_hint_seen_${athleteId}`
+    localStorage.setItem(key, '1')
+    setShowHint(false)
+  }, [athleteId])
+
+  const handleOpen = useCallback(() => {
+    if (showHint) dismissHint()
+    setOpen(true)
+  }, [showHint, dismissHint])
+
+  const handleCopyLink = useCallback(async () => {
+    await navigator.clipboard.writeText(url)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }, [url])
+
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
-        aria-label="Show QR code for athlete page"
-        title="Athlete QR code"
-      >
-        <QrCode size={18} />
-      </button>
+      <div className="relative flex flex-col items-center">
+        <button
+          onClick={handleOpen}
+          className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+          aria-label="Print QR code for athlete's personal page"
+          title="Print QR code for athlete's personal page"
+        >
+          <QrCode size={18} />
+        </button>
+        <span className="text-[9px] text-gray-400 font-medium leading-none mt-0.5">QR</span>
+
+        {showHint && (
+          <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-10 w-56">
+            <div className="bg-teal-700 text-white text-[11px] rounded-lg px-3 py-2 shadow-lg relative">
+              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-teal-700 rotate-45 rounded-sm" />
+              <p className="relative">New: Print a QR code for this athlete&apos;s personal page</p>
+              <button
+                onClick={(e) => { e.stopPropagation(); dismissHint() }}
+                className="absolute top-1 right-1 p-0.5 text-teal-200 hover:text-white"
+                aria-label="Dismiss hint"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {open && (
         <div
@@ -59,17 +104,37 @@ export default function AthleteQrCode({ athleteId, athleteName }: Props) {
               </div>
             </div>
 
-            <p className="text-sm text-gray-600 mb-4">
-              Scan this code to open {athleteName}&apos;s running page.
-              They will need their PIN to sign in.
+            <p className="text-sm text-gray-600 mb-4 text-left">
+              Print this QR code and stick it somewhere easy to find — like a fridge, a bedroom wall, or inside a notebook.
+              {' '}{athleteName} (or their caregiver) can scan it with any phone camera to open their personal running page.
+              {' '}They&apos;ll need their PIN to sign in.
             </p>
 
-            <button
-              onClick={() => window.print()}
-              className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition-colors"
-            >
-              Print QR code
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={() => window.print()}
+                className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                Print QR code
+              </button>
+
+              <button
+                onClick={handleCopyLink}
+                className="w-full h-12 flex items-center justify-center gap-2 bg-white border border-gray-200 hover:border-teal-300 hover:bg-teal-50 text-gray-700 text-sm font-medium rounded-xl transition-colors"
+              >
+                {linkCopied ? (
+                  <>
+                    <Check size={16} className="text-emerald-600" />
+                    <span className="text-emerald-600">Link copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={16} />
+                    <span>Copy link</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
