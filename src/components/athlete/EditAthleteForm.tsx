@@ -278,8 +278,16 @@ function AthletePinSection({ athleteId, athleteName }: { athleteId: string; athl
   return (
     <div className="mt-6 bg-teal-50/50 border border-teal-100 rounded-lg px-4 py-3 space-y-3">
       <p className="text-xs font-semibold text-teal-700">🏃 Athlete access page</p>
-      <p className="text-[10px] text-teal-600">
-        Set a 4-digit PIN so {athleteName} can view their own running journey at a personal page.
+      <p className="text-[10px] text-teal-600 font-medium">
+        Give {athleteName} their own page in 3 steps:
+      </p>
+      <ol className="text-[10px] text-teal-600 list-decimal list-inside space-y-0.5">
+        <li>Set a simple 4-digit PIN below</li>
+        <li>Print or share the QR code (tap the QR icon on the athlete&apos;s profile)</li>
+        <li>The athlete or caregiver scans the QR code and enters the PIN to view their running journey</li>
+      </ol>
+      <p className="text-[10px] text-teal-600 italic">
+        Tip: Choose a PIN the athlete can remember — like a birthday (e.g. 0512) or a favourite number.
       </p>
 
       <div className="flex items-end gap-3">
@@ -307,7 +315,7 @@ function AthletePinSection({ athleteId, athleteName }: { athleteId: string; athl
       </div>
 
       {result?.success && (
-        <p className="text-[10px] text-emerald-600 font-medium">PIN saved. {athleteName} can use it to access their page.</p>
+        <p className="text-[10px] text-emerald-600 font-medium">PIN saved! Now tap the QR icon at the top of {athleteName}&apos;s profile to print or share the QR code.</p>
       )}
       {result?.error && (
         <p className="text-[10px] text-red-600 font-medium">{result.error}</p>
