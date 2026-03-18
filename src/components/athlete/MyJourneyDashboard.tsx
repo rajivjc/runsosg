@@ -56,6 +56,7 @@ interface Props {
   milestones: MilestoneData[]
   goal: GoalData | null
   personalBest: PersonalBestData | null
+  bestRuns: RecentRun[]
   recentRuns: RecentRun[]
   cheers: CheerData[]
   storyUrl: string | null
@@ -135,6 +136,7 @@ export default function MyJourneyDashboard({
   milestones,
   goal,
   personalBest,
+  bestRuns,
   recentRuns,
   cheers,
   storyUrl,
@@ -153,6 +155,7 @@ export default function MyJourneyDashboard({
   const [goalFeedback, setGoalFeedback] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState(themeColor)
   const [colorFeedback, setColorFeedback] = useState<string | null>(null)
+  const [lastSentMessage, setLastSentMessage] = useState<{ message: string; time: string } | null>(null)
   const theme = THEME_COLORS[selectedColor] ?? THEME_COLORS.teal
 
   const handleSendMessage = useCallback(async (message: string) => {
@@ -164,6 +167,9 @@ export default function MyJourneyDashboard({
     if (result.success) {
       setMessageSent(message)
       setTimeout(() => setMessageSent(null), 4000)
+      const now = new Date()
+      const timeStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+      setLastSentMessage({ message, time: timeStr })
     } else {
       setMessageError(result.error ?? 'Could not send. Try again.')
     }
@@ -325,6 +331,59 @@ export default function MyJourneyDashboard({
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── My Best Runs ──────────────────────────────────── */}
+        {bestRuns.length > 0 && (
+          <section aria-label="My best runs" className="mb-8">
+            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <span>⭐</span> My best runs
+            </h2>
+            <div className="space-y-2">
+              {bestRuns.map(run => {
+                const feel = run.feel ? FEEL_LABELS[run.feel] : null
+                const km = run.distance_km ?? 0
+                return (
+                  <div
+                    key={run.id}
+                    className="bg-amber-50/50 border border-amber-100 border-l-4 border-l-amber-400 rounded-xl px-4 py-3 flex items-center gap-4 shadow-sm"
+                  >
+                    {feel && (
+                      <div className="flex flex-col items-center flex-shrink-0 w-10">
+                        <span className="text-2xl">{feel.emoji}</span>
+                        <span className="text-[10px] text-gray-500 mt-0.5">{feel.label}</span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">
+                        {formatRunDate(run.date)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {km > 0 ? (
+                          <>
+                            <div className="flex-1 h-2 bg-amber-100 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-amber-400 rounded-full"
+                                style={{ width: `${Math.min((km / 5) * 100, 100)}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-500 flex-shrink-0 w-12 text-right">
+                              {km.toFixed(1)} km
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400">
+                            No distance recorded
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="flex-shrink-0 text-xl" aria-label="Favourited">❤️</span>
+                  </div>
+                )
+              })}
             </div>
           </section>
         )}
@@ -561,6 +620,11 @@ export default function MyJourneyDashboard({
               </p>
             )}
           </div>
+          {lastSentMessage && !messageSent && (
+            <p className="text-sm text-gray-500 text-center mt-2">
+              You sent &ldquo;{lastSentMessage.message}&rdquo; on {lastSentMessage.time} ✓
+            </p>
+          )}
         </section>
 
         {/* ── Share Button ────────────────────────────────── */}

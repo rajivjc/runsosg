@@ -95,8 +95,9 @@ export default async function MyJourneyPage({ params }: PageProps) {
       .limit(1),
     adminClient
       .from('athlete_favorites')
-      .select('session_id')
-      .eq('athlete_id', athleteId),
+      .select('session_id, sessions(id, date, distance_km, feel)')
+      .eq('athlete_id', athleteId)
+      .order('created_at', { ascending: false }),
   ])
 
   const allSessions = allSessionDates ?? []
@@ -140,6 +141,13 @@ export default async function MyJourneyPage({ params }: PageProps) {
   const storyUrl = athlete.allow_public_sharing ? `/story/${athlete.id}` : null
   const currentMood = todayMood?.[0]?.mood ?? null
   const favoriteSessionIds = new Set((favorites ?? []).map(f => f.session_id))
+  const bestRuns = (favorites ?? [])
+    .filter(f => f.sessions)
+    .slice(0, 3)
+    .map(f => {
+      const s = f.sessions as unknown as { id: string; date: string; distance_km: number | null; feel: number | null }
+      return { id: s.id, date: s.date, distance_km: s.distance_km, feel: s.feel }
+    })
 
   return (
     <MyJourneyDashboard
@@ -171,6 +179,7 @@ export default async function MyJourneyPage({ params }: PageProps) {
         message: c.message,
         created_at: c.created_at,
       }))}
+      bestRuns={bestRuns}
       storyUrl={storyUrl}
     />
   )
