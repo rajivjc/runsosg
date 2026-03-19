@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-SOSG Running Club Hub — a Next.js 14 web application for managing a running club for athletes with special needs. Coaches log runs (manually or via Strava sync), track athlete progress through milestones, record coaching cues, write notes, and celebrate achievements. Caregivers get read-only access to their linked athlete with cheering and milestone sharing.
+SOSG Running Club Hub — a Next.js 14 web application for managing a running club for athletes with special needs. Coaches log runs (manually or via Strava sync), track athlete progress through milestones, record coaching cues, write notes, and celebrate achievements. Caregivers get read-only access to their linked athlete with the ability to send cheers and view milestone celebrations. Athletes themselves can access their own PIN-protected personal page to view their running journey, check in with their mood, pick goals, choose an avatar, favourite their best runs, and message their coach.
 
 **Tech stack:** Next.js 14 (App Router) · React 18 · TypeScript · Supabase (auth + Postgres + RLS) · Tailwind CSS v4 · Recharts · Resend · Lucide React · Sharp
 
@@ -130,8 +130,14 @@ Role-specific feeds with separate data loaders:
 - **Route:** `/my/[athleteId]` — PIN-authenticated, no Supabase auth required
 - **PIN auth:** 4-digit bcrypt-hashed PIN, rate limited (5 attempts / 15-minute lockout)
 - **Cookie:** `athlete_session_[id]` with 24h expiry, HttpOnly, Secure, SameSite=Strict
-- **Messages:** Athletes send preset one-tap messages to coaches (stored in `athlete_messages` table)
-- **Data shown:** Stats, milestones, goal progress, recent runs, cheers — never notes, cues, or medical info
+- **Messages:** Athletes send preset one-tap messages to coaches (stored in `athlete_messages` table). Last sent message shows persistent confirmation
+- **Mood check-in:** Emoji-based (5 options: Sad, Tired, Okay, Happy, Excited). One tap. Mood trends visible to coaches
+- **Goal picker:** Athletes choose what they want to work on (Run further / Run more often / Feel stronger). One tap, visible to coaches
+- **Avatar:** Athletes choose from 8 preset emoji avatars. Choice appears across coach and caregiver views with a "chosen by athlete" indicator (✌️ badge). See avatar guidelines below
+- **Theme color:** Athletes pick a color that tints their personal page (teal, blue, purple, green, amber, coral)
+- **Favourites:** Athletes can heart their best runs, surfaced in a "My best runs" section
+- **QR code:** Coaches can print a QR code for each athlete's page. Designed to be stuck on a fridge or notebook for easy scanning
+- **Data shown:** Stats, milestones, goal progress, recent runs, cheers, messages from home — never notes, cues, or medical info
 
 ## Inclusive Design Principles
 
@@ -172,6 +178,22 @@ These principles are **mandatory** for all athlete-facing, caregiver-facing, and
 - **Celebrate effort and participation:** "You showed up today!" is valid. Outcomes are not the only thing worth celebrating
 - **No infantilizing design:** Sophisticated and elegant, simultaneously accessible. The test: "Would I show this to a neurotypical adult runner the same way?"
 - **No inspiration porn:** Celebrate the achievement, not the disability. Running 2km is an achievement because running 2km is hard, not because the runner has a disability
+
+### Avatar Selection
+
+Athletes can pick their own avatar from a preset list of 8 options. The avatar appears across all views (athlete, coach, caregiver) with a subtle indicator on non-athlete views showing it was the athlete's choice.
+
+**Allowed avatars (V1):** 🏃 (Runner), 🏃‍♂️ (Man running), 🏃‍♀️ (Woman running), 👟 (Running shoe), 🏅 (Medal), 🏆 (Trophy), ⭐ (Star), 💪 (Strong)
+
+**Selection criteria — do not modify without reviewing these principles:**
+- **8 options max** — cognitive accessibility research recommends 3-10 choices for users with IDD
+- **No fire emoji (🔥)** — frightens people who take language literally (same reason "you're on fire!" was removed from copy)
+- **No animals** — this is an adult running app ("Would Strava let you be a cartoon cat?")
+- **No rainbow (🌈)** — introduces unintended LGBTQ+ pride context into a simple identity choice
+- **No disability-specific emoji (wheelchair, cane)** — the app is "defined by sport, not disability"
+- **Default yellow emoji, no skin tones in V1** — adding 5 skin tone variants per person emoji would exceed the cognitive accessibility limit. Planned for V2 as an optional second step after initial selection
+- **Three human options + five sport/achievement options** — covers athletes who want human representation and those who prefer non-human identity
+- **Server-side validation required** — the allowed list must be enforced in the server action, not just the UI
 
 ### Privacy
 
