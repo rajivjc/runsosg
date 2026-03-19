@@ -21,6 +21,45 @@ interface PageProps {
   params: { id: string }
 }
 
+const CONNECTION_MILESTONES = [
+  { min: 1, max: 4, label: 'Getting started', target: 5 },
+  { min: 5, max: 14, label: 'Building trust', target: 15 },
+  { min: 15, max: 24, label: 'Trusted coach', target: 25 },
+  { min: 25, max: Infinity, label: 'Strong bond', target: 25 },
+]
+
+function ConnectionCard({ count, coachName }: { count: number; coachName: string | null }) {
+  const milestone = CONNECTION_MILESTONES.find(m => count >= m.min && count <= m.max)!
+  const isTopLevel = count >= 25
+  const target = milestone.target
+  const pct = isTopLevel ? 100 : Math.min((count / target) * 100, 100)
+  const nextMilestone = CONNECTION_MILESTONES.find(m => count < m.min)
+  const remaining = nextMilestone ? nextMilestone.min - count : 0
+
+  return (
+    <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+      <p className="text-sm font-semibold text-amber-900 mb-1">
+        🤝 Your connection
+      </p>
+      <p className="text-sm text-amber-800 mb-2">
+        {count} {count === 1 ? 'session' : 'sessions'} together
+      </p>
+      <div className="w-full h-2 bg-amber-100 rounded-full overflow-hidden mb-1">
+        <div
+          className="h-full bg-amber-400 rounded-full transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <p className="text-xs text-amber-600">
+        {isTopLevel
+          ? milestone.label
+          : `${remaining} more for "${nextMilestone!.label}"`
+        }
+      </p>
+    </div>
+  )
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { data: athlete } = await adminClient
     .from('athletes')
@@ -227,6 +266,12 @@ export default async function AthleteHubPage({ params }: PageProps) {
     notFound()
   }
 
+  // Connection strength: how many completed sessions this coach has with this athlete
+  const mySessionsWithAthlete = (sessions ?? []).filter(
+    (s: any) => s.coach_user_id === user?.id && s.status !== 'deleted'
+  ).length
+  const myCoachName = user ? (coachMap[user.id] ?? null) : null
+
   // Goal progress (no new query — uses already-fetched sessions)
   const goalProgress = athlete.goal_type && athlete.goal_target
     ? calculateGoalProgress(
@@ -320,6 +365,11 @@ export default async function AthleteHubPage({ params }: PageProps) {
             <p className="text-[10px] text-teal-600 mt-1">Almost there!</p>
           )}
         </div>
+      )}
+
+      {/* Connection strength */}
+      {mySessionsWithAthlete > 0 && !isReadOnly && (
+        <ConnectionCard count={mySessionsWithAthlete} coachName={myCoachName} />
       )}
 
       {/* Working On status */}

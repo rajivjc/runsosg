@@ -50,6 +50,11 @@ interface PersonalBestData {
   date: string
 }
 
+interface PrimaryCoachData {
+  name: string
+  sessionCount: number
+}
+
 interface Props {
   athlete: AthleteData
   stats: StatData
@@ -64,6 +69,7 @@ interface Props {
   themeColor: string
   currentMood: number | null
   favoriteSessionIds: string[]
+  primaryCoach: PrimaryCoachData | null
 }
 
 // ─── Feel emoji mapping ─────────────────────────────────────────
@@ -144,6 +150,7 @@ export default function MyJourneyDashboard({
   themeColor,
   currentMood,
   favoriteSessionIds,
+  primaryCoach,
 }: Props) {
   const [messageSent, setMessageSent] = useState<string | null>(null)
   const [messageError, setMessageError] = useState<string | null>(null)
@@ -287,6 +294,39 @@ export default function MyJourneyDashboard({
             )}
           </div>
         </section>
+
+        {/* ── Your Coach ──────────────────────────────────── */}
+        {primaryCoach && (
+          <section aria-label="Your coach" className="mb-8">
+            <div className={`${theme.bgLight} border ${theme.borderLight} rounded-xl px-5 py-4 text-center shadow-sm`}>
+              <p className="text-base font-medium text-gray-900 mb-0.5">
+                Your coach
+              </p>
+              <p className="text-lg font-bold text-gray-900 mb-1">
+                {primaryCoach.name}
+              </p>
+              <p className="text-sm text-gray-500 mb-3">
+                {primaryCoach.sessionCount} {primaryCoach.sessionCount === 1 ? 'session' : 'sessions'} together
+              </p>
+              {primaryCoach.sessionCount <= 20 ? (
+                <div className="flex justify-center gap-1.5 flex-wrap">
+                  {Array.from({ length: Math.min(primaryCoach.sessionCount, 20) }).map((_, i) => (
+                    <span key={i} className={`inline-block w-3 h-3 rounded-full ${theme.bg}`} />
+                  ))}
+                  {(() => {
+                    // Show empty dots to next milestone
+                    const milestoneTargets = [5, 15, 25]
+                    const nextTarget = milestoneTargets.find(t => t > primaryCoach.sessionCount) ?? primaryCoach.sessionCount
+                    const empty = nextTarget - primaryCoach.sessionCount
+                    return Array.from({ length: Math.min(empty, 20 - primaryCoach.sessionCount) }).map((_, i) => (
+                      <span key={`e${i}`} className="inline-block w-3 h-3 rounded-full bg-gray-200" />
+                    ))
+                  })()}
+                </div>
+              ) : null}
+            </div>
+          </section>
+        )}
 
         {/* ── Stats Strip ──────────────────────────────────── */}
         <section aria-label="Your running stats" className="grid grid-cols-3 gap-3 mb-8">

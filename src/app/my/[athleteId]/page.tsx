@@ -82,7 +82,7 @@ export default async function MyJourneyPage({ params }: PageProps) {
       .is('strava_deleted_at', null),
     adminClient
       .from('sessions')
-      .select('date, distance_km')
+      .select('date, distance_km, coach_user_id')
       .eq('athlete_id', athleteId)
       .eq('status', 'completed')
       .is('strava_deleted_at', null),
@@ -101,6 +101,28 @@ export default async function MyJourneyPage({ params }: PageProps) {
   ])
 
   const allSessions = allSessionDates ?? []
+
+  // Find primary coach (most sessions with this athlete)
+  const coachSessionCounts: Record<string, number> = {}
+  for (const s of allSessions) {
+    const coachId = (s as any).coach_user_id
+    if (coachId) {
+      coachSessionCounts[coachId] = (coachSessionCounts[coachId] ?? 0) + 1
+    }
+  }
+  const primaryCoachId = Object.entries(coachSessionCounts)
+    .sort(([, a], [, b]) => b - a)[0]?.[0] ?? null
+  const primaryCoachCount = primaryCoachId ? coachSessionCounts[primaryCoachId] : 0
+
+  let primaryCoachName: string | null = null
+  if (primaryCoachId && primaryCoachCount >= 3) {
+    const { data: coachUser } = await adminClient
+      .from('users')
+      .select('name, email')
+      .eq('id', primaryCoachId)
+      .single()
+    primaryCoachName = coachUser?.name ?? coachUser?.email?.split('@')[0] ?? null
+  }
 
   // Compute total distance
   const totalKm = allSessions.reduce(
@@ -181,6 +203,7 @@ export default async function MyJourneyPage({ params }: PageProps) {
       }))}
       bestRuns={bestRuns}
       storyUrl={storyUrl}
+      primaryCoach={primaryCoachName && primaryCoachCount >= 3 ? { name: primaryCoachName, sessionCount: primaryCoachCount } : null}
     />
   )
 }
