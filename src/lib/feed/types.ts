@@ -118,7 +118,7 @@ export interface CoachFeedData {
 
 export interface CaregiverFeedData {
   user: { role: string; name: string | null }
-  athlete: { id: string; name: string } | null
+  athlete: { id: string; name: string; avatar: string | null } | null
   recentSessions: { id: string; date: string; distance_km: number | null; feel: number | null }[]
   milestones: { id: string; label: string; icon: string; achieved_at: string }[]
   recentNotes: { content: string; created_at: string; coach_name: string | null }[]

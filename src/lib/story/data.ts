@@ -54,6 +54,7 @@ export interface StoryPageData {
     running_goal: string | null
     created_at: string | null
     allow_public_sharing: boolean
+    avatar: string | null
   }
   sessions: StorySession[]
   milestones: StoryMilestone[]
@@ -75,7 +76,7 @@ export const getStoryData = cache(async (athleteId: string): Promise<StoryPageDa
   ] = await Promise.all([
     adminClient
       .from('athletes')
-      .select('id, name, joined_at, running_goal, created_at, allow_public_sharing')
+      .select('id, name, joined_at, running_goal, created_at, allow_public_sharing, avatar')
       .eq('id', athleteId)
       .single(),
     adminClient
@@ -143,7 +144,7 @@ export const getStoryData = cache(async (athleteId: string): Promise<StoryPageDa
   }))
 
   return {
-    athlete,
+    athlete: { ...athlete, avatar: athlete.avatar ?? null },
     sessions: (sessions ?? []) as StorySession[],
     milestones: flatMilestones,
     heroPhotoUrl,

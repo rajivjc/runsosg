@@ -41,6 +41,7 @@ export default function AthleteCard({
   id,
   name,
   photoUrl,
+  avatar,
   totalSessions,
   lastSessionDate,
   recentFeels,
@@ -66,6 +67,18 @@ export default function AthleteCard({
           unoptimized
           className="rounded-full w-12 h-12 object-cover flex-shrink-0"
         />
+      ) : avatar ? (
+        <div className="relative flex-shrink-0">
+          <div className="rounded-full w-12 h-12 bg-teal-50 flex items-center justify-center text-2xl">
+            {avatar}
+          </div>
+          <span
+            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-50 border-[1.5px] border-white flex items-center justify-center text-[8px] leading-none"
+            title="Avatar chosen by athlete"
+          >
+            ✌️
+          </span>
+        </div>
       ) : (
         <div className={`rounded-full w-12 h-12 flex items-center justify-center font-semibold text-base flex-shrink-0 ${
           needsAttention ? 'bg-amber-100 text-amber-700' : 'bg-teal-50 text-teal-600'

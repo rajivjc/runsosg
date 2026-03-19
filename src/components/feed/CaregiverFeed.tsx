@@ -88,6 +88,22 @@ export default function CaregiverFeed({ data, userId }: Props) {
             </span>
           )}
         </div>
+        {caregiverAthlete?.avatar && (
+          <div className="flex items-center gap-2 mt-2">
+            <div className="relative flex-shrink-0">
+              <div className="rounded-full w-10 h-10 bg-white/60 flex items-center justify-center text-xl">
+                {caregiverAthlete.avatar}
+              </div>
+              <span
+                className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-50 border-[1.5px] border-white flex items-center justify-center text-[8px] leading-none"
+                title="Avatar chosen by athlete"
+              >
+                ✌️
+              </span>
+            </div>
+            <p className="text-xs text-amber-600">{athleteFirstName} chose this avatar</p>
+          </div>
+        )}
         {caregiverAthlete ? (
           <>
             {caregiverRecentSessions.length === 0 ? (

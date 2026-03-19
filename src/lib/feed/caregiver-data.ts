@@ -51,7 +51,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       .select('id, athlete_id, session_id, label, achieved_at, athletes(name), milestone_definitions(icon)')
       .order('achieved_at', { ascending: false })
       .limit(20),
-    adminClient.from('athletes').select('id, name, allow_public_sharing, sharing_disabled_by_caregiver, working_on, recent_progress, working_on_updated_at, working_on_updated_by').eq('caregiver_user_id', userId).maybeSingle(),
+    adminClient.from('athletes').select('id, name, allow_public_sharing, sharing_disabled_by_caregiver, working_on, recent_progress, working_on_updated_at, working_on_updated_by, avatar').eq('caregiver_user_id', userId).maybeSingle(),
     // Issue 1 & 2: Shared helper for club stats (includes get_total_km RPC)
     loadClubStats(),
     // Issue 8: DB-level weekly stats instead of JS filtering
@@ -274,7 +274,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
 
   return {
     user: { role: userRow?.role ?? 'caregiver', name: userRow?.name ?? null },
-    athlete: caregiverAthlete ? { id: caregiverAthlete.id, name: caregiverAthlete.name } : null,
+    athlete: caregiverAthlete ? { id: caregiverAthlete.id, name: caregiverAthlete.name, avatar: (caregiverAthlete as any)?.avatar as string | null ?? null } : null,
     recentSessions: (cgSessions ?? []) as { id: string; date: string; distance_km: number | null; feel: number | null }[],
     milestones: formattedCgMilestones,
     recentNotes: (cgNotes ?? []).map((n: any) => ({

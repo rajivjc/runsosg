@@ -293,3 +293,27 @@ export async function setAthleteTheme(
   if (error) return { error: 'Could not save color. Try again.' }
   return { success: true }
 }
+
+// ─── Athlete Avatar ────────────────────────────────────────────
+
+const ALLOWED_AVATARS = ['🏃', '🏃‍♂️', '🏃‍♀️', '👟', '🏅', '🏆', '⭐', '💪'] as const
+
+export async function setAthleteAvatar(
+  athleteId: string,
+  avatar: string
+): Promise<{ error?: string; success?: boolean }> {
+  if (!await verifyAthleteCookie(athleteId)) {
+    return { error: 'Please sign in again.' }
+  }
+  if (!ALLOWED_AVATARS.includes(avatar as typeof ALLOWED_AVATARS[number])) {
+    return { error: 'Invalid avatar' }
+  }
+
+  const { error } = await adminClient
+    .from('athletes')
+    .update({ avatar })
+    .eq('id', athleteId)
+
+  if (error) return { error: 'Could not save avatar. Try again.' }
+  return { success: true }
+}

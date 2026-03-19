@@ -270,6 +270,7 @@ export interface Athlete {
   working_on_updated_at: string | null
   working_on_updated_by: string | null
   theme_color?: string
+  avatar?: string | null
   athlete_goal_choice?: 'run_further' | 'run_more' | 'feel_stronger' | null
   updated_by: string | null
   updated_at: string | null

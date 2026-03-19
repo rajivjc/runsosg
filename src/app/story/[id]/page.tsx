@@ -149,6 +149,7 @@ export default async function StoryPage({ params }: PageProps) {
         <StoryHero
           athleteName={athlete.name}
           heroPhotoUrl={heroPhotoUrl}
+          avatar={athlete.avatar ?? null}
           totalSessions={narrative.totalSessions}
           totalKm={narrative.totalKm}
           milestoneCount={milestones.length}
