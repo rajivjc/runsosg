@@ -90,8 +90,8 @@ beforeEach(() => {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('BADGE_DEFINITIONS', () => {
-  it('has 11 badge definitions', () => {
-    expect(BADGE_DEFINITIONS).toHaveLength(11)
+  it('has 14 badge definitions', () => {
+    expect(BADGE_DEFINITIONS).toHaveLength(14)
   })
 
   it('each badge has required fields', () => {
@@ -130,12 +130,16 @@ describe('badge check functions', () => {
     noteCount: number
     kudosGivenCount: number
     feelRatedCount: number
+    sessionDates: string[]
+    sessionsPerAthlete: number[]
   }> = {}) => ({
     sessionCount: 0,
     athleteCount: 0,
     noteCount: 0,
     kudosGivenCount: 0,
     feelRatedCount: 0,
+    sessionDates: [] as string[],
+    sessionsPerAthlete: [] as number[],
     ...overrides,
   })
 
@@ -216,7 +220,7 @@ describe('syncBadges', () => {
     mock.enqueue('coach_badges', { data: [{ badge_key: 'first_steps' }] })
     // Stats: 1 session, 1 athlete — only qualifies for first_steps which is already earned
     mock.enqueue('sessions', { data: null, count: 1 })
-    mock.enqueue('sessions', { data: [{ athlete_id: 'a1' }] })
+    mock.enqueue('sessions', { data: [{ athlete_id: 'a1', date: '2026-01-01' }] })
     mock.enqueue('sessions', { data: null, count: 0 }) // notes
     mock.enqueue('kudos', { data: null, count: 0 })
     mock.enqueue('sessions', { data: null, count: 0 }) // feels
@@ -235,7 +239,7 @@ describe('syncBadges', () => {
     mock.enqueue('coach_badges', { data: [] })
     // Stats: 1 session
     mock.enqueue('sessions', { data: null, count: 1 })
-    mock.enqueue('sessions', { data: [{ athlete_id: 'a1' }] })
+    mock.enqueue('sessions', { data: [{ athlete_id: 'a1', date: '2026-01-01' }] })
     mock.enqueue('sessions', { data: null, count: 0 })
     mock.enqueue('kudos', { data: null, count: 0 })
     mock.enqueue('sessions', { data: null, count: 0 })
@@ -263,8 +267,8 @@ describe('syncBadges', () => {
     // Stats: 5 sessions with 3 athletes
     mock.enqueue('sessions', { data: null, count: 5 })
     mock.enqueue('sessions', { data: [
-      { athlete_id: 'a1' }, { athlete_id: 'a2' }, { athlete_id: 'a3' },
-      { athlete_id: 'a1' }, { athlete_id: 'a2' },
+      { athlete_id: 'a1', date: '2026-01-01' }, { athlete_id: 'a2', date: '2026-01-02' }, { athlete_id: 'a3', date: '2026-01-03' },
+      { athlete_id: 'a1', date: '2026-01-04' }, { athlete_id: 'a2', date: '2026-01-05' },
     ] })
     mock.enqueue('sessions', { data: null, count: 0 })
     mock.enqueue('kudos', { data: null, count: 0 })
@@ -294,10 +298,10 @@ describe('syncBadges', () => {
     // Stats: 10 sessions with 3 athletes
     mock.enqueue('sessions', { data: null, count: 10 })
     mock.enqueue('sessions', { data: [
-      { athlete_id: 'a1' }, { athlete_id: 'a2' }, { athlete_id: 'a3' },
-      { athlete_id: 'a1' }, { athlete_id: 'a2' },
-      { athlete_id: 'a1' }, { athlete_id: 'a2' }, { athlete_id: 'a3' },
-      { athlete_id: 'a1' }, { athlete_id: 'a2' },
+      { athlete_id: 'a1', date: '2026-01-01' }, { athlete_id: 'a2', date: '2026-01-02' }, { athlete_id: 'a3', date: '2026-01-03' },
+      { athlete_id: 'a1', date: '2026-01-04' }, { athlete_id: 'a2', date: '2026-01-05' },
+      { athlete_id: 'a1', date: '2026-01-06' }, { athlete_id: 'a2', date: '2026-01-07' }, { athlete_id: 'a3', date: '2026-01-08' },
+      { athlete_id: 'a1', date: '2026-01-09' }, { athlete_id: 'a2', date: '2026-01-10' },
     ] })
     mock.enqueue('sessions', { data: null, count: 0 })
     mock.enqueue('kudos', { data: null, count: 0 })
@@ -347,7 +351,7 @@ describe('syncBadges', () => {
     ] })
     // Stats: 1 session, 10 kudos
     mock.enqueue('sessions', { data: null, count: 1 })
-    mock.enqueue('sessions', { data: [{ athlete_id: 'a1' }] })
+    mock.enqueue('sessions', { data: [{ athlete_id: 'a1', date: '2026-01-01' }] })
     mock.enqueue('sessions', { data: null, count: 0 })
     mock.enqueue('kudos', { data: null, count: 10 })
     mock.enqueue('sessions', { data: null, count: 0 })
@@ -371,7 +375,7 @@ describe('syncBadges', () => {
     // Coach has first_steps and stats still show 1 session
     mock.enqueue('coach_badges', { data: [{ badge_key: 'first_steps' }] })
     mock.enqueue('sessions', { data: null, count: 1 })
-    mock.enqueue('sessions', { data: [{ athlete_id: 'a1' }] })
+    mock.enqueue('sessions', { data: [{ athlete_id: 'a1', date: '2026-01-01' }] })
     mock.enqueue('sessions', { data: null, count: 0 })
     mock.enqueue('kudos', { data: null, count: 0 })
     mock.enqueue('sessions', { data: null, count: 0 })
@@ -426,7 +430,7 @@ describe('syncBadges', () => {
 
     mock.enqueue('coach_badges', { data: [] })
     mock.enqueue('sessions', { data: null, count: 1 })
-    mock.enqueue('sessions', { data: [{ athlete_id: 'a1' }] })
+    mock.enqueue('sessions', { data: [{ athlete_id: 'a1', date: '2026-01-01' }] })
     mock.enqueue('sessions', { data: null, count: 0 })
     mock.enqueue('kudos', { data: null, count: 10 })
     mock.enqueue('sessions', { data: null, count: 0 })
@@ -444,7 +448,7 @@ describe('syncBadges', () => {
 
     mock.enqueue('coach_badges', { data: [{ badge_key: 'first_steps' }] })
     mock.enqueue('sessions', { data: null, count: 1 })
-    mock.enqueue('sessions', { data: [{ athlete_id: 'a1' }] })
+    mock.enqueue('sessions', { data: [{ athlete_id: 'a1', date: '2026-01-01' }] })
     mock.enqueue('sessions', { data: null, count: 10 }) // notes
     mock.enqueue('kudos', { data: null, count: 0 })
     mock.enqueue('sessions', { data: null, count: 10 }) // feels
@@ -466,7 +470,7 @@ describe('checkAndAwardBadges (backward compat)', () => {
 
     mock.enqueue('coach_badges', { data: [] })
     mock.enqueue('sessions', { data: null, count: 1 })
-    mock.enqueue('sessions', { data: [{ athlete_id: 'a1' }] })
+    mock.enqueue('sessions', { data: [{ athlete_id: 'a1', date: '2026-01-01' }] })
     mock.enqueue('sessions', { data: null, count: 0 })
     mock.enqueue('kudos', { data: null, count: 0 })
     mock.enqueue('sessions', { data: null, count: 0 })
