@@ -2,7 +2,7 @@
 
 A web application for managing a running club for athletes with special needs. Coaches log runs (manually or via Strava sync), track athlete progress through milestones, record coaching cues, write notes, and celebrate achievements. Caregivers get read-only access to their linked athlete with the ability to send cheers and view milestone celebrations. Athletes themselves can view their own running journey through a PIN-protected personal page.
 
-> **[Why I Built This](https://sosg.run/about)** — *It started with a moment I almost missed. An athlete finished a 5km run and looked around to see if anyone noticed. I could have built a special needs tracker. I built a running app instead.*
+> **[Why I Built This](https://sosg.run/about)** — *It started with a moment I almost missed. An athlete finished a 5km run and looked around to see if anyone was watching. We were. I could have built something defined by disability. I built something defined by the sport.*
 
 ## Tech Stack
 
@@ -78,8 +78,14 @@ Magic-link authentication via Supabase OTP. Four access levels:
 ### Athlete Voice
 
 - **My Journey Page** (`/my/[athleteId]`) — PIN-protected athlete-facing page showing stats, milestones, goal progress, recent runs, and cheers from caregivers
-- **Preset Messages** — Athletes send one-tap messages to coaches ("Thank you!", "That was fun!", "I want to run more!", "See you next week!")
-- **Coach PIN Setup** — Coaches set a 4-digit PIN for each athlete through the edit profile page, with copy-link support
+- **Avatar Selection** — Athletes choose from 8 preset emoji avatars (runners, shoe, medal, trophy, star, strong). Their choice appears across coach and caregiver views with a "chosen by athlete" indicator
+- **Mood Check-in** — Emoji-based daily mood (Sad, Tired, Okay, Happy, Excited). One tap. Mood trends visible to coaches for proactive support
+- **Goal Picker** — Athletes choose what they want to work on: run further, run more often, or feel stronger. Visible to coaches
+- **Theme Color** — Athletes personalise their page with a color choice (teal, blue, purple, green, amber, coral) that tints their personal page
+- **My Best Runs** — Athletes heart their favourite runs, surfaced in a dedicated section on their page
+- **Preset Messages** — Athletes send one-tap messages to coaches ("Thank you!", "That was fun!", "I want to run more!", "See you next week!") with persistent sent confirmation
+- **QR Code Access** — Coaches print a QR code for each athlete's page, designed to be stuck on a fridge or notebook for easy scanning by the athlete or caregiver
+- **Coach PIN Setup** — Coaches set a 4-digit PIN for each athlete with step-by-step guidance and copy-link support
 - **Rate-Limited Auth** — 5 PIN attempts per 15-minute window, bcrypt-hashed storage, HttpOnly session cookies
 
 ### Engagement
@@ -116,6 +122,8 @@ All athlete-facing, caregiver-facing, and public pages follow research-backed in
 - **Icons paired with text** on all navigation (supports non-readers and low-literacy users)
 - **Visual alternatives for numbers** — Progress bars alongside numeric values
 - **Privacy by design** — Athlete pages never expose medical info, coach notes, cues, or feel ratings
+- **Avatar selection** — 8 carefully chosen options within cognitive accessibility limits. No fire emoji (literal language principle), no animals (adult running app), no disability-specific symbols (defined by sport, not disability). See CLAUDE.md for full rationale
+- **Athlete autonomy** — Athletes choose their own avatar, color theme, goals, and favourite runs. Small choices matter when many choices are made for you
 
 Sources: WCAG 2.2, W3C COGA, Special Olympics design research, sensory-friendly design for autistic users.
 
@@ -131,4 +139,4 @@ Sources: WCAG 2.2, W3C COGA, Special Olympics design research, sensory-friendly 
 
 20+ tables with Row Level Security enabled on all. Migrations live in `supabase/migrations/` ordered by timestamp. Types are manually maintained in `src/lib/supabase/types.ts`.
 
-Key tables: `users`, `athletes`, `sessions`, `cues`, `coach_notes`, `milestones`, `milestone_definitions`, `strava_connections`, `strava_sync_log`, `strava_unmatched`, `notifications`, `invitations`, `media`, `kudos`, `cheers`, `coach_badges`, `goals`, `club_settings`, `athlete_messages`, `push_subscriptions`
+Key tables: `users`, `athletes`, `sessions`, `cues`, `coach_notes`, `milestones`, `milestone_definitions`, `strava_connections`, `strava_sync_log`, `strava_unmatched`, `notifications`, `invitations`, `media`, `kudos`, `cheers`, `coach_badges`, `goals`, `club_settings`, `athlete_messages`, `push_subscriptions`, `athlete_moods`, `athlete_favorites`
