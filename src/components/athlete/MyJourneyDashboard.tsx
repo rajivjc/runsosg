@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { sendAthleteMessage, saveAthleteMood, toggleFavoriteRun, setAthleteGoal, setAthleteTheme } from '@/app/my/[athleteId]/actions'
+import { sendAthleteMessage, saveAthleteMood, toggleFavoriteRun, setAthleteGoal, setAthleteTheme, setAthleteAvatar } from '@/app/my/[athleteId]/actions'
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -9,6 +9,7 @@ interface AthleteData {
   id: string
   name: string
   photo_url: string | null
+  avatar: string | null
 }
 
 interface StatData {
@@ -128,6 +129,21 @@ const COLOR_OPTIONS = [
   { key: 'coral', label: 'Coral', swatch: 'bg-orange-400' },
 ]
 
+// ─── Avatar options ──────────────────────────────────────────────
+
+const AVATAR_OPTIONS = [
+  { key: '🏃', label: 'Runner' },
+  { key: '🏃‍♂️', label: 'Man running' },
+  { key: '🏃‍♀️', label: 'Woman running' },
+  { key: '👟', label: 'Running shoe' },
+  { key: '🏅', label: 'Medal' },
+  { key: '🏆', label: 'Trophy' },
+  { key: '⭐', label: 'Star' },
+  { key: '💪', label: 'Strong' },
+] as const
+
+const AVATAR_FEEDBACKS = ['Nice!', 'Love it!', 'Great pick!', "That's you!"]
+
 // ─── Goal choice labels ─────────────────────────────────────────
 
 const GOAL_CHOICES = [
@@ -163,6 +179,10 @@ export default function MyJourneyDashboard({
   const [selectedColor, setSelectedColor] = useState(themeColor)
   const [colorFeedback, setColorFeedback] = useState<string | null>(null)
   const [lastSentMessage, setLastSentMessage] = useState<{ message: string; time: string } | null>(null)
+  const [selectedAvatar, setSelectedAvatar] = useState(athlete.avatar ?? '🏃')
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false)
+  const [avatarFeedback, setAvatarFeedback] = useState<string | null>(null)
+  const [avatarBounce, setAvatarBounce] = useState(false)
   const theme = THEME_COLORS[selectedColor] ?? THEME_COLORS.teal
 
   const handleSendMessage = useCallback(async (message: string) => {
@@ -220,6 +240,19 @@ export default function MyJourneyDashboard({
     }
   }, [athlete.id])
 
+  const handleAvatarChange = useCallback(async (avatar: string) => {
+    setSelectedAvatar(avatar)
+    setAvatarFeedback(null)
+    setAvatarBounce(true)
+    setTimeout(() => setAvatarBounce(false), 200)
+    const result = await setAthleteAvatar(athlete.id, avatar)
+    if (result.success) {
+      const feedback = AVATAR_FEEDBACKS[Math.floor(Math.random() * AVATAR_FEEDBACKS.length)]
+      setAvatarFeedback(feedback)
+      setTimeout(() => setAvatarFeedback(null), 2500)
+    }
+  }, [athlete.id])
+
   const formatRunDate = (dateStr: string) => {
     // dateStr may be a full ISO timestamp (timestamptz) or YYYY-MM-DD
     const date = dateStr.includes('T')
@@ -250,10 +283,64 @@ export default function MyJourneyDashboard({
               />
             </div>
           ) : (
-            <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${theme.bgLight} flex items-center justify-center border-4 ${theme.borderLight}`}>
-              <span className="text-4xl">🏃</span>
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => setShowAvatarPicker(p => !p)}
+                className={`w-[84px] h-[84px] mx-auto rounded-full ${theme.bgLight} flex items-center justify-center border-4 ${theme.borderLight} transition-transform duration-200 motion-reduce:transition-none ${avatarBounce ? 'scale-110' : 'scale-100'}`}
+                aria-label="Choose your avatar"
+              >
+                <span className="text-[44px] leading-none">{selectedAvatar}</span>
+              </button>
+              <p
+                className={`text-xs mt-1.5 ${theme.text} opacity-70 cursor-pointer`}
+                onClick={() => setShowAvatarPicker(p => !p)}
+              >
+                Tap to change
+              </p>
             </div>
           )}
+
+          {/* Inline avatar picker */}
+          {showAvatarPicker && !athlete.photo_url && (
+            <div className="mb-4">
+              <div
+                role="radiogroup"
+                aria-label="Pick your avatar"
+                className="inline-grid grid-cols-4 gap-3"
+              >
+                {AVATAR_OPTIONS.map(opt => {
+                  const isSelected = selectedAvatar === opt.key
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={opt.label}
+                      onClick={() => handleAvatarChange(opt.key)}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-150 motion-reduce:transition-none ${
+                        isSelected
+                          ? `ring-2 ${theme.ring} ${theme.bgLight} scale-105 motion-reduce:scale-100`
+                          : 'bg-white hover:bg-gray-50 ring-1 ring-gray-200'
+                      }`}
+                    >
+                      {opt.key}
+                    </button>
+                  )
+                })}
+              </div>
+              {avatarFeedback && (
+                <p
+                  className={`text-sm font-medium ${theme.text} mt-2 animate-fade-in`}
+                  aria-live="polite"
+                >
+                  {avatarFeedback}
+                </p>
+              )}
+            </div>
+          )}
+
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
             Hi {athlete.name}!
           </h1>

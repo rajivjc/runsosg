@@ -16,7 +16,7 @@ export default async function MyJourneyPage({ params }: PageProps) {
   // Check if athlete exists and has a PIN set
   const { data: athlete } = await adminClient
     .from('athletes')
-    .select('id, name, photo_url, goal_type, goal_target, allow_public_sharing, athlete_goal_choice, theme_color')
+    .select('id, name, photo_url, goal_type, goal_target, allow_public_sharing, athlete_goal_choice, theme_color, avatar')
     .eq('id', athleteId)
     .eq('active', true)
     .single()
@@ -177,6 +177,7 @@ export default async function MyJourneyPage({ params }: PageProps) {
         id: athlete.id,
         name: athlete.name,
         photo_url: athlete.photo_url,
+        avatar: athlete.avatar ?? null,
       }}
       athleteGoalChoice={athlete.athlete_goal_choice ?? null}
       themeColor={athlete.theme_color ?? 'teal'}

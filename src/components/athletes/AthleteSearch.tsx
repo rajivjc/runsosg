@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import AthleteCard, { type AthleteCardProps, isInactive } from './AthleteCard'
 
@@ -8,8 +8,24 @@ type AthleteSearchProps = {
   athletes: AthleteCardProps[]
 }
 
+const LEGEND_DISMISSED_KEY = 'avatar-legend-dismissed'
+
 export default function AthleteSearch({ athletes }: AthleteSearchProps) {
   const [query, setQuery] = useState('')
+  const [legendDismissed, setLegendDismissed] = useState(true)
+
+  const hasAnyAvatar = athletes.some(a => a.avatar)
+
+  useEffect(() => {
+    if (hasAnyAvatar) {
+      setLegendDismissed(localStorage.getItem(LEGEND_DISMISSED_KEY) === 'true')
+    }
+  }, [hasAnyAvatar])
+
+  const dismissLegend = () => {
+    setLegendDismissed(true)
+    localStorage.setItem(LEGEND_DISMISSED_KEY, 'true')
+  }
 
   const filtered =
     query.trim() === ''
@@ -57,6 +73,22 @@ export default function AthleteSearch({ athletes }: AthleteSearchProps) {
               <AthleteCard {...athlete} />
             </div>
           ))}
+        </div>
+      )}
+
+      {hasAnyAvatar && !legendDismissed && (
+        <div className="flex items-center justify-between mt-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-100 text-xs text-amber-700">
+          <span className="flex items-center gap-1.5">
+            <span className="w-4 h-4 rounded-full bg-amber-50 border-[1.5px] border-amber-200 flex items-center justify-center text-[8px] leading-none">✌️</span>
+            Avatar chosen by athlete
+          </span>
+          <button
+            onClick={dismissLegend}
+            className="text-amber-400 hover:text-amber-600 p-0.5 rounded transition-colors"
+            aria-label="Dismiss legend"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
     </div>

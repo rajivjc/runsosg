@@ -1,6 +1,7 @@
 interface StoryHeroProps {
   athleteName: string
   heroPhotoUrl: string | null
+  avatar: string | null
   totalSessions: number
   totalKm: number
   milestoneCount: number
@@ -9,6 +10,7 @@ interface StoryHeroProps {
 export default function StoryHero({
   athleteName,
   heroPhotoUrl,
+  avatar,
   totalSessions,
   totalKm,
   milestoneCount,
@@ -23,7 +25,7 @@ export default function StoryHero({
           className="w-28 h-28 rounded-full object-cover mb-4 ring-4 ring-teal-100 shadow-lg"
         />
       ) : (
-        <span className="text-7xl mb-4">🏃</span>
+        <span className="text-7xl mb-4">{avatar ?? '🏃'}</span>
       )}
       <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2">
         Running Journey

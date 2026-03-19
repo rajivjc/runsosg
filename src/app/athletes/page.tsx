@@ -11,6 +11,7 @@ export type AthleteListItem = {
   id: string
   name: string
   photoUrl: string | null
+  avatar: string | null
   totalSessions: number
   lastSessionDate: string | null
   recentFeels: number[]
@@ -43,7 +44,7 @@ export default async function AthletesPage({
   const [{ data: athletes }, { data: sessions }, { data: recentFeels }] = await Promise.all([
     adminClient
       .from('athletes')
-      .select('id, name, photo_url, active')
+      .select('id, name, photo_url, active, avatar')
       .eq('active', true)
       .order('name', { ascending: true }),
     adminClient
@@ -77,6 +78,7 @@ export default async function AthletesPage({
       id: athlete.id,
       name: athlete.name,
       photoUrl: athlete.photo_url,
+      avatar: athlete.avatar ?? null,
       totalSessions: athleteSessions.length,
       lastSessionDate: lastSession ? (lastSession.date as string) : null,
       recentFeels: feelsByAthlete[athlete.id] ?? [],

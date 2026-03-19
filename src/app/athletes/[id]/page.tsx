@@ -92,7 +92,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
   ] = await Promise.all([
     adminClient
       .from('athletes')
-      .select('id, name, photo_url, active, date_of_birth, running_goal, goal_type, goal_target, communication_notes, medical_notes, emergency_contact, athlete_pin, working_on, recent_progress, working_on_updated_at, working_on_updated_by')
+      .select('id, name, photo_url, active, date_of_birth, running_goal, goal_type, goal_target, communication_notes, medical_notes, emergency_contact, athlete_pin, working_on, recent_progress, working_on_updated_at, working_on_updated_by, avatar')
       .eq('id', id)
       .single(),
 
@@ -300,7 +300,22 @@ export default async function AthleteHubPage({ params }: PageProps) {
       </Link>
 
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-gray-900">{athlete.name}</h1>
+        <div className="flex items-center gap-3">
+          {!athlete.photo_url && athlete.avatar && (
+            <div className="relative flex-shrink-0">
+              <div className="rounded-full w-10 h-10 bg-teal-50 flex items-center justify-center text-xl">
+                {athlete.avatar}
+              </div>
+              <span
+                className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-50 border-[1.5px] border-white flex items-center justify-center text-[8px] leading-none"
+                title="Avatar chosen by athlete"
+              >
+                ✌️
+              </span>
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-gray-900">{athlete.name}</h1>
+        </div>
         <div className="flex items-center gap-1">
           {!isReadOnly && athlete.athlete_pin && (
             <AthleteQrCode athleteId={id} athleteName={athlete.name} />
