@@ -157,8 +157,8 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-500 to-emerald-600 px-4 py-8">
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-8">
         {isRevoked && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-center">
             Your access has been revoked. Please contact your administrator.
@@ -174,11 +174,45 @@ export default function LoginPage() {
             This invitation link is invalid. Please contact your administrator.
           </div>
         )}
-        <div className="text-4xl text-center mb-2">🏃</div>
+        {/* Running icon — matches PWA splash screen */}
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 512 512"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <g fill="#0D9488" stroke="#0D9488" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="312" cy="135" r="32" stroke="none" />
+                <line x1="298" y1="167" x2="252" y2="280" strokeWidth="42" />
+                <circle cx="290" cy="193" r="16" stroke="none" />
+                <circle cx="255" cy="276" r="15" stroke="none" />
+                <line x1="290" y1="193" x2="342" y2="208" strokeWidth="22" />
+                <circle cx="342" cy="208" r="9" stroke="none" />
+                <line x1="342" y1="208" x2="354" y2="178" strokeWidth="18" />
+                <line x1="290" y1="193" x2="243" y2="174" strokeWidth="22" />
+                <circle cx="243" cy="174" r="9" stroke="none" />
+                <line x1="243" y1="174" x2="218" y2="190" strokeWidth="18" />
+                <line x1="255" y1="276" x2="318" y2="338" strokeWidth="28" />
+                <circle cx="318" cy="338" r="11" stroke="none" />
+                <line x1="318" y1="338" x2="354" y2="320" strokeWidth="23" />
+                <line x1="255" y1="276" x2="198" y2="342" strokeWidth="28" />
+                <circle cx="198" cy="342" r="11" stroke="none" />
+                <line x1="198" y1="342" x2="166" y2="365" strokeWidth="23" />
+              </g>
+            </svg>
+          </div>
+        </div>
+
         <h1 className="text-2xl font-bold text-center text-gray-900 mb-1">
           SOSG Running Club
         </h1>
-        <p className="text-sm text-gray-500 text-center mb-6">Sign in to continue</p>
+        <p className="text-sm text-teal-600 text-center font-medium mb-6">
+          Growing together, one run at a time
+        </p>
 
         {pageState === 'success' ? (
           <div className="flex flex-col items-center text-center mt-6 space-y-4">
@@ -352,11 +386,26 @@ export default function LoginPage() {
           </form>
         )}
       </div>
-      <p className="text-xs text-gray-400 text-center mt-6">
-        <a href="/privacy" className="underline hover:text-gray-600">Privacy Policy</a>
-        {' · '}
-        <a href="/terms" className="underline hover:text-gray-600">Terms of Service</a>
-      </p>
+
+      {/* Footer links */}
+      <div className="mt-6 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3 text-sm">
+          <a href="/about" className="text-white/80 hover:text-white transition-colors">
+            Our story
+          </a>
+          <span className="text-white/40">&middot;</span>
+          <a href="/privacy" className="text-white/80 hover:text-white transition-colors">
+            Privacy
+          </a>
+          <span className="text-white/40">&middot;</span>
+          <a href="/terms" className="text-white/80 hover:text-white transition-colors">
+            Terms
+          </a>
+        </div>
+        <p className="text-xs text-white/50">
+          Invite only — contact your administrator to join
+        </p>
+      </div>
     </main>
   )
 }

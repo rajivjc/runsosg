@@ -1,7 +1,4 @@
 import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { adminClient } from '@/lib/supabase/admin'
 import ShareButton from '@/components/milestone/ShareButton'
 import CloseButton from '@/components/milestone/CloseButton'
 
@@ -17,22 +14,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function AboutPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
-
-  const { data: userRow } = await adminClient
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!userRow || (userRow.role !== 'coach' && userRow.role !== 'admin')) {
-    redirect('/feed')
-  }
-
+export default function AboutPage() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
 
   return (

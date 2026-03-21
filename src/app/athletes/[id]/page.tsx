@@ -14,6 +14,8 @@ import { computeWeeklyVolume, computeFeelTrend, computeDistanceTimeline } from '
 import type { MilestonePin } from '@/lib/analytics/session-trends'
 import WorkingOnCard from '@/components/athlete/WorkingOnCard'
 import CheerViewTracker from '@/components/feed/CheerViewTracker'
+import HintCard from '@/components/ui/HintCard'
+import { HINT_KEYS } from '@/lib/hint-keys'
 import { getAthletePhotosPaginated, getAthletePhotos, getAthletePhotoCount, withSignedUrls } from '@/lib/media'
 import { addCoachNote, deletePhoto } from './actions'
 
@@ -339,6 +341,12 @@ export default async function AthleteHubPage({ params }: PageProps) {
           )}
         </div>
       </div>
+
+      <HintCard
+        storageKey={HINT_KEYS.HINT_ATHLETE_DETAIL}
+        title="Athlete profile"
+        description="Use the tabs below to see runs, coaching cues, notes, and photos. Update cues after each session so the next coach is prepared."
+      />
 
       {/* Profile strip */}
       {(athlete.running_goal || athlete.medical_notes || athlete.emergency_contact || athlete.communication_notes) && (

@@ -8,6 +8,8 @@ import ClubStats from '@/components/feed/ClubStats'
 import WeeklyRecapCard from '@/components/feed/WeeklyRecapCard'
 import SessionGroup from '@/components/feed/SessionGroup'
 import BetaBanner from '@/components/feed/BetaBanner'
+import HintCard from '@/components/ui/HintCard'
+import { HINT_KEYS } from '@/lib/hint-keys'
 import CaregiverWorkingOnCard from '@/components/feed/CaregiverWorkingOnCard'
 import CaregiverMonthlySummary from '@/components/feed/CaregiverMonthlySummary'
 import type { CaregiverFeedData } from '@/lib/feed/types'
@@ -72,6 +74,13 @@ export default function CaregiverFeed({ data, userId }: Props) {
           totalCount={onboarding.totalCount}
         />
       )}
+
+      <HintCard
+        storageKey={HINT_KEYS.HINT_CAREGIVER_FEED}
+        title="Your athlete's updates"
+        description="This is where you'll see sessions, milestones, and weekly recaps. You can send cheers to encourage your athlete before their next run."
+        variant="amber"
+      />
 
       {/* Card 1 — Athlete Status */}
       <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl px-5 py-4 mb-5 shadow-sm">
