@@ -2,11 +2,21 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function sendMagicLink(
   email: string,
   origin: string
 ): Promise<{ error: string | null; rateLimited?: boolean; notFound?: boolean }> {
+  // Rate limit: 5 attempts per email per minute
+  const rl = checkRateLimit(`login:${email.toLowerCase()}`, 5, 60)
+  if (!rl.success) {
+    return {
+      error: 'Too many requests. Please wait a few minutes before trying again.',
+      rateLimited: true,
+    }
+  }
+
   // Check if user exists and is active before sending OTP
   const { data: authUsers } = await adminClient.auth.admin.listUsers()
   const authUser = authUsers?.users?.find(

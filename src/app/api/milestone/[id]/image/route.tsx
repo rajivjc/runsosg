@@ -1,12 +1,19 @@
 import { ImageResponse } from '@vercel/og'
 import { adminClient } from '@/lib/supabase/admin'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
+  const ip = getClientIp(request)
+  const rl = checkRateLimit(`og-image:${ip}`, 30, 60)
+  if (!rl.success) {
+    return new Response('Too many requests', { status: 429 })
+  }
+
   const { data: rawMilestone } = await adminClient
     .from('milestones')
     .select('*, athletes(name), milestone_definitions(icon, label)')
