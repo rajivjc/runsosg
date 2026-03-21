@@ -20,6 +20,8 @@ const PUBLIC_PATHS = [
   '/auth/pwa-launch',
   '/setup',
   '/about',
+  '/privacy',
+  '/terms',
   '/strava/connected',
   '/api/strava/webhook',
   '/api/health',

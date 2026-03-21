@@ -352,6 +352,11 @@ export default function LoginPage() {
           </form>
         )}
       </div>
+      <p className="text-xs text-gray-400 text-center mt-6">
+        <a href="/privacy" className="underline hover:text-gray-600">Privacy Policy</a>
+        {' · '}
+        <a href="/terms" className="underline hover:text-gray-600">Terms of Service</a>
+      </p>
     </main>
   )
 }
