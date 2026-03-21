@@ -10,6 +10,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 const DISMISS_KEY = 'sosg-install-banner-dismissed'
 const OLD_DISMISS_KEY = 'sosg-install-dismissed'
+const PWA_INSTALLED_KEY = 'sosg-pwa-was-installed'
 const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 
 type Platform =
@@ -61,6 +62,22 @@ function migrateOldDismissKey(): void {
   }
 }
 
+/**
+ * If the app was previously installed as a PWA but is no longer running
+ * in standalone mode, the user must have uninstalled it. Clear the
+ * dismiss key so the install banner shows again.
+ */
+function clearDismissIfUninstalled(): void {
+  if (typeof window === 'undefined') return
+
+  const wasInstalled = localStorage.getItem(PWA_INSTALLED_KEY)
+  if (wasInstalled && !isStandalone()) {
+    // User had the PWA but uninstalled it — re-show the banner
+    localStorage.removeItem(DISMISS_KEY)
+    localStorage.removeItem(PWA_INSTALLED_KEY)
+  }
+}
+
 function wasDismissedRecently(): boolean {
   if (typeof window === 'undefined') return false
   const raw = localStorage.getItem(DISMISS_KEY)
@@ -74,7 +91,14 @@ export default function InstallBanner() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    if (isStandalone()) return
+    // Mark that PWA is installed (for uninstall detection later)
+    if (isStandalone()) {
+      localStorage.setItem(PWA_INSTALLED_KEY, '1')
+      return
+    }
+
+    // If user previously had PWA but uninstalled, clear the dismiss timer
+    clearDismissIfUninstalled()
 
     migrateOldDismissKey()
     if (wasDismissedRecently()) return

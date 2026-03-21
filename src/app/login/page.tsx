@@ -401,6 +401,10 @@ export default function LoginPage() {
           <a href="/terms" className="text-white/80 hover:text-white transition-colors">
             Terms
           </a>
+          <span className="text-white/40">&middot;</span>
+          <a href="/setup" className="text-white/80 hover:text-white transition-colors">
+            Install the app
+          </a>
         </div>
         <p className="text-xs text-white/50">
           Invite only — contact your administrator to join
