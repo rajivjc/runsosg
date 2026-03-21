@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { NotificationList } from './NotificationList'
+import HintCard from '@/components/ui/HintCard'
+import { HINT_KEYS } from '@/lib/hint-keys'
 
 export const metadata: Metadata = { title: 'Notifications — SOSG Running Club' }
 
@@ -49,6 +51,12 @@ export default async function NotificationsPage() {
           />
         )}
       </div>
+
+      <HintCard
+        storageKey={HINT_KEYS.HINT_NOTIFICATIONS}
+        title="Notifications"
+        description="Milestone awards, low feel alerts, and unmatched Strava runs appear here. Unmatched runs need your help to link to the right athlete."
+      />
 
       {notifications.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-12">

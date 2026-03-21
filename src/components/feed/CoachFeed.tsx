@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import MilestoneDetector from '@/components/milestone/MilestoneDetector'
 import OnboardingCard from '@/components/feed/OnboardingCard'
+import AppContextCard from '@/components/feed/AppContextCard'
 import CheerViewTracker from '@/components/feed/CheerViewTracker'
 import { formatDate } from '@/lib/utils/dates'
 import ClubStats from '@/components/feed/ClubStats'
 import CoachSessionFeed from '@/components/feed/CoachSessionFeed'
 import BetaBanner from '@/components/feed/BetaBanner'
+import HintCard from '@/components/ui/HintCard'
+import { HINT_KEYS } from '@/lib/hint-keys'
 import type { CoachFeedData } from '@/lib/feed/types'
 
 interface Props {
@@ -50,16 +53,20 @@ export default function CoachFeed({ data, userId }: Props) {
 
       {/* Onboarding checklist for new coaches */}
       {showOnboarding && (
-        <OnboardingCard
-          firstName={firstName}
-          steps={onboarding.steps}
-          completedCount={onboarding.completedCount}
-          totalCount={onboarding.totalCount}
-        />
+        <>
+          <AppContextCard />
+          <OnboardingCard
+            firstName={firstName}
+            steps={onboarding.steps}
+            completedCount={onboarding.completedCount}
+            totalCount={onboarding.totalCount}
+          />
+        </>
       )}
 
       {/* Coach greeting card — hidden during onboarding */}
       {!showOnboarding && (
+        <>
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200/60 rounded-2xl px-5 py-4 mb-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-lg font-bold text-gray-900">
@@ -93,6 +100,12 @@ export default function CoachFeed({ data, userId }: Props) {
             </div>
           )}
         </div>
+        <HintCard
+          storageKey={HINT_KEYS.HINT_FEED_POST_ONBOARDING}
+          title="Your coaching feed"
+          description="New sessions, milestones, and alerts from all athletes show up here. Tap any session card for details."
+        />
+        </>
       )}
 
       {/* Cheers from home */}

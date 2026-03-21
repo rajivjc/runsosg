@@ -2,6 +2,8 @@
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { saveCues } from '@/app/athletes/[id]/actions'
+import HintCard from '@/components/ui/HintCard'
+import { HINT_KEYS } from '@/lib/hint-keys'
 import type { CuesData } from './AthleteTabs'
 
 type Section = 'helps' | 'avoid' | 'best_cues' | 'kit'
@@ -137,6 +139,11 @@ export default function CuesTab({ athleteId, athleteName, initialCues }: CuesTab
 
   return (
     <div className="space-y-6">
+      <HintCard
+        storageKey={HINT_KEYS.HINT_CUES}
+        title="Coaching cues"
+        description="These cues are shared with all coaches and carry over between sessions. Add what helps, what to avoid, and the best cues for this athlete."
+      />
       {allEmpty && (
         <div className="text-center py-6">
           <p className="text-3xl mb-2">📋</p>
