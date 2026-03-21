@@ -13,6 +13,7 @@ import StoryPhotoTimeline from '@/components/story/StoryPhotoTimeline'
 import StoryCoachReflection from '@/components/story/StoryCoachReflection'
 import StoryUpdateCard from '@/components/story/StoryUpdateCard'
 import StoryFooter from '@/components/story/StoryFooter'
+import PoweredByBadge from '@/components/ui/PoweredByBadge'
 
 interface PageProps {
   params: { id: string }
@@ -219,6 +220,7 @@ export default async function StoryPage({ params }: PageProps) {
           storyUrl={`${appUrl}/story/${params.id}`}
         />
       </div>
+      <PoweredByBadge />
     </div>
   )
 }

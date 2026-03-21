@@ -6,6 +6,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import ShareButton from '@/components/milestone/ShareButton'
 import CloseButton from '@/components/milestone/CloseButton'
+import PoweredByBadge from '@/components/ui/PoweredByBadge'
 
 interface PageProps {
   params: { id: string }
@@ -173,6 +174,7 @@ export default async function MilestoneSharePage({ params }: PageProps) {
           This page shows {athleteName}&apos;s running achievements only. No personal details, notes, or contact information are included.
         </p>
       </div>
+      <PoweredByBadge />
     </div>
   )
 }
