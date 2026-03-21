@@ -30,6 +30,7 @@
  */
 
 import { adminClient } from '@/lib/supabase/admin'
+import type { Json } from '@/lib/supabase/types'
 
 type AuditEntry = {
   actorId: string
@@ -55,7 +56,7 @@ export async function logAudit(entry: AuditEntry): Promise<void> {
       action: entry.action,
       target_type: entry.targetType ?? null,
       target_id: entry.targetId ?? null,
-      metadata: entry.metadata ?? {},
+      metadata: (entry.metadata ?? {}) as Json,
     })
   } catch (err) {
     // Audit logging must never fail the parent operation

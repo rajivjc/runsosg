@@ -201,6 +201,12 @@ export interface Database {
         Update: Partial<AthleteFavorite>
         Relationships: []
       }
+      audit_log: {
+        Row: AuditLog & Record<string, unknown>
+        Insert: Omit<AuditLog, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<AuditLog>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -492,5 +498,17 @@ export interface AthleteFavorite {
   id: string
   athlete_id: string
   session_id: string
+  created_at: string
+}
+
+export interface AuditLog {
+  id: string
+  actor_id: string
+  actor_email: string | null
+  actor_role: string | null
+  action: string
+  target_type: string | null
+  target_id: string | null
+  metadata: Json
   created_at: string
 }
