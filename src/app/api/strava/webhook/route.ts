@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { adminClient } from '@/lib/supabase/admin'
 import { processStravaActivity } from '@/lib/strava/sync'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 // ── GET — Strava webhook subscription verification ────────────────────────────
 
@@ -28,6 +29,13 @@ interface StravaWebhookBody {
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
+  // Rate limit: 120 requests per minute per IP
+  const ip = getClientIp(request)
+  const rl = checkRateLimit(`strava-webhook:${ip}`, 120, 60)
+  if (!rl.success) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   let body: StravaWebhookBody
 
   try {

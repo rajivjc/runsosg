@@ -30,6 +30,11 @@ jest.mock('@/lib/supabase/admin', () => ({
   },
 }))
 
+jest.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: jest.fn().mockReturnValue({ success: true, remaining: 99, resetInSeconds: 60 }),
+  getClientIp: jest.fn().mockReturnValue('127.0.0.1'),
+}))
+
 // Mock archiver for ZIP tests — we don't need real ZIP creation
 jest.mock('archiver', () => {
   return jest.fn().mockReturnValue({

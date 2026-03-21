@@ -36,6 +36,10 @@ jest.mock('@/lib/supabase/server', () => ({
   }),
 }))
 
+jest.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: jest.fn().mockReturnValue({ success: true, remaining: 99, resetInSeconds: 60 }),
+}))
+
 import { sendMagicLink } from '@/app/login/actions'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
