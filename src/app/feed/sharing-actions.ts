@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 
 /**
  * Caregiver disables public sharing for their linked athlete.
@@ -44,6 +45,15 @@ export async function disableSharingAsCaregiver(
     .eq('id', athleteId)
 
   if (error) return { error: 'Could not update sharing settings. Please try again.' }
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'caregiver',
+    action: 'sharing.disable',
+    targetType: 'athlete',
+    targetId: athleteId,
+  })
 
   revalidatePath('/feed')
   revalidatePath(`/athletes/${athleteId}`)

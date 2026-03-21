@@ -8,6 +8,7 @@ import { syncBadges } from '@/lib/badges'
 import { parseValidDate } from '@/lib/utils/dates'
 import { getAthletePhotosPaginated, withSignedUrls, deleteMediaForSession, deleteMediaById } from '@/lib/media'
 import { sendPushToRole } from '@/lib/push'
+import { logAudit } from '@/lib/audit'
 
 export async function addCoachNote(athleteId: string, content: string, includeInStory = false): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -106,6 +107,16 @@ export async function updateAthlete(
     .eq('id', athleteId)
 
   if (error) return { error: 'Could not update athlete profile. Please try again.' }
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: callerUser?.role,
+    action: 'athlete.update',
+    targetType: 'athlete',
+    targetId: athleteId,
+    metadata: { name },
+  })
 
   // Notify caregiver when sharing is enabled
   const justEnabled = allow_public_sharing && !currentAthlete?.allow_public_sharing && !currentAthlete?.sharing_disabled_by_caregiver
@@ -331,6 +342,16 @@ export async function saveCues(
     .single()
 
   if (error) return { error: 'Could not save cues. Please try again.' }
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: callerUser?.role,
+    action: 'cues.update',
+    targetType: 'athlete',
+    targetId: athleteId,
+  })
+
   revalidatePath(`/athletes/${athleteId}`)
   return { data }
 }
@@ -608,6 +629,16 @@ export async function deleteSession(
     if (error) return { error: 'Could not delete the session. Please try again.' }
   }
 
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'coach',
+    action: 'session.delete',
+    targetType: 'session',
+    targetId: sessionId,
+    metadata: { athleteId, syncSource: session.sync_source },
+  })
+
   // Re-evaluate badges for the session's coach (not the admin performing the delete)
   if (session.coach_user_id) {
     await syncBadges(session.coach_user_id)
@@ -644,6 +675,16 @@ export async function deletePhoto(
 
   const result = await deleteMediaById(mediaId)
   if (result.error) return result
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: callerUser?.role,
+    action: 'photo.delete',
+    targetType: 'media',
+    targetId: mediaId,
+    metadata: { athleteId },
+  })
 
   revalidatePath(`/athletes/${athleteId}`)
   return {}

@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 import bcrypt from 'bcryptjs'
 import { adminClient } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 const PIN_COOKIE_PREFIX = 'athlete_session_'
 const MAX_ATTEMPTS = 5
@@ -125,6 +126,13 @@ export async function setAthletePin(
   if (error) {
     return { error: 'Could not save PIN. Please try again.' }
   }
+
+  logAudit({
+    actorId: 'system',
+    action: 'athlete.pin_set',
+    targetType: 'athlete',
+    targetId: athleteId,
+  })
 
   return { success: true }
 }

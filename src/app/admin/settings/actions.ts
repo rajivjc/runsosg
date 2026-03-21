@@ -3,6 +3,7 @@
 import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 
 export async function updateClubSettings(
   _prev: { error?: string; success?: string },
@@ -65,6 +66,15 @@ export async function updateClubSettings(
 
     if (error) return { error: 'Could not save settings. Please try again.' }
   }
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'admin',
+    action: 'settings.update',
+    targetType: 'club_settings',
+    metadata: { name },
+  })
 
   revalidatePath('/admin/settings')
   return { success: 'Settings saved.' }

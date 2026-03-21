@@ -4,6 +4,7 @@ import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { revalidateTag } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 
 async function verifyAdmin(): Promise<{ userId: string } | { error: string }> {
   const supabase = await createClient()
@@ -67,6 +68,14 @@ export async function createMilestoneDefinition(
 
   if (error) return { error: 'Could not create milestone definition. Please try again.' }
 
+  logAudit({
+    actorId: auth.userId,
+    actorRole: 'admin',
+    action: 'milestone_def.create',
+    targetType: 'milestone_definition',
+    metadata: { label, type },
+  })
+
   revalidatePath('/admin/milestones')
   revalidateTag('milestone-definitions')
   return { success: `Milestone "${label}" created.` }
@@ -85,6 +94,15 @@ export async function toggleMilestoneDefinitionActive(
     .eq('id', definitionId)
 
   if (error) return { error: 'Could not update milestone. Please try again.' }
+
+  logAudit({
+    actorId: auth.userId,
+    actorRole: 'admin',
+    action: 'milestone_def.toggle',
+    targetType: 'milestone_definition',
+    targetId: definitionId,
+    metadata: { active },
+  })
 
   revalidatePath('/admin/milestones')
   revalidateTag('milestone-definitions')
@@ -111,6 +129,15 @@ export async function updateMilestoneDefinition(
     .eq('id', definitionId)
 
   if (error) return { error: 'Could not update milestone. Please try again.' }
+
+  logAudit({
+    actorId: auth.userId,
+    actorRole: 'admin',
+    action: 'milestone_def.update',
+    targetType: 'milestone_definition',
+    targetId: definitionId,
+    metadata: data,
+  })
 
   revalidatePath('/admin/milestones')
   revalidateTag('milestone-definitions')

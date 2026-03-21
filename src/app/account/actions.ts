@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 
 export async function signOut() {
   const supabase = await createClient()
@@ -20,6 +21,14 @@ export async function disconnectStrava() {
     .from('strava_connections')
     .delete()
     .eq('user_id', user.id)
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    action: 'strava.disconnect',
+    targetType: 'strava_connection',
+    targetId: user.id,
+  })
 
   revalidatePath('/account')
   revalidatePath('/athletes')

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { parseValidDate } from '@/lib/utils/dates'
 import { sendEmail } from '@/lib/email/resend'
 import { invitationEmail } from '@/lib/email/templates'
+import { logAudit } from '@/lib/audit'
 
 export type InviteFormState = {
   error?: string
@@ -89,6 +90,16 @@ export async function inviteUser(
     }
   }
 
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'admin',
+    action: 'user.invite',
+    targetType: 'user',
+    targetId: email,
+    metadata: { email, role, athleteId },
+  })
+
   revalidatePath('/admin')
   return { success: `Invitation sent to ${email}` }
 }
@@ -123,6 +134,15 @@ export async function toggleUserActive(
     .eq('id', userId)
 
   if (error) return { error: 'Could not update user status. Please try again.' }
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'admin',
+    action: active ? 'user.reactivate' : 'user.deactivate',
+    targetType: 'user',
+    targetId: userId,
+  })
 
   revalidatePath('/admin')
   return { success: active ? 'User reactivated' : 'User deactivated' }
@@ -179,6 +199,16 @@ export async function createAthlete(
 
   if (error) return { error: 'Could not create the athlete. Please try again.' }
 
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'admin',
+    action: 'athlete.create',
+    targetType: 'athlete',
+    targetId: data.id,
+    metadata: { name },
+  })
+
   revalidatePath('/athletes')
   revalidatePath('/admin')
   return { success: 'Athlete created', athleteId: data.id }
@@ -229,6 +259,16 @@ export async function changeUserRole(
     .eq('id', userId)
 
   if (error) return { error: 'Could not update the role. Please try again.' }
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'admin',
+    action: 'user.role_change',
+    targetType: 'user',
+    targetId: userId,
+    metadata: { newRole, athleteId },
+  })
 
   // If changing to caregiver and athleteId provided, link them to the athlete
   if (newRole === 'caregiver' && athleteId) {
@@ -281,6 +321,16 @@ export async function cancelInvitation(invitationId: string): Promise<{ error?: 
 
   if (error) return { error: 'Could not cancel the invitation. Please try again.' }
 
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'admin',
+    action: 'invitation.cancel',
+    targetType: 'invitation',
+    targetId: invitationId,
+    metadata: { email: invitation.email },
+  })
+
   // Also delete the auth user created by createUser (if they never signed in)
   try {
     const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers({
@@ -330,6 +380,16 @@ export async function deleteUser(userId: string): Promise<{ error?: string }> {
   const { error } = await adminClient.auth.admin.deleteUser(userId)
   if (error) return { error: 'Could not delete the user. Please try again.' }
 
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'admin',
+    action: 'user.delete',
+    targetType: 'user',
+    targetId: userId,
+    metadata: { email: targetEmail },
+  })
+
   revalidatePath('/admin')
   return {}
 }
@@ -352,6 +412,15 @@ export async function deleteAthlete(athleteId: string): Promise<{ error?: string
     .eq('id', athleteId)
 
   if (error) return { error: 'Could not delete the athlete. They may have linked data — try deactivating instead.' }
+
+  logAudit({
+    actorId: user.id,
+    actorEmail: user.email,
+    actorRole: 'admin',
+    action: 'athlete.delete',
+    targetType: 'athlete',
+    targetId: athleteId,
+  })
 
   revalidatePath('/athletes')
   revalidatePath('/admin')
