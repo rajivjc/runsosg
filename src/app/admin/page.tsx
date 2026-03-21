@@ -82,7 +82,7 @@ export default async function AdminPage() {
 
       {/* Quick links */}
       <section>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Link
             href="/admin/milestones"
             className="bg-white border border-gray-200 rounded-xl px-4 py-4 hover:border-teal-200 hover:bg-teal-50/30 transition-colors"
@@ -98,6 +98,14 @@ export default async function AdminPage() {
             <span className="text-2xl">⚙️</span>
             <p className="text-sm font-semibold text-gray-900 mt-2">Settings</p>
             <p className="text-xs text-gray-500 mt-0.5">Club name, location, session schedule</p>
+          </Link>
+          <Link
+            href="/admin/audit"
+            className="bg-white border border-gray-200 rounded-xl px-4 py-4 hover:border-teal-200 hover:bg-teal-50/30 transition-colors"
+          >
+            <span className="text-2xl">📋</span>
+            <p className="text-sm font-semibold text-gray-900 mt-2">Activity Log</p>
+            <p className="text-xs text-gray-500 mt-0.5">View recent admin and coach actions</p>
           </Link>
         </div>
       </section>
