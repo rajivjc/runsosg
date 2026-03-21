@@ -1,7 +1,18 @@
+// Refactored from 849-line monolith. Children:
+// - MoodCheckIn: mood selection + submission
+// - AvatarPicker: avatar selection + display (when no photo)
+// - ThemeColorPicker: theme colour selection + save
+// Parent manages: selectedColor/theme (shared across all sections),
+//   message state, favorites, goal choice, athlete data, and all
+//   non-personalization sections.
+
 'use client'
 
 import { useState, useCallback } from 'react'
-import { sendAthleteMessage, saveAthleteMood, toggleFavoriteRun, setAthleteGoal, setAthleteTheme, setAthleteAvatar } from '@/app/my/[athleteId]/actions'
+import { sendAthleteMessage, toggleFavoriteRun, setAthleteGoal } from '@/app/my/[athleteId]/actions'
+import MoodCheckIn from '@/components/athlete/MoodCheckIn'
+import AvatarPicker from '@/components/athlete/AvatarPicker'
+import ThemeColorPicker from '@/components/athlete/ThemeColorPicker'
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -108,42 +119,6 @@ const THEME_COLORS: Record<string, {
   coral:  { from: 'from-orange-50', ring: 'ring-orange-400', bg: 'bg-orange-400', border: 'border-orange-400', borderLight: 'border-orange-200', text: 'text-orange-700', bgLight: 'bg-orange-50', bgDark: 'bg-orange-600' },
 }
 
-// ─── Mood options ────────────────────────────────────────────────
-
-const MOOD_OPTIONS = [
-  { value: 1, emoji: '😢', label: 'Sad' },
-  { value: 2, emoji: '😴', label: 'Tired' },
-  { value: 3, emoji: '😐', label: 'Okay' },
-  { value: 4, emoji: '😊', label: 'Happy' },
-  { value: 5, emoji: '🤩', label: 'Excited' },
-]
-
-// ─── Color picker options ────────────────────────────────────────
-
-const COLOR_OPTIONS = [
-  { key: 'teal', label: 'Teal', swatch: 'bg-teal-400' },
-  { key: 'blue', label: 'Blue', swatch: 'bg-blue-400' },
-  { key: 'purple', label: 'Purple', swatch: 'bg-purple-400' },
-  { key: 'green', label: 'Green', swatch: 'bg-green-400' },
-  { key: 'amber', label: 'Amber', swatch: 'bg-amber-400' },
-  { key: 'coral', label: 'Coral', swatch: 'bg-orange-400' },
-]
-
-// ─── Avatar options ──────────────────────────────────────────────
-
-const AVATAR_OPTIONS = [
-  { key: '🏃', label: 'Runner' },
-  { key: '🏃‍♂️', label: 'Man running' },
-  { key: '🏃‍♀️', label: 'Woman running' },
-  { key: '👟', label: 'Running shoe' },
-  { key: '🏅', label: 'Medal' },
-  { key: '🏆', label: 'Trophy' },
-  { key: '⭐', label: 'Star' },
-  { key: '💪', label: 'Strong' },
-] as const
-
-const AVATAR_FEEDBACKS = ['Nice!', 'Love it!', 'Great pick!', "That's you!"]
-
 // ─── Goal choice labels ─────────────────────────────────────────
 
 const GOAL_CHOICES = [
@@ -171,18 +146,11 @@ export default function MyJourneyDashboard({
   const [messageSent, setMessageSent] = useState<string | null>(null)
   const [messageError, setMessageError] = useState<string | null>(null)
   const [sendingMessage, setSendingMessage] = useState(false)
-  const [mood, setMood] = useState<number | null>(currentMood)
-  const [moodFeedback, setMoodFeedback] = useState<string | null>(null)
   const [favorites, setFavorites] = useState<Set<string>>(new Set(favoriteSessionIds))
   const [goalChoice, setGoalChoice] = useState<string | null>(athleteGoalChoice)
   const [goalFeedback, setGoalFeedback] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState(themeColor)
-  const [colorFeedback, setColorFeedback] = useState<string | null>(null)
   const [lastSentMessage, setLastSentMessage] = useState<{ message: string; time: string } | null>(null)
-  const [selectedAvatar, setSelectedAvatar] = useState(athlete.avatar ?? '🏃')
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false)
-  const [avatarFeedback, setAvatarFeedback] = useState<string | null>(null)
-  const [avatarBounce, setAvatarBounce] = useState(false)
   const theme = THEME_COLORS[selectedColor] ?? THEME_COLORS.teal
 
   const handleSendMessage = useCallback(async (message: string) => {
@@ -199,16 +167,6 @@ export default function MyJourneyDashboard({
       setLastSentMessage({ message, time: timeStr })
     } else {
       setMessageError(result.error ?? 'Could not send. Try again.')
-    }
-  }, [athlete.id])
-
-  const handleMood = useCallback(async (value: number) => {
-    setMood(value)
-    setMoodFeedback(null)
-    const result = await saveAthleteMood(athlete.id, value)
-    if (result.success) {
-      setMoodFeedback('Got it!')
-      setTimeout(() => setMoodFeedback(null), 3000)
     }
   }, [athlete.id])
 
@@ -230,28 +188,9 @@ export default function MyJourneyDashboard({
     }
   }, [athlete.id])
 
-  const handleColorChange = useCallback(async (color: string) => {
+  const handleColorChange = useCallback((color: string) => {
     setSelectedColor(color)
-    setColorFeedback(null)
-    const result = await setAthleteTheme(athlete.id, color)
-    if (result.success) {
-      setColorFeedback('Nice choice!')
-      setTimeout(() => setColorFeedback(null), 3000)
-    }
-  }, [athlete.id])
-
-  const handleAvatarChange = useCallback(async (avatar: string) => {
-    setSelectedAvatar(avatar)
-    setAvatarFeedback(null)
-    setAvatarBounce(true)
-    setTimeout(() => setAvatarBounce(false), 200)
-    const result = await setAthleteAvatar(athlete.id, avatar)
-    if (result.success) {
-      const feedback = AVATAR_FEEDBACKS[Math.floor(Math.random() * AVATAR_FEEDBACKS.length)]
-      setAvatarFeedback(feedback)
-      setTimeout(() => setAvatarFeedback(null), 2500)
-    }
-  }, [athlete.id])
+  }, [])
 
   const formatRunDate = (dateStr: string) => {
     // dateStr may be a full ISO timestamp (timestamptz) or YYYY-MM-DD
@@ -283,62 +222,14 @@ export default function MyJourneyDashboard({
               />
             </div>
           ) : (
-            <div className="mb-4">
-              <button
-                type="button"
-                onClick={() => setShowAvatarPicker(p => !p)}
-                className={`w-[84px] h-[84px] mx-auto rounded-full ${theme.bgLight} flex items-center justify-center border-4 ${theme.borderLight} transition-transform duration-200 motion-reduce:transition-none ${avatarBounce ? 'scale-110' : 'scale-100'}`}
-                aria-label="Choose your avatar"
-              >
-                <span className="text-[44px] leading-none">{selectedAvatar}</span>
-              </button>
-              <p
-                className={`text-xs mt-1.5 ${theme.text} opacity-70 cursor-pointer`}
-                onClick={() => setShowAvatarPicker(p => !p)}
-              >
-                Tap to change
-              </p>
-            </div>
-          )}
-
-          {/* Inline avatar picker */}
-          {showAvatarPicker && !athlete.photo_url && (
-            <div className="mb-4">
-              <div
-                role="radiogroup"
-                aria-label="Pick your avatar"
-                className="inline-grid grid-cols-4 gap-3"
-              >
-                {AVATAR_OPTIONS.map(opt => {
-                  const isSelected = selectedAvatar === opt.key
-                  return (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      aria-label={opt.label}
-                      onClick={() => handleAvatarChange(opt.key)}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-150 motion-reduce:transition-none ${
-                        isSelected
-                          ? `ring-2 ${theme.ring} ${theme.bgLight} scale-105 motion-reduce:scale-100`
-                          : 'bg-white hover:bg-gray-50 ring-1 ring-gray-200'
-                      }`}
-                    >
-                      {opt.key}
-                    </button>
-                  )
-                })}
-              </div>
-              {avatarFeedback && (
-                <p
-                  className={`text-sm font-medium ${theme.text} mt-2 animate-fade-in`}
-                  aria-live="polite"
-                >
-                  {avatarFeedback}
-                </p>
-              )}
-            </div>
+            <AvatarPicker
+              athleteId={athlete.id}
+              currentAvatar={athlete.avatar}
+              themeRing={theme.ring}
+              themeText={theme.text}
+              themeBgLight={theme.bgLight}
+              themeBorderLight={theme.borderLight}
+            />
           )}
 
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
@@ -350,37 +241,12 @@ export default function MyJourneyDashboard({
         </section>
 
         {/* ── Mood Picker ─────────────────────────────────── */}
-        <section aria-label="How are you feeling today" className="mb-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span>😊</span> How are you feeling today?
-          </h2>
-          <div className="flex justify-between gap-2">
-            {MOOD_OPTIONS.map(m => {
-              const selected = mood === m.value
-              return (
-                <button
-                  key={m.value}
-                  onClick={() => handleMood(m.value)}
-                  className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-all
-                    ${selected
-                      ? `bg-white border-2 ${theme.ring.replace('ring', 'border')} shadow-sm`
-                      : 'bg-white/60 border-2 border-transparent hover:bg-white'
-                    }`}
-                  aria-label={m.label}
-                  aria-pressed={selected}
-                >
-                  <span className="text-3xl">{m.emoji}</span>
-                  <span className="text-xs text-gray-600">{m.label}</span>
-                </button>
-              )
-            })}
-          </div>
-          <div aria-live="polite" className="mt-2 min-h-[1.25rem]">
-            {moodFeedback && (
-              <p className={`text-sm ${theme.text} font-medium text-center`}>{moodFeedback}</p>
-            )}
-          </div>
-        </section>
+        <MoodCheckIn
+          athleteId={athlete.id}
+          currentMood={currentMood}
+          themeRing={theme.ring}
+          themeText={theme.text}
+        />
 
         {/* ── Your Coach ──────────────────────────────────── */}
         {primaryCoach && (
@@ -687,33 +553,12 @@ export default function MyJourneyDashboard({
         )}
 
         {/* ── Theme Color Picker ─────────────────────────── */}
-        <section aria-label="Pick your color" className="mb-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span>🎨</span> Pick your color
-          </h2>
-          <div className="flex justify-between gap-2">
-            {COLOR_OPTIONS.map(c => {
-              const selected = selectedColor === c.key
-              return (
-                <button
-                  key={c.key}
-                  onClick={() => handleColorChange(c.key)}
-                  className={`w-14 h-14 rounded-full ${c.swatch} flex items-center justify-center transition-all
-                    ${selected ? 'ring-4 ring-offset-2 ring-gray-400 scale-110' : 'opacity-60 hover:opacity-80'}`}
-                  aria-label={`${c.label}${selected ? ' (selected)' : ''}`}
-                  aria-pressed={selected}
-                >
-                  {selected && <span className="text-white text-lg font-bold drop-shadow-sm">✓</span>}
-                </button>
-              )
-            })}
-          </div>
-          <div aria-live="polite" className="mt-2 min-h-[1.25rem]">
-            {colorFeedback && (
-              <p className={`text-sm ${theme.text} font-medium text-center`}>{colorFeedback}</p>
-            )}
-          </div>
-        </section>
+        <ThemeColorPicker
+          athleteId={athlete.id}
+          selectedColor={selectedColor}
+          themeText={theme.text}
+          onColorChange={handleColorChange}
+        />
 
         {/* ── Send Message to Coach ───────────────────────── */}
         <section aria-label="Send a message to your coach" className="mb-8">
