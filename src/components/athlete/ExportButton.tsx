@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { Download } from 'lucide-react'
 import { getExportData } from '@/lib/export'
-import { formatSessionsAsCSV, triggerDownload } from '@/lib/csv'
+import { formatSessionsAsCSV } from '@/lib/csv'
 import { generateProgressReport } from '@/lib/pdf-report'
-import { guardIOSDownload } from '@/lib/utils/ios-download-fix'
+import { shareCsv } from '@/lib/utils/ios-download-fix'
 
 export default function ExportButton({ athleteId }: { athleteId: string }) {
   const [open, setOpen] = useState(false)
@@ -36,11 +36,9 @@ export default function ExportButton({ athleteId }: { athleteId: string }) {
         const filename = result.athleteName
           .toLowerCase()
           .replace(/\s+/g, '-') + '-sessions.csv'
-        guardIOSDownload()
-        triggerDownload(csv, filename)
+        await shareCsv(csv, filename)
       } else {
-        guardIOSDownload()
-        generateProgressReport(result.data, result.athleteName)
+        await generateProgressReport(result.data, result.athleteName)
       }
     } catch {
       alert('Export failed. Please try again.')

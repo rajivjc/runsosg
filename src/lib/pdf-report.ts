@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { ExportSession } from '@/lib/export'
+import { sharePdf } from '@/lib/utils/ios-download-fix'
 
 const SGT = 'Asia/Singapore'
 
@@ -44,7 +45,7 @@ export function calculateSummaryStats(sessions: ExportSession[]): {
   return { totalSessions, totalDistanceKm, averagePace, dateRange }
 }
 
-export function generateProgressReport(data: ExportSession[], athleteName: string): void {
+export async function generateProgressReport(data: ExportSession[], athleteName: string): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const pageHeight = doc.internal.pageSize.getHeight()
@@ -160,5 +161,6 @@ export function generateProgressReport(data: ExportSession[], athleteName: strin
   }
 
   const filename = athleteName.toLowerCase().replace(/\s+/g, '-') + '-progress-report.pdf'
-  doc.save(filename)
+  const blob = doc.output('blob')
+  await sharePdf(blob, filename)
 }

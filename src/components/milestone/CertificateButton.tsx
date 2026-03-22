@@ -27,9 +27,13 @@ function DownloadIcon() {
 }
 
 export default function CertificateButton({ data, variant = 'primary' }: CertificateButtonProps) {
-  function handleClick(e: React.MouseEvent) {
+  async function handleClick(e: React.MouseEvent) {
     e.stopPropagation()
-    generateCertificatePdf(data)
+    try {
+      await generateCertificatePdf(data)
+    } catch {
+      // User cancelled the share sheet — this is fine, not an error
+    }
   }
 
   if (variant === 'ghost') {

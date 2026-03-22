@@ -1,10 +1,10 @@
 /**
- * iOS PWA (WKWebView) corrupts page layout after dismissing a document
- * preview sheet (PDF/CSV viewer). This utility forces a layout
- * recalculation when the page becomes visible again after a download.
+ * On iOS PWA, blob downloads via a.click() corrupt the page layout.
+ * This module provides share-based alternatives that use the native
+ * iOS share sheet, avoiding the WKWebView document preview entirely.
  */
 
-function isIOSStandalone(): boolean {
+function isIOSPWA(): boolean {
   if (typeof window === 'undefined') return false
   return (
     (window.matchMedia('(display-mode: standalone)').matches ||
@@ -14,27 +14,57 @@ function isIOSStandalone(): boolean {
   )
 }
 
-/**
- * Call this BEFORE triggering a download in iOS PWA.
- * It sets up a one-time visibilitychange listener that forces
- * a layout recalculation when the user returns from the preview.
- */
-export function guardIOSDownload(): void {
-  if (!isIOSStandalone()) return
-
-  function handleVisibilityChange() {
-    if (document.visibilityState === 'visible') {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-
-      // Force layout recalculation by briefly toggling overflow
-      const scrollY = window.scrollY
-      document.documentElement.style.overflow = 'hidden'
-      setTimeout(() => {
-        document.documentElement.style.overflow = ''
-        window.scrollTo(0, scrollY)
-      }, 50)
-    }
+function canShareFiles(): boolean {
+  if (typeof navigator === 'undefined') return false
+  if (!navigator.share || !navigator.canShare) return false
+  // Test with a dummy file to check file sharing support
+  try {
+    const testFile = new File([''], 'test.pdf', { type: 'application/pdf' })
+    return navigator.canShare({ files: [testFile] })
+  } catch {
+    return false
   }
+}
 
-  document.addEventListener('visibilitychange', handleVisibilityChange)
+/**
+ * Share or download a PDF blob. On iOS PWA, uses the native share sheet.
+ * On desktop/other platforms, triggers a normal download.
+ */
+export async function sharePdf(blob: Blob, filename: string): Promise<void> {
+  if (isIOSPWA() && canShareFiles()) {
+    const file = new File([blob], filename, { type: 'application/pdf' })
+    await navigator.share({ files: [file] })
+    return
+  }
+  // Desktop fallback: normal download
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * Share or download a CSV string. On iOS PWA, uses the native share sheet.
+ * On desktop/other platforms, triggers a normal download.
+ */
+export async function shareCsv(content: string, filename: string): Promise<void> {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+  if (isIOSPWA() && canShareFiles()) {
+    const file = new File([blob], filename, { type: 'text/csv' })
+    await navigator.share({ files: [file] })
+    return
+  }
+  // Desktop fallback: normal download
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }

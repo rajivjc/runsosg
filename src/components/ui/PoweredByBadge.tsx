@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function PoweredByBadge() {
   return (
-    <footer className="mt-12 pt-6 pb-6 text-center">
+    <footer className="absolute bottom-4 left-0 right-0 text-center">
       <Link
         href="/login"
         className="text-sm text-white/50 hover:text-white/70 transition-colors"

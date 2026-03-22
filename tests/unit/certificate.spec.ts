@@ -17,7 +17,7 @@
 // ── Mock jsPDF ──────────────────────────────────────────────────────────────
 
 const mockText = jest.fn()
-const mockSave = jest.fn()
+const mockOutput = jest.fn().mockReturnValue(new Blob(['pdf'], { type: 'application/pdf' }))
 const mockSetFont = jest.fn()
 const mockSetFontSize = jest.fn()
 const mockSetTextColor = jest.fn()
@@ -34,7 +34,7 @@ jest.mock('jspdf', () => ({
     mockJsPDFConstructor(...args)
     return {
       text: mockText,
-      save: mockSave,
+      output: mockOutput,
       setFont: mockSetFont,
       setFontSize: mockSetFontSize,
       setTextColor: mockSetTextColor,
@@ -45,6 +45,11 @@ jest.mock('jspdf', () => ({
       line: mockLine,
     }
   }),
+}))
+
+const mockSharePdf = jest.fn().mockResolvedValue(undefined)
+jest.mock('@/lib/utils/ios-download-fix', () => ({
+  sharePdf: (...args: unknown[]) => mockSharePdf(...args),
 }))
 
 import { generateCertificatePdf, type CertificateData } from '@/lib/certificate'
@@ -67,7 +72,8 @@ function makeData(overrides: Partial<CertificateData> = {}): CertificateData {
 
 function resetMocks() {
   mockText.mockClear()
-  mockSave.mockClear()
+  mockOutput.mockClear()
+  mockSharePdf.mockClear()
   mockSetFont.mockClear()
   mockSetFontSize.mockClear()
   mockSetTextColor.mockClear()
@@ -84,8 +90,8 @@ function resetMocks() {
 describe('generateCertificatePdf', () => {
   beforeEach(resetMocks)
 
-  test('creates a valid PDF with landscape A4 orientation', () => {
-    generateCertificatePdf(makeData())
+  test('creates a valid PDF with landscape A4 orientation', async () => {
+    await generateCertificatePdf(makeData())
 
     expect(mockJsPDFConstructor).toHaveBeenCalledWith({
       orientation: 'landscape',
@@ -95,54 +101,55 @@ describe('generateCertificatePdf', () => {
     expect(mockText).toHaveBeenCalledWith('Nicholas Tan', expect.any(Number), expect.any(Number), expect.anything())
     expect(mockText).toHaveBeenCalledWith('5 Sessions', expect.any(Number), expect.any(Number), expect.anything())
     expect(mockText).toHaveBeenCalledWith('CERTIFICATE OF ACHIEVEMENT', expect.any(Number), expect.any(Number), expect.anything())
-    expect(mockSave).toHaveBeenCalledWith(expect.stringMatching(/\.pdf$/))
+    expect(mockOutput).toHaveBeenCalledWith('blob')
+    expect(mockSharePdf).toHaveBeenCalledWith(expect.any(Blob), expect.stringMatching(/\.pdf$/))
   })
 
-  test('filename is correctly slugified', () => {
-    generateCertificatePdf(makeData({ athleteName: 'Nicholas Tan', milestoneLabel: '5 Sessions' }))
+  test('filename is correctly slugified', async () => {
+    await generateCertificatePdf(makeData({ athleteName: 'Nicholas Tan', milestoneLabel: '5 Sessions' }))
 
-    expect(mockSave).toHaveBeenCalledWith('nicholas-tan-5-sessions.pdf')
+    expect(mockSharePdf).toHaveBeenCalledWith(expect.any(Blob), 'nicholas-tan-5-sessions.pdf')
   })
 
-  test('coach name is omitted when null', () => {
-    generateCertificatePdf(makeData({ coachName: null }))
+  test('coach name is omitted when null', async () => {
+    await generateCertificatePdf(makeData({ coachName: null }))
 
     const textCalls: unknown[] = mockText.mock.calls.map((c: unknown[]) => c[0])
     const hasCoached = textCalls.some((t) => typeof t === 'string' && t.includes('Coached by'))
     expect(hasCoached).toBe(false)
   })
 
-  test('coach name is included when present', () => {
-    generateCertificatePdf(makeData({ coachName: 'Coach Sarah' }))
+  test('coach name is included when present', async () => {
+    await generateCertificatePdf(makeData({ coachName: 'Coach Sarah' }))
 
     const textCalls: unknown[] = mockText.mock.calls.map((c: unknown[]) => c[0])
     const hasCoachSarah = textCalls.some((t) => typeof t === 'string' && t.includes('Coach Sarah'))
     expect(hasCoachSarah).toBe(true)
   })
 
-  test('default theme colour is teal when null', () => {
-    generateCertificatePdf(makeData({ themeColor: null }))
+  test('default theme colour is teal when null', async () => {
+    await generateCertificatePdf(makeData({ themeColor: null }))
 
     // Teal primary is #0F766E → RGB(15, 118, 110)
     expect(mockSetTextColor).toHaveBeenCalledWith(15, 118, 110)
   })
 
-  test('respects athlete theme colour', () => {
-    generateCertificatePdf(makeData({ themeColor: 'purple' }))
+  test('respects athlete theme colour', async () => {
+    await generateCertificatePdf(makeData({ themeColor: 'purple' }))
 
     // Purple primary is #7C3AED → RGB(124, 58, 237)
     expect(mockSetTextColor).toHaveBeenCalledWith(124, 58, 237)
   })
 
-  test('falls back to teal for unknown theme colour', () => {
-    generateCertificatePdf(makeData({ themeColor: 'rainbow' }))
+  test('falls back to teal for unknown theme colour', async () => {
+    await generateCertificatePdf(makeData({ themeColor: 'rainbow' }))
 
     // Should use teal: RGB(15, 118, 110)
     expect(mockSetTextColor).toHaveBeenCalledWith(15, 118, 110)
   })
 
-  test('date is formatted in Singapore locale', () => {
-    generateCertificatePdf(makeData({ achievedAt: '2026-03-15T08:00:00Z' }))
+  test('date is formatted in Singapore locale', async () => {
+    await generateCertificatePdf(makeData({ achievedAt: '2026-03-15T08:00:00Z' }))
 
     const textCalls: unknown[] = mockText.mock.calls.map((c: unknown[]) => c[0])
     const hasDate = textCalls.some((t) => typeof t === 'string' && t === '15 March 2026')
@@ -156,8 +163,8 @@ describe('generateCertificatePdf', () => {
     expect(typeof mod.default).toBe('function')
   })
 
-  test('avatar defaults to 🏃 when null', () => {
-    generateCertificatePdf(makeData({ avatar: null }))
+  test('avatar defaults to 🏃 when null', async () => {
+    await generateCertificatePdf(makeData({ avatar: null }))
 
     const textCalls: unknown[] = mockText.mock.calls.map((c: unknown[]) => c[0])
     const hasRunnerEmoji = textCalls.some((t) => t === '🏃')

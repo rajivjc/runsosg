@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf'
-import { guardIOSDownload } from '@/lib/utils/ios-download-fix'
+import { sharePdf } from '@/lib/utils/ios-download-fix'
 
 const THEME_HEX: Record<string, { primary: string; light: string }> = {
   teal:   { primary: '#0F766E', light: '#CCFBF1' },
@@ -37,7 +37,7 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, '')
 }
 
-export function generateCertificatePdf(data: CertificateData): void {
+export async function generateCertificatePdf(data: CertificateData): Promise<void> {
   const theme = THEME_HEX[data.themeColor ?? ''] ?? THEME_HEX.teal
   const primaryRgb = hexToRgb(theme.primary)
   const avatar = data.avatar ?? '🏃'
@@ -130,6 +130,6 @@ export function generateCertificatePdf(data: CertificateData): void {
 
   // ─── Save ─────────────────────────────────────────────────────
   const filename = `${slugify(data.athleteName)}-${slugify(data.milestoneLabel)}.pdf`
-  guardIOSDownload()
-  doc.save(filename)
+  const blob = doc.output('blob')
+  await sharePdf(blob, filename)
 }
