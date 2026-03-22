@@ -9,14 +9,21 @@ import CoachSessionFeed from '@/components/feed/CoachSessionFeed'
 import BetaBanner from '@/components/feed/BetaBanner'
 import HintCard from '@/components/ui/HintCard'
 import { HINT_KEYS } from '@/lib/hint-keys'
+import PrioritySummary from '@/components/feed/PrioritySummary'
+import PriorityBucket from '@/components/feed/PriorityBucket'
+import AthleteStatusCard from '@/components/feed/AthleteStatusCard'
+import OnTrackCloud from '@/components/feed/OnTrackCloud'
+import FeelTrendBars from '@/components/feed/FeelTrendBars'
 import type { CoachFeedData } from '@/lib/feed/types'
+import type { CoachPriorities } from '@/lib/feed/coach-priorities'
 
 interface Props {
   data: CoachFeedData
   userId: string
+  priorities?: CoachPriorities
 }
 
-export default function CoachFeed({ data, userId }: Props) {
+export default function CoachFeed({ data, userId, priorities }: Props) {
   const {
     user,
     sessions,
@@ -105,6 +112,93 @@ export default function CoachFeed({ data, userId }: Props) {
           title="Your coaching feed"
           description="New sessions, milestones, and alerts from all athletes show up here. Tap any session card for details."
         />
+        </>
+      )}
+
+      {/* Priority status dashboard */}
+      {priorities && priorities.totalAthletes > 0 && (
+        <>
+          <PrioritySummary
+            needsAttentionCount={priorities.needsAttention.length}
+            goingQuietCount={priorities.goingQuiet.length}
+            nearMilestoneCount={priorities.nearMilestone.length}
+            onTrackCount={priorities.onTrack.length}
+            totalAthletes={priorities.totalAthletes}
+          />
+
+          {priorities.needsAttention.length > 0 && (
+            <PriorityBucket variant="danger" label="Needs attention">
+              {priorities.needsAttention.map((a) => (
+                <AthleteStatusCard
+                  key={a.athleteId}
+                  athleteId={a.athleteId}
+                  athleteName={a.athleteName}
+                  avatar={a.avatar}
+                  detail={a.detail}
+                  variant="danger"
+                  rightContent={<FeelTrendBars ratings={a.recentFeelRatings} />}
+                />
+              ))}
+            </PriorityBucket>
+          )}
+
+          {priorities.goingQuiet.length > 0 && (
+            <PriorityBucket variant="warning" label="Going quiet">
+              {priorities.goingQuiet.map((a) => (
+                <AthleteStatusCard
+                  key={a.athleteId}
+                  athleteId={a.athleteId}
+                  athleteName={a.athleteName}
+                  avatar={a.avatar}
+                  detail={`No sessions in ${a.daysSinceLastSession} days · Was averaging every ${a.averageCadenceDays} days`}
+                  variant="warning"
+                />
+              ))}
+            </PriorityBucket>
+          )}
+
+          {priorities.nearMilestone.length > 0 && (
+            <PriorityBucket variant="info" label="Approaching milestone">
+              {priorities.nearMilestone.map((a) => (
+                <AthleteStatusCard
+                  key={a.athleteId}
+                  athleteId={a.athleteId}
+                  athleteName={a.athleteName}
+                  avatar={a.avatar}
+                  detail={`${a.target - a.current} ${a.unit} away from ${a.milestoneName}`}
+                  variant="info"
+                  rightContent={
+                    <span className="text-xs font-semibold text-gray-500">
+                      {a.current}/{a.target}
+                    </span>
+                  }
+                />
+              ))}
+            </PriorityBucket>
+          )}
+
+          {priorities.onTrack.length > 0 && (
+            <PriorityBucket variant="success" label={`On track · ${priorities.onTrack.length} athletes`}>
+              <OnTrackCloud athletes={priorities.onTrack} />
+            </PriorityBucket>
+          )}
+
+          {priorities.unmatchedStravaCount > 0 && (
+            <Link
+              href="/notifications"
+              className="block rounded-xl px-4 py-3 mb-4 min-h-[44px]"
+              style={{
+                backgroundColor: 'var(--color-warning-light)',
+                borderLeft: '3px solid var(--color-warning)',
+              }}
+            >
+              <p className="text-sm font-medium text-gray-900">
+                {priorities.unmatchedStravaCount} unmatched Strava activit{priorities.unmatchedStravaCount === 1 ? 'y' : 'ies'} — tap to resolve
+              </p>
+            </Link>
+          )}
+
+          <hr className="border-gray-200 mb-5" />
         </>
       )}
 

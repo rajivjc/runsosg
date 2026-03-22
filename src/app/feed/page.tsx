@@ -3,6 +3,7 @@ import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { loadCoachFeedData } from '@/lib/feed/coach-data'
 import { loadCaregiverFeedData } from '@/lib/feed/caregiver-data'
+import { getCoachPriorities } from '@/lib/feed/coach-priorities'
 import CoachFeed from '@/components/feed/CoachFeed'
 import CaregiverFeed from '@/components/feed/CaregiverFeed'
 
@@ -27,6 +28,9 @@ export default async function FeedPage() {
     return <CaregiverFeed data={data} userId={user.id} />
   }
 
-  const data = await loadCoachFeedData(user.id)
-  return <CoachFeed data={data} userId={user.id} />
+  const [data, priorities] = await Promise.all([
+    loadCoachFeedData(user.id),
+    getCoachPriorities(user.id),
+  ])
+  return <CoachFeed data={data} userId={user.id} priorities={priorities} />
 }
