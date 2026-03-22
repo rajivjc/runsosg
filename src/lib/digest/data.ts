@@ -6,7 +6,7 @@
  */
 
 import { adminClient } from '@/lib/supabase/admin'
-import { getPreviousWeekRange } from '@/lib/email/weekly-digest'
+import { getCurrentWeekRange } from '@/lib/email/weekly-digest'
 import {
   detectFeelDecline,
   detectRecentPersonalBest,
@@ -19,7 +19,7 @@ import type { CoachDigestInput, CaregiverDigestInput, AthleteWeekData } from './
  * Fetch digest data for a coach. Returns null if the user is not a coach/admin.
  */
 export async function getCoachDigestData(userId: string): Promise<CoachDigestInput | null> {
-  const { weekStart, weekEnd, label: weekLabel } = getPreviousWeekRange()
+  const { weekStart, weekEnd, label: weekLabel } = getCurrentWeekRange()
 
   // Verify user is a coach/admin and get name
   const { data: userRow } = await adminClient
@@ -300,7 +300,7 @@ export async function getCoachDigestData(userId: string): Promise<CoachDigestInp
  * or has no linked athlete.
  */
 export async function getCaregiverDigestData(userId: string): Promise<CaregiverDigestInput | null> {
-  const { weekStart, weekEnd, label: weekLabel } = getPreviousWeekRange()
+  const { weekStart, weekEnd, label: weekLabel } = getCurrentWeekRange()
 
   // Verify user is a caregiver and get name
   const { data: userRow } = await adminClient
