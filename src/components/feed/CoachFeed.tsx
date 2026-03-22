@@ -159,21 +159,24 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
 
           {priorities.nearMilestone.length > 0 && (
             <PriorityBucket variant="info" label="Approaching milestone">
-              {priorities.nearMilestone.map((a) => (
-                <AthleteStatusCard
-                  key={a.athleteId}
-                  athleteId={a.athleteId}
-                  athleteName={a.athleteName}
-                  avatar={a.avatar}
-                  detail={`${a.target - a.current} ${a.unit} away from ${a.milestoneName}`}
-                  variant="info"
-                  rightContent={
-                    <span className="text-xs font-semibold text-gray-500">
-                      {a.current}/{a.target}
-                    </span>
-                  }
-                />
-              ))}
+              {priorities.nearMilestone.map((a) => {
+                const remaining = Math.round((a.target - a.current) * 10) / 10
+                return (
+                  <AthleteStatusCard
+                    key={a.athleteId}
+                    athleteId={a.athleteId}
+                    athleteName={a.athleteName}
+                    avatar={a.avatar}
+                    detail={`${remaining} ${a.unit} away from ${a.milestoneName}`}
+                    variant="info"
+                    rightContent={
+                      <span className="text-xs font-semibold text-gray-500">
+                        {a.current} / {a.target} {a.unit}
+                      </span>
+                    }
+                  />
+                )
+              })}
             </PriorityBucket>
           )}
 
@@ -198,7 +201,9 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
             </Link>
           )}
 
-          <hr className="border-gray-200 mb-5" />
+          <div className="mt-6 mb-5 border-t-2 border-gray-200 pt-4">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Recent activity</p>
+          </div>
         </>
       )}
 
