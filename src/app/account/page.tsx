@@ -462,13 +462,13 @@ export default async function AccountPage({
           ) : (
             <>
               <div className="flex items-center gap-3">
-                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${connection ? 'bg-teal-500 text-white' : 'border-2 border-teal-300'}`}>
+                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${connection ? 'bg-teal-500 text-white' : 'border-2 border-teal-300 dark:border-teal-400/40'}`}>
                   {connection && <span className="text-[10px]">&#10003;</span>}
                 </span>
                 <span className={`text-sm ${connection ? 'text-teal-600 dark:text-teal-300 line-through' : 'text-text-primary font-medium'}`}>Connect Strava for auto-sync</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${totalSessions > 0 ? 'bg-teal-500 text-white' : 'border-2 border-teal-300'}`}>
+                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${totalSessions > 0 ? 'bg-teal-500 text-white' : 'border-2 border-teal-300 dark:border-teal-400/40'}`}>
                   {totalSessions > 0 && <span className="text-[10px]">&#10003;</span>}
                 </span>
                 <span className={`text-sm ${totalSessions > 0 ? 'text-teal-600 dark:text-teal-300 line-through' : 'text-text-primary font-medium'}`}>Log your first run</span>
