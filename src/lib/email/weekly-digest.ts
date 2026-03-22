@@ -28,6 +28,45 @@ export interface CaregiverDigestData {
 }
 
 /**
+ * Compute the current week's Monday 00:00 to Sunday 23:59:59 in SGT.
+ * Used by the in-app digest page (shows the current/most-recent week).
+ * On Sunday, this captures the full week. On Monday, the week just started.
+ */
+export function getCurrentWeekRange(): { weekStart: string; weekEnd: string; label: string } {
+  const now = new Date()
+  const sgt = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Singapore' }))
+
+  // Find this week's Monday
+  const day = sgt.getDay() // 0=Sun, 1=Mon
+  const daysSinceMonday = day === 0 ? 6 : day - 1
+  const thisMonday = new Date(sgt)
+  thisMonday.setDate(sgt.getDate() - daysSinceMonday)
+  thisMonday.setHours(0, 0, 0, 0)
+
+  const thisSunday = new Date(thisMonday)
+  thisSunday.setDate(thisMonday.getDate() + 6)
+  thisSunday.setHours(23, 59, 59, 999)
+
+  const toSgtIso = (d: Date) => {
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const dayStr = String(d.getDate()).padStart(2, '0')
+    const hours = String(d.getHours()).padStart(2, '0')
+    const mins = String(d.getMinutes()).padStart(2, '0')
+    const secs = String(d.getSeconds()).padStart(2, '0')
+    return `${year}-${month}-${dayStr}T${hours}:${mins}:${secs}+08:00`
+  }
+
+  const label = `${thisMonday.getDate()} ${thisMonday.toLocaleString('en-SG', { month: 'short' })} – ${thisSunday.getDate()} ${thisSunday.toLocaleString('en-SG', { month: 'short' })} ${thisSunday.getFullYear()}`
+
+  return {
+    weekStart: toSgtIso(thisMonday),
+    weekEnd: toSgtIso(thisSunday),
+    label,
+  }
+}
+
+/**
  * Compute the previous week's Monday 00:00 and Sunday 23:59:59 in SGT.
  */
 export function getPreviousWeekRange(): { weekStart: string; weekEnd: string; label: string } {
