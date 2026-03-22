@@ -92,7 +92,7 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
 
         const baseClasses = `flex flex-1 flex-col items-center justify-center min-h-[44px] py-3 gap-1 font-medium transition-all duration-150 rounded-lg mx-0.5 active:scale-95 ${
           active
-            ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-900/15'
+            ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-900/20'
             : 'text-text-muted hover:text-text-secondary hover:bg-surface-raised'
         }`
 

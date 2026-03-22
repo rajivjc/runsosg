@@ -138,7 +138,7 @@ export default function MilestoneTimeline({ earned, definitions, currentSessionC
           <div className="mt-3 pt-3 border-t border-border-subtle space-y-2">
             {otherEarned.map(m => (
               <Link key={m.id} href={`/milestone/${m.id}`}>
-                <div className="flex items-center gap-3 bg-amber-50/50 dark:bg-amber-900/15 hover:bg-amber-50 dark:hover:bg-amber-900/15 rounded-lg px-3 py-2.5 transition-colors">
+                <div className="flex items-center gap-3 bg-amber-50/50 dark:bg-amber-900/20 hover:bg-amber-50 dark:hover:bg-amber-900/15 rounded-lg px-3 py-2.5 transition-colors">
                   <span className="text-xl flex-shrink-0">{m.icon}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-text-primary">{m.label}</p>

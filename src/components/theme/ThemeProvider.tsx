@@ -29,7 +29,7 @@ function applyTheme(resolved: 'light' | 'dark') {
   // Update meta theme-color for PWA status bar
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) {
-    meta.setAttribute('content', resolved === 'dark' ? '#1A1A2E' : '#0D9488')
+    meta.setAttribute('content', resolved === 'dark' ? '#141424' : '#0D9488')
   }
 }
 

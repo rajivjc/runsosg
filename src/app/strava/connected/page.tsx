@@ -62,7 +62,7 @@ function StravaConnectedContent() {
 
         {!isStandalone && (
           <div className="pt-2 space-y-3">
-            <div className="rounded-lg bg-teal-50 dark:bg-teal-900/15 border border-teal-200 dark:border-teal-400/20 px-4 py-3">
+            <div className="rounded-lg bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-400/20 px-4 py-3">
               <p className="text-sm font-medium text-teal-800 dark:text-teal-300 mb-1">
                 Go back to the SOSG Run app
               </p>

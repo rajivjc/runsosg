@@ -28,7 +28,7 @@ export default function OnTrackCloud({ athletes, maxVisible = 8 }: Props) {
         <Link
           key={a.athleteId}
           href={`/athletes/${a.athleteId}`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-green-50 dark:bg-green-900/15 text-[13px] font-medium text-text-primary hover:bg-green-100 transition-colors min-h-[44px]"
+          className="inline-flex items-center gap-1.5 rounded-full bg-green-50 dark:bg-green-900/20 text-[13px] font-medium text-text-primary hover:bg-green-100 transition-colors min-h-[44px]"
           style={{
             padding: '8px 14px',
             border: '0.5px solid #BBF7D0',

@@ -28,7 +28,7 @@ export default function StoryProgress({ progress }: StoryProgressProps) {
           </p>
           <p className="text-[10px] text-text-hint">km</p>
         </div>
-        <div className="bg-teal-50 dark:bg-teal-900/15 rounded-xl p-4 text-center">
+        <div className="bg-teal-50 dark:bg-teal-900/20 rounded-xl p-4 text-center">
           <p className="text-[10px] text-teal-500 font-medium uppercase mb-1">
             Most recent
           </p>

@@ -60,7 +60,7 @@ export default function WelcomeForm({ role }: { role: string }) {
           autoFocus
           placeholder={role === 'caregiver' ? 'e.g. Sarah' : 'e.g. Coach Rajiv'}
           autoComplete="name"
-          className="block w-full rounded-lg border border-border-strong px-3 py-2.5 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+          className="block w-full rounded-lg border border-border-strong px-3 py-2.5 text-sm placeholder-text-hint focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
         />
         {state.error && (
           <p className="mt-1 text-sm text-red-600 dark:text-red-300" role="alert">

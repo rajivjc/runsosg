@@ -7,8 +7,8 @@ describe('Dark mode', () => {
   test('globals.css contains .dark override block', () => {
     const content = fs.readFileSync(path.join(srcDir, 'app', 'globals.css'), 'utf-8')
     expect(content).toContain('.dark {')
-    expect(content).toContain('--color-bg: #1A1A2E')
-    expect(content).toContain('--color-surface: #232338')
+    expect(content).toContain('--color-bg: #141424')
+    expect(content).toContain('--color-surface: #1E1E32')
     expect(content).toContain('--color-text-primary: #F0EDE8')
     expect(content).toContain('color-scheme: dark')
   })

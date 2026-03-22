@@ -94,7 +94,7 @@ export default function AthleteQrCode({ athleteId, athleteName }: Props) {
             </div>
 
             <div className="flex justify-center mb-4">
-              <div className="bg-surface p-3 rounded-xl border border-border-subtle">
+              <div className="bg-white p-3 rounded-xl border border-border-subtle">
                 <QRCodeSVG
                   value={url}
                   size={200}

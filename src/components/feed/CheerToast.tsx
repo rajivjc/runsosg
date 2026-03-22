@@ -63,7 +63,7 @@ export default function CheerToast({ cheers, onViewed }: Props) {
       aria-live="polite"
     >
       <div
-        className="bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-400/20 rounded-xl px-4 py-3 shadow-lg cursor-pointer"
+        className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-400/20 rounded-xl px-4 py-3 shadow-lg cursor-pointer"
         onClick={dismissCurrent}
       >
         <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">

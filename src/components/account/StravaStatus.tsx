@@ -18,7 +18,7 @@ export default function StravaStatus({ connection }: { connection: Connection })
 
   if (!connection) {
     return (
-      <div className="rounded-xl border border-orange-200 dark:border-orange-400/20 bg-orange-50 dark:bg-orange-900/15 p-4">
+      <div className="rounded-xl border border-orange-200 dark:border-orange-400/20 bg-orange-50 dark:bg-orange-900/20 p-4">
         <p className="text-sm font-medium text-orange-900 mb-1">Not connected</p>
         <p className="text-xs text-orange-700 dark:text-orange-300 mb-3">
           Connect Strava so your runs automatically sync to athlete profiles.
@@ -39,7 +39,7 @@ export default function StravaStatus({ connection }: { connection: Connection })
     : 'Never'
 
   return (
-    <div className={`rounded-xl border p-4 ${isHealthy ? 'border-green-200 dark:border-green-400/20 bg-green-50 dark:bg-green-900/15' : 'border-red-200 dark:border-red-400/20 bg-red-50 dark:bg-red-900/15'}`}>
+    <div className={`rounded-xl border p-4 ${isHealthy ? 'border-green-200 dark:border-green-400/20 bg-green-50 dark:bg-green-900/20' : 'border-red-200 dark:border-red-400/20 bg-red-50 dark:bg-red-900/20'}`}>
       <div className="flex items-center justify-between mb-2">
         <p className={`text-sm font-medium ${isHealthy ? 'text-green-900' : 'text-red-900'}`}>
           {isHealthy ? '✓ Connected' : '⚠ Connection issue'}
@@ -56,7 +56,7 @@ export default function StravaStatus({ connection }: { connection: Connection })
       )}
 
       {confirming ? (
-        <div className="mt-3 rounded-lg border border-red-200 dark:border-red-400/20 bg-red-50 dark:bg-red-900/15 px-3 py-3">
+        <div className="mt-3 rounded-lg border border-red-200 dark:border-red-400/20 bg-red-50 dark:bg-red-900/20 px-3 py-3">
           <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-2">
             Disconnect Strava? Your runs will no longer sync automatically.
           </p>

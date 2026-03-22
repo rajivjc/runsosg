@@ -147,7 +147,7 @@ export default function PushToggle({ vapidPublicKey }: Props) {
         aria-label="Toggle push notifications"
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-surface shadow-sm transition-transform ${
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
             status === 'enabled' ? 'translate-x-6' : 'translate-x-1'
           }`}
         />

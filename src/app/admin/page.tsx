@@ -130,7 +130,7 @@ export default async function AdminPage() {
                   <p className="text-xs text-text-muted capitalize">
                     {inv.role}
                     {inv.role === 'caregiver' && inv.athlete_id && athleteNameMap[inv.athlete_id] && (
-                      <span className="ml-1 inline-flex items-center rounded-full border border-teal-200 dark:border-teal-400/20 bg-teal-50 dark:bg-teal-900/15 px-2 py-0.5 text-xs font-medium text-teal-700 dark:text-teal-300">
+                      <span className="ml-1 inline-flex items-center rounded-full border border-teal-200 dark:border-teal-400/20 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 text-xs font-medium text-teal-700 dark:text-teal-300">
                         Linked to {athleteNameMap[inv.athlete_id]}
                       </span>
                     )}

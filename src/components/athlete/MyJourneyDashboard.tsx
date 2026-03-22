@@ -111,12 +111,12 @@ const THEME_COLORS: Record<string, {
   from: string; ring: string; bg: string
   border: string; borderLight: string; text: string; bgLight: string; bgDark: string
 }> = {
-  teal:   { from: 'from-teal-50 dark:from-teal-950/30',   ring: 'ring-teal-400',   bg: 'bg-teal-400',   border: 'border-teal-400',   borderLight: 'border-teal-200 dark:border-teal-400/20', text: 'text-teal-700 dark:text-teal-300',   bgLight: 'bg-teal-50 dark:bg-teal-900/15',   bgDark: 'bg-teal-600' },
+  teal:   { from: 'from-teal-50 dark:from-teal-950/30',   ring: 'ring-teal-400',   bg: 'bg-teal-400',   border: 'border-teal-400',   borderLight: 'border-teal-200 dark:border-teal-400/20', text: 'text-teal-700 dark:text-teal-300',   bgLight: 'bg-teal-50 dark:bg-teal-900/20',   bgDark: 'bg-teal-600' },
   blue:   { from: 'from-blue-50 dark:from-blue-950/30',   ring: 'ring-blue-400',   bg: 'bg-blue-400',   border: 'border-blue-400',   borderLight: 'border-blue-200 dark:border-blue-400/20', text: 'text-blue-700 dark:text-blue-300',   bgLight: 'bg-blue-50 dark:bg-blue-900/15',   bgDark: 'bg-blue-600' },
   purple: { from: 'from-purple-50 dark:from-purple-950/30', ring: 'ring-purple-400', bg: 'bg-purple-400', border: 'border-purple-400', borderLight: 'border-purple-200 dark:border-purple-400/20', text: 'text-purple-700 dark:text-purple-300', bgLight: 'bg-purple-50 dark:bg-purple-900/15', bgDark: 'bg-purple-600' },
-  green:  { from: 'from-green-50 dark:from-green-950/30',  ring: 'ring-green-400',  bg: 'bg-green-400',  border: 'border-green-400',  borderLight: 'border-green-200 dark:border-green-400/20', text: 'text-green-700 dark:text-green-300',  bgLight: 'bg-green-50 dark:bg-green-900/15',  bgDark: 'bg-green-600' },
-  amber:  { from: 'from-amber-50 dark:from-amber-950/30',  ring: 'ring-amber-400',  bg: 'bg-amber-400',  border: 'border-amber-400',  borderLight: 'border-amber-200 dark:border-amber-400/20', text: 'text-amber-700 dark:text-amber-300',  bgLight: 'bg-amber-50 dark:bg-amber-900/15',  bgDark: 'bg-amber-600' },
-  coral:  { from: 'from-orange-50 dark:from-orange-950/30', ring: 'ring-orange-400', bg: 'bg-orange-400', border: 'border-orange-400', borderLight: 'border-orange-200 dark:border-orange-400/20', text: 'text-orange-700 dark:text-orange-300', bgLight: 'bg-orange-50 dark:bg-orange-900/15', bgDark: 'bg-orange-600' },
+  green:  { from: 'from-green-50 dark:from-green-950/30',  ring: 'ring-green-400',  bg: 'bg-green-400',  border: 'border-green-400',  borderLight: 'border-green-200 dark:border-green-400/20', text: 'text-green-700 dark:text-green-300',  bgLight: 'bg-green-50 dark:bg-green-900/20',  bgDark: 'bg-green-600' },
+  amber:  { from: 'from-amber-50 dark:from-amber-950/30',  ring: 'ring-amber-400',  bg: 'bg-amber-400',  border: 'border-amber-400',  borderLight: 'border-amber-200 dark:border-amber-400/20', text: 'text-amber-700 dark:text-amber-300',  bgLight: 'bg-amber-50 dark:bg-amber-900/20',  bgDark: 'bg-amber-600' },
+  coral:  { from: 'from-orange-50 dark:from-orange-950/30', ring: 'ring-orange-400', bg: 'bg-orange-400', border: 'border-orange-400', borderLight: 'border-orange-200 dark:border-orange-400/20', text: 'text-orange-700 dark:text-orange-300', bgLight: 'bg-orange-50 dark:bg-orange-900/20', bgDark: 'bg-orange-600' },
 }
 
 // ─── Goal choice labels ─────────────────────────────────────────
@@ -207,7 +207,7 @@ export default function MyJourneyDashboard({
   }
 
   return (
-    <main className={`min-h-screen bg-gradient-to-b ${theme.from} to-white dark:to-[#1A1A2E] pb-12`}>
+    <main className={`min-h-screen bg-gradient-to-b ${theme.from} to-white dark:to-[#141424] pb-12`}>
       <div className="max-w-lg mx-auto px-5 py-8">
 
         {/* ── Hero Section ─────────────────────────────────── */}
@@ -341,7 +341,7 @@ export default function MyJourneyDashboard({
                 return (
                   <div
                     key={run.id}
-                    className="bg-amber-50/50 dark:bg-amber-900/15 border border-amber-100 dark:border-amber-400/20 border-l-4 border-l-amber-400 rounded-xl px-4 py-3 flex items-center gap-4 shadow-sm"
+                    className="bg-amber-50/50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-400/20 border-l-4 border-l-amber-400 rounded-xl px-4 py-3 flex items-center gap-4 shadow-sm"
                   >
                     {feel && (
                       <div className="flex flex-col items-center flex-shrink-0 w-10">
@@ -541,7 +541,7 @@ export default function MyJourneyDashboard({
               {cheers.map(c => (
                 <div
                   key={c.id}
-                  className="bg-amber-50 dark:bg-amber-900/15 border border-amber-100 dark:border-amber-400/20 rounded-xl px-4 py-3 shadow-sm"
+                  className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-400/20 rounded-xl px-4 py-3 shadow-sm"
                 >
                   <p className="text-base text-amber-900">
                     &ldquo;{c.message}&rdquo;

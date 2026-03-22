@@ -190,7 +190,7 @@ export default async function AccountPage({
       </section>
 
       {searchParams?.connected === 'strava' && (
-        <div className="rounded-lg bg-green-50 dark:bg-green-900/15 border border-green-200 dark:border-green-400/20 px-4 py-3 text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
+        <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-400/20 px-4 py-3 text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
           <span>✓</span>
           <span>Strava connected! Your runs will now sync automatically.</span>
         </div>
@@ -200,7 +200,7 @@ export default async function AccountPage({
       <section>
         <p className="text-xs text-text-hint uppercase tracking-wide font-medium mb-3">Display name</p>
         {searchParams.setup === 'name' && (
-          <div className="mb-3 rounded-lg bg-teal-50 dark:bg-teal-900/15 border border-teal-200 dark:border-teal-400/20 px-4 py-3 text-sm text-teal-800 dark:text-teal-300">
+          <div className="mb-3 rounded-lg bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-400/20 px-4 py-3 text-sm text-teal-800 dark:text-teal-300">
             👋 Welcome! Please set your display name before getting started.
           </div>
         )}
@@ -427,7 +427,7 @@ export default async function AccountPage({
 
       {/* Caregiver — no athlete linked */}
       {isCaregiver && !caregiverAthlete && (
-        <div className="bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-400/20 rounded-xl px-4 py-4">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-400/20 rounded-xl px-4 py-4">
           <p className="text-sm text-amber-800 dark:text-amber-300">
             Your athlete hasn&apos;t been linked yet. Please ask a coach or admin to connect your account.
           </p>

@@ -51,7 +51,7 @@ export default function SetupPage() {
         </div>
 
         {installed && (
-          <div className="mb-6 rounded-lg bg-green-50 dark:bg-green-900/15 border border-green-200 dark:border-green-400/20 px-4 py-3 text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
+          <div className="mb-6 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-400/20 px-4 py-3 text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
@@ -138,7 +138,7 @@ export default function SetupPage() {
 function IOSInstructions() {
   return (
     <div className="space-y-4">
-      <div className="rounded-lg bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-400/20 px-3 py-2.5 text-xs text-amber-800 dark:text-amber-300">
+      <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-400/20 px-3 py-2.5 text-xs text-amber-800 dark:text-amber-300">
         <strong>Important:</strong> You must use <strong>Safari</strong> for this step (the blue compass icon on your home screen). If you&apos;re using Chrome or another browser, open <strong>Safari</strong>, go to <strong>sosg.run</strong>, and sign in there first.
       </div>
       <ol className="space-y-3 pl-0" style={{ listStyle: 'none', paddingLeft: 0 }}>

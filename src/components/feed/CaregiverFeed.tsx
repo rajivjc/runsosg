@@ -104,7 +104,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
                 {caregiverAthlete.avatar}
               </div>
               <span
-                className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-50 dark:bg-amber-900/15 border-[1.5px] border-white flex items-center justify-center text-[8px] leading-none"
+                className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-50 dark:bg-amber-900/20 border-[1.5px] border-white flex items-center justify-center text-[8px] leading-none"
                 title="Avatar chosen by athlete"
               >
                 ✌️

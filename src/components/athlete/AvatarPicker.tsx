@@ -27,7 +27,7 @@ interface AvatarPickerProps {
   themeRing: string
   /** Theme text class, e.g. 'text-teal-700 dark:text-teal-300' */
   themeText: string
-  /** Theme light background class, e.g. 'bg-teal-50 dark:bg-teal-900/15' */
+  /** Theme light background class, e.g. 'bg-teal-50 dark:bg-teal-900/20' */
   themeBgLight: string
   /** Theme light border class, e.g. 'border-teal-200 dark:border-teal-400/20' */
   themeBorderLight: string

@@ -53,7 +53,7 @@ export default function AthleteCard({
       href={`/athletes/${id}`}
       className={`flex items-center gap-4 rounded-xl shadow-sm p-4 hover:shadow-md active:scale-[0.98] transition-all duration-200 ${
         needsAttention
-          ? 'bg-amber-50/60 dark:bg-amber-900/15 border border-amber-200/80 dark:border-amber-400/20 hover:border-amber-300'
+          ? 'bg-amber-50/60 dark:bg-amber-900/20 border border-amber-200/80 dark:border-amber-400/20 hover:border-amber-300'
           : 'bg-surface border border-border-subtle hover:border-border'
       }`}
     >
@@ -69,11 +69,11 @@ export default function AthleteCard({
         />
       ) : avatar ? (
         <div className="relative flex-shrink-0">
-          <div className="rounded-full w-12 h-12 bg-teal-50 dark:bg-teal-900/15 flex items-center justify-center text-2xl">
+          <div className="rounded-full w-12 h-12 bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-2xl">
             {avatar}
           </div>
           <span
-            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-50 dark:bg-amber-900/15 border-[1.5px] border-white flex items-center justify-center text-[8px] leading-none"
+            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-50 dark:bg-amber-900/20 border-[1.5px] border-white flex items-center justify-center text-[8px] leading-none"
             title="Avatar chosen by athlete"
           >
             ✌️
@@ -81,7 +81,7 @@ export default function AthleteCard({
         </div>
       ) : (
         <div className={`rounded-full w-12 h-12 flex items-center justify-center font-semibold text-base flex-shrink-0 ${
-          needsAttention ? 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300' : 'bg-teal-50 dark:bg-teal-900/15 text-teal-600 dark:text-teal-300'
+          needsAttention ? 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300' : 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-300'
         }`}>
           {getInitials(name)}
         </div>

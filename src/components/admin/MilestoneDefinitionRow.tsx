@@ -97,7 +97,7 @@ export default function MilestoneDefinitionRow({
               disabled={toggling}
               className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
                 isActive
-                  ? 'bg-green-50 dark:bg-green-900/15 text-green-700 dark:text-green-300 hover:bg-green-100'
+                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100'
                   : 'bg-surface-alt text-text-muted hover:bg-surface-alt'
               }`}
             >

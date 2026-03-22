@@ -27,7 +27,7 @@ export default async function WelcomePage() {
       <div className="w-full max-w-sm">
         <div className="bg-surface rounded-2xl shadow-md p-8">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-900/15 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center mx-auto mb-4">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-teal-600 dark:text-teal-300">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

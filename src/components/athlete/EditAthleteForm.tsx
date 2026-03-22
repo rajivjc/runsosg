@@ -106,7 +106,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
       </div>
 
       {/* Structured goal — track with progress bar */}
-      <div className="bg-teal-50/50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-400/20 rounded-lg px-4 py-3 space-y-3">
+      <div className="bg-teal-50/50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-400/20 rounded-lg px-4 py-3 space-y-3">
         <p className="text-xs font-semibold text-teal-700 dark:text-teal-300">Track goal progress</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -181,7 +181,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
       </div>
 
       {/* Share achievements */}
-      <div className="bg-teal-50/50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-400/20 rounded-lg px-4 py-3 space-y-2">
+      <div className="bg-teal-50/50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-400/20 rounded-lg px-4 py-3 space-y-2">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold text-teal-700 dark:text-teal-300">📣 Share achievements</p>
           {athlete.sharing_disabled_by_caregiver ? (
@@ -198,7 +198,7 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
                 onChange={(e) => setSharingEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-surface-alt peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:border-border-strong after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600" />
+              <div className="w-9 h-5 bg-surface-alt peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-teal-500/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border-strong after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600" />
             </label>
           )}
         </div>
@@ -276,7 +276,7 @@ function AthletePinSection({ athleteId, athleteName }: { athleteId: string; athl
   }, [journeyUrl])
 
   return (
-    <div className="mt-6 bg-teal-50/50 dark:bg-teal-900/15 border border-teal-100 dark:border-teal-400/20 rounded-lg px-4 py-3 space-y-3">
+    <div className="mt-6 bg-teal-50/50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-400/20 rounded-lg px-4 py-3 space-y-3">
       <p className="text-xs font-semibold text-teal-700 dark:text-teal-300">🏃 Athlete access page</p>
       <p className="text-[10px] text-teal-600 dark:text-teal-300 font-medium">
         Give {athleteName} their own page in 3 steps:

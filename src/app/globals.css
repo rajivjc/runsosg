@@ -27,23 +27,26 @@
   }
 
   .dark {
-    --color-bg: #1A1A2E;
-    --color-surface: #232338;
-    --color-surface-alt: #2C2C42;
-    --color-surface-raised: #2C2C42;
+    --color-bg: #141424;
+    --color-surface: #1E1E32;
+    --color-surface-alt: #282842;
+    --color-surface-raised: #2E2E48;
     --color-text-primary: #F0EDE8;
     --color-text-secondary: #B8B5AD;
     --color-text-muted: #9A9790;
-    --color-text-hint: #6B6860;
-    --color-border: rgba(255,255,255,0.08);
-    --color-border-strong: rgba(255,255,255,0.14);
-    --color-border-subtle: rgba(255,255,255,0.05);
+    --color-text-hint: #706D65;
+    --color-border: rgba(255,255,255,0.10);
+    --color-border-strong: rgba(255,255,255,0.16);
+    --color-border-subtle: rgba(255,255,255,0.06);
     --color-accent: #2DD4BF;
     --color-accent-hover: #5EEAD4;
     --color-accent-text: #5EEAD4;
-    --color-accent-bg: rgba(45,212,191,0.12);
-    --color-accent-border: rgba(45,212,191,0.20);
+    --color-accent-bg: rgba(45,212,191,0.15);
+    --color-accent-border: rgba(45,212,191,0.25);
     color-scheme: dark;
+
+    /* Warm tint for shadows */
+    --tw-shadow-color: rgba(45, 30, 15, 0.3);
   }
 }
 
@@ -129,6 +132,20 @@ nav.fixed.bottom-0 {
 }
 .animate-list-item {
   animation: fadeSlideIn 300ms ease-out both;
+}
+
+/* Dark mode form inputs — visually distinct from card surface */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #2C2C42;
+  border-color: rgba(255,255,255,0.12);
+  color: #F0EDE8;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #706D65;
 }
 
 /* Respect reduced motion */

@@ -256,7 +256,7 @@ export default function LogRunSheet({ athleteId, isOpen, onClose, onSaved, creat
                     onClick={() => setSelectedFeel(value)}
                     className={`flex-1 flex flex-col items-center py-2 rounded-xl text-2xl transition-all duration-200 ${
                       selectedFeel === value
-                        ? 'bg-teal-50 dark:bg-teal-900/15 ring-2 ring-teal-400 scale-105'
+                        ? 'bg-teal-50 dark:bg-teal-900/20 ring-2 ring-teal-400 scale-105'
                         : 'bg-surface border border-border hover:bg-surface-raised active:scale-95'
                     }`}
                     aria-label={label}

@@ -1,6 +1,6 @@
 export default function StravaConnectBanner() {
   return (
-    <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-orange-200 dark:border-orange-400/20 bg-orange-50 dark:bg-orange-900/15 px-4 py-3">
+    <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-orange-200 dark:border-orange-400/20 bg-orange-50 dark:bg-orange-900/20 px-4 py-3">
       <div>
         <p className="text-sm font-medium text-orange-900">Connect your Strava account</p>
         <p className="text-xs text-orange-700 dark:text-orange-300 mt-0.5">

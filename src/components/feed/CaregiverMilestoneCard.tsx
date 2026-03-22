@@ -18,7 +18,7 @@ export default function CaregiverMilestoneCard({ milestones, nextMilestone }: Pr
           <div className="flex flex-wrap gap-1.5">
             {milestones.map(m => (
               <Link key={m.id} href={`/milestone/${m.id}`}>
-                <span className="inline-flex items-center gap-1 bg-amber-50/70 dark:bg-amber-900/15 hover:bg-amber-50 dark:hover:bg-amber-900/15 border border-amber-200 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-full transition-colors">
+                <span className="inline-flex items-center gap-1 bg-amber-50/70 dark:bg-amber-900/20 hover:bg-amber-50 dark:hover:bg-amber-900/15 border border-amber-200 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-full transition-colors">
                   {m.icon ?? '🏆'} {m.label}
                 </span>
               </Link>
@@ -28,7 +28,7 @@ export default function CaregiverMilestoneCard({ milestones, nextMilestone }: Pr
       )}
 
       {nextMilestone && (
-        <div className="bg-amber-50/40 dark:bg-amber-900/15 rounded-lg px-3 py-2.5">
+        <div className="bg-amber-50/40 dark:bg-amber-900/20 rounded-lg px-3 py-2.5">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-semibold text-text-primary">
               {nextMilestone.icon} {nextMilestone.label}

@@ -62,7 +62,7 @@ export default function PinEntry({ athleteId, athleteName }: Props) {
   const allFilled = digits.every(d => d !== '')
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-gradient-to-b from-teal-50 dark:from-teal-950/30 to-white dark:to-[#141424] flex items-center justify-center px-6">
       <div className="w-full max-w-sm text-center">
         {/* Athlete name */}
         <h1 className="text-2xl font-bold text-text-primary mb-2">

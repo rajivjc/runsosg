@@ -46,7 +46,7 @@ export default async function AcceptInvitePage({
       <div className="w-full max-w-sm rounded-3xl bg-surface p-8 shadow-2xl text-center">
         {/* Running icon — matches login page */}
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-900/15 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
             <svg
               width="32"
               height="32"

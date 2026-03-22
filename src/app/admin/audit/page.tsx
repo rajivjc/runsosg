@@ -111,9 +111,9 @@ function roleBadgeColor(role: string | null): string {
     case 'admin':
       return 'bg-purple-50 text-purple-700 border-purple-200'
     case 'coach':
-      return 'bg-teal-50 dark:bg-teal-900/15 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-400/20'
+      return 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-400/20'
     case 'caregiver':
-      return 'bg-amber-50 dark:bg-amber-900/15 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-400/20'
+      return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-400/20'
     default:
       return 'bg-surface-raised text-text-secondary border-border'
   }

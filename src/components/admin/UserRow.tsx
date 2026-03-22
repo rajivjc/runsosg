@@ -117,7 +117,7 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
               </span>
             )}
             {currentRole === 'caregiver' && !showAthleteSelector && linkedAthleteName && (
-              <span className="text-xs bg-amber-50 dark:bg-amber-900/15 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-400/20 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-400/20 px-2 py-0.5 rounded-full">
                 Linked to {linkedAthleteName}
               </span>
             )}
@@ -135,8 +135,8 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
                 disabled={busy || deleting}
                 className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap ${
                   active
-                    ? 'bg-red-50 dark:bg-red-900/15 text-red-600 dark:text-red-300 hover:bg-red-100'
-                    : 'bg-green-50 dark:bg-green-900/15 text-green-600 dark:text-green-300 hover:bg-green-100'
+                    ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 hover:bg-red-100'
+                    : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 hover:bg-green-100'
                 }`}
               >
                 {busy ? '…' : active ? 'Deactivate' : 'Reactivate'}
@@ -144,7 +144,7 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
               <button
                 onClick={handleDelete}
                 disabled={deleting || busy}
-                className="text-xs font-medium px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-900/15 text-red-600 dark:text-red-300 hover:bg-red-100 transition-colors disabled:opacity-50 whitespace-nowrap"
+                className="text-xs font-medium px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 hover:bg-red-100 transition-colors disabled:opacity-50 whitespace-nowrap"
               >
                 {deleting ? '…' : 'Delete'}
               </button>
@@ -155,7 +155,7 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
 
       {/* Athlete selector — shown when changing role to caregiver */}
       {showAthleteSelector && (
-        <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/15 border border-orange-200 dark:border-orange-400/20 rounded-lg space-y-2">
+        <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-400/20 rounded-lg space-y-2">
           <p className="text-xs font-medium text-orange-800">
             Which athlete is this caregiver linked to?
           </p>

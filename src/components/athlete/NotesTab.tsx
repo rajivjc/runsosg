@@ -216,7 +216,7 @@ export default function NotesTab({
           ) : (
             <button
               onClick={onToggleNoteInput}
-              className="w-full bg-teal-50 dark:bg-teal-900/15 hover:bg-teal-100 active:scale-[0.98] border border-teal-200 dark:border-teal-400/20 text-teal-700 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-300 rounded-xl py-3.5 text-sm font-semibold transition-all duration-150"
+              className="w-full bg-teal-50 dark:bg-teal-900/20 hover:bg-teal-100 active:scale-[0.98] border border-teal-200 dark:border-teal-400/20 text-teal-700 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-300 rounded-xl py-3.5 text-sm font-semibold transition-all duration-150"
             >
               + Add note
             </button>

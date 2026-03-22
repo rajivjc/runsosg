@@ -30,17 +30,26 @@ describe('Semantic token migration', () => {
       { cwd: process.cwd(), encoding: 'utf-8' }
     ).trim()
 
-    // Filter out allowed patterns: gradients, opacity modifiers, test files
+    // Allowed files: QR code (needs white bg for scanning), toggle knobs (physical knob stays white)
+    const allowedFiles = [
+      'AthleteQrCode.tsx',
+      'PushToggle.tsx',
+      'EditAthleteForm.tsx',
+    ]
+    // Filter out allowed patterns: gradients, opacity modifiers, toggle knobs, QR codes
     const files = result.split('\n').filter(f => f.trim())
     const violations = files.filter(f => {
+      if (allowedFiles.some(a => f.endsWith(a))) return false
       const content = fs.readFileSync(f, 'utf-8')
       // Allow bg-white/60 (opacity modifier on gradient cards)
       // Allow bg-white inside gradient strings
+      // Allow after:bg-white (toggle knobs must stay white)
       const lines = content.split('\n').filter(line =>
         line.includes('bg-white') &&
         !line.includes('bg-white/') &&
         !line.includes('from-') &&
-        !line.includes('to-')
+        !line.includes('to-') &&
+        !line.includes('after:bg-white')
       )
       return lines.length > 0
     })

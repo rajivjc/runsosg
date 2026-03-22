@@ -96,7 +96,7 @@ export default async function UnmatchedRunPage({
       </div>
 
       {isResolved ? (
-        <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-200 dark:border-teal-400/20 rounded-xl p-4 text-sm text-teal-800 dark:text-teal-300">
+        <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-400/20 rounded-xl p-4 text-sm text-teal-800 dark:text-teal-300">
           This run has already been linked to an athlete.
         </div>
       ) : (

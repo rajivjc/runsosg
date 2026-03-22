@@ -13,7 +13,7 @@ export default function WeeklyRecapCard({ weeklyStats, weeklyRecap }: Props) {
   return (
     <div className="bg-surface border border-border-subtle rounded-xl px-4 py-3 mb-5 shadow-sm">
       <div className="flex items-center gap-3 recap-stat recap-stat-1">
-        <div className="w-10 h-10 rounded-full bg-teal-50 dark:bg-teal-900/15 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center flex-shrink-0">
           <span className="text-lg">🏃</span>
         </div>
         <div>

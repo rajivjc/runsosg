@@ -34,7 +34,7 @@ export default function TermsPage() {
         </p>
 
         {/* Short version summary */}
-        <div className="bg-teal-50 dark:bg-teal-900/15 rounded-2xl px-6 py-5 mb-10">
+        <div className="bg-teal-50 dark:bg-teal-900/20 rounded-2xl px-6 py-5 mb-10">
           <p className="text-base font-semibold text-teal-800 dark:text-teal-300 mb-3">
             The short version
           </p>

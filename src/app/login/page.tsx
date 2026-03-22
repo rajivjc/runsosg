@@ -160,23 +160,23 @@ export default function LoginPage() {
     <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-500 to-emerald-600 px-4 py-8">
       <div className="w-full max-w-sm bg-surface rounded-3xl shadow-2xl p-8">
         {isRevoked && (
-          <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-400/20 px-4 py-3 text-sm text-red-700 dark:text-red-300 text-center">
+          <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-400/20 px-4 py-3 text-sm text-red-700 dark:text-red-300 text-center">
             Your access has been revoked. Please contact your administrator.
           </div>
         )}
         {isExpired && pageState !== 'success' && (
-          <div className="mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-400/20 px-4 py-3 text-sm text-amber-700 dark:text-amber-300 text-center">
+          <div className="mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-400/20 px-4 py-3 text-sm text-amber-700 dark:text-amber-300 text-center">
             Your invitation link has expired. We&apos;re sending a new sign-in code to your email.
           </div>
         )}
         {isInvalidInvite && (
-          <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-400/20 px-4 py-3 text-sm text-red-700 dark:text-red-300 text-center">
+          <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-400/20 px-4 py-3 text-sm text-red-700 dark:text-red-300 text-center">
             This invitation link is invalid. Please contact your administrator.
           </div>
         )}
         {/* Running icon — matches PWA splash screen */}
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-900/15 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
             <svg
               width="32"
               height="32"
@@ -216,7 +216,7 @@ export default function LoginPage() {
 
         {pageState === 'success' ? (
           <div className="flex flex-col items-center text-center mt-6 space-y-4">
-            <div className="w-14 h-14 rounded-full bg-teal-50 dark:bg-teal-900/15 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-7 w-7 text-teal-600 dark:text-teal-300"
@@ -326,7 +326,7 @@ export default function LoginPage() {
                 placeholder="your@email.com"
                 required
                 autoComplete="email"
-                className="block w-full rounded-lg border border-border-strong px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                className="block w-full rounded-lg border border-border-strong px-3 py-2 text-sm placeholder-text-hint focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               />
               {pageState === 'error' && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-300" role="alert">

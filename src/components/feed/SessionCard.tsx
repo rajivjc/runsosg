@@ -30,7 +30,7 @@ interface Props {
 export default function SessionCard({ session: s, badges, kudosCount, kudosGivers, myKudos, isReadOnly, userId }: Props) {
   const hasMilestone = badges.length > 0
   const feelColor = s.feel ? (FEEL_BORDER[s.feel] ?? 'border-l-gray-200') : 'border-l-gray-200'
-  const cardBg = hasMilestone ? 'bg-amber-50/40 dark:bg-amber-900/15' : 'bg-surface'
+  const cardBg = hasMilestone ? 'bg-amber-50/40 dark:bg-amber-900/20' : 'bg-surface'
   const pace = formatPace(s.distance_km, s.duration_seconds)
 
   const card = (
@@ -71,7 +71,7 @@ export default function SessionCard({ session: s, badges, kudosCount, kudosGiver
           {badges.map((m, i) => (
             <span
               key={i}
-              className={`inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 text-[11px] font-semibold px-2 py-1 rounded-full ${m.id ? 'cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors' : ''}`}
+              className={`inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 text-[11px] font-semibold px-2 py-1 rounded-full ${m.id ? 'cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors' : ''}`}
               onClick={m.id ? (e) => {
                 e.stopPropagation()
                 e.preventDefault()

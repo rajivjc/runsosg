@@ -36,7 +36,7 @@ export default function CaregiverCheerCard({ athleteId, athleteFirstName, athlet
                   <p className="text-[10px] text-text-muted mt-0.5">{formatDate(c.created_at)}</p>
                 </div>
                 {c.viewed_at ? (
-                  <span className="text-[10px] text-teal-600 dark:text-teal-300 font-medium flex-shrink-0 bg-teal-50 dark:bg-teal-900/15 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] text-teal-600 dark:text-teal-300 font-medium flex-shrink-0 bg-teal-50 dark:bg-teal-900/20 px-2 py-0.5 rounded-full">
                     Seen &#10003;
                   </span>
                 ) : (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTheme } from '@/components/theme/ThemeProvider'
 import {
   BarChart,
   Bar,
@@ -73,8 +74,8 @@ function DistanceTooltip({ active, payload }: { active?: boolean; payload?: Arra
 }
 
 // Custom dot for feel chart that shows color based on feel value
-function FeelDot(props: { cx?: number; cy?: number; payload?: FeelPoint }) {
-  const { cx, cy, payload } = props
+function FeelDot(props: { cx?: number; cy?: number; payload?: FeelPoint; isDark?: boolean }) {
+  const { cx, cy, payload, isDark } = props
   if (cx == null || cy == null || !payload) return null
   return (
     <circle
@@ -82,7 +83,7 @@ function FeelDot(props: { cx?: number; cy?: number; payload?: FeelPoint }) {
       cy={cy}
       r={4}
       fill={FEEL_COLORS[payload.feel] ?? '#9CA3AF'}
-      stroke="white"
+      stroke={isDark ? '#1E1E32' : 'white'}
       strokeWidth={2}
     />
   )
@@ -96,6 +97,12 @@ export default function ProgressChart({
   compact = false,
 }: ProgressChartProps) {
   const [view, setView] = useState<ChartView>('volume')
+  const { resolved } = useTheme()
+  const isDark = resolved === 'dark'
+
+  const tickFill = isDark ? '#9A9790' : '#6B7280'
+  const gridStroke = isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6'
+  const dotStroke = isDark ? '#1E1E32' : 'white'
 
   const hasVolume = weeklyVolume.some(w => w.totalKm > 0)
   const hasFeel = feelTrend.length >= 2
@@ -131,7 +138,7 @@ export default function ProgressChart({
               onClick={() => setView(v.key)}
               className={`text-[11px] font-semibold px-3 py-1.5 rounded-full transition-colors ${
                 activeView === v.key
-                  ? 'bg-teal-50 dark:bg-teal-900/15 text-teal-700 dark:text-teal-300'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
                   : 'text-text-hint hover:text-text-secondary hover:bg-surface-raised'
               }`}
             >
@@ -149,16 +156,16 @@ export default function ProgressChart({
           </p>
           <ResponsiveContainer width="100%" height={height}>
             <BarChart data={weeklyVolume} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
               <XAxis
                 dataKey="weekLabel"
-                tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                tick={{ fontSize: 10, fill: tickFill }}
                 tickLine={false}
                 axisLine={false}
                 interval={compact ? 2 : 1}
               />
               <YAxis
-                tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                tick={{ fontSize: 10, fill: tickFill }}
                 tickLine={false}
                 axisLine={false}
                 width={40}
@@ -179,10 +186,10 @@ export default function ProgressChart({
           </p>
           <ResponsiveContainer width="100%" height={height}>
             <LineChart data={feelTrend} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
               <XAxis
                 dataKey="dateLabel"
-                tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                tick={{ fontSize: 10, fill: tickFill }}
                 tickLine={false}
                 axisLine={false}
                 interval={Math.max(0, Math.floor(feelTrend.length / 6) - 1)}
@@ -190,7 +197,7 @@ export default function ProgressChart({
               <YAxis
                 domain={[1, 5]}
                 ticks={[1, 2, 3, 4, 5]}
-                tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                tick={{ fontSize: 10, fill: tickFill }}
                 tickLine={false}
                 axisLine={false}
                 width={40}
@@ -202,8 +209,8 @@ export default function ProgressChart({
                 dataKey="feel"
                 stroke="#14B8A6"
                 strokeWidth={2}
-                dot={<FeelDot />}
-                activeDot={{ r: 6, stroke: '#0D9488', strokeWidth: 2, fill: 'white' }}
+                dot={<FeelDot isDark={isDark} />}
+                activeDot={{ r: 6, stroke: '#0D9488', strokeWidth: 2, fill: dotStroke }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -224,16 +231,16 @@ export default function ProgressChart({
                   <stop offset="95%" stopColor="#14B8A6" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
               <XAxis
                 dataKey="dateLabel"
-                tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                tick={{ fontSize: 10, fill: tickFill }}
                 tickLine={false}
                 axisLine={false}
                 interval={Math.max(0, Math.floor(distanceTimeline.length / 6) - 1)}
               />
               <YAxis
-                tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                tick={{ fontSize: 10, fill: tickFill }}
                 tickLine={false}
                 axisLine={false}
                 width={40}
@@ -259,7 +266,7 @@ export default function ProgressChart({
                       y={p.cumulativeKm}
                       r={6}
                       fill="#F59E0B"
-                      stroke="white"
+                      stroke={dotStroke}
                       strokeWidth={2}
                       label={{
                         value: pin.icon,

@@ -85,11 +85,11 @@ const FEEL_COLORS: Record<number, string> = {
 }
 
 const FEEL_BG: Record<number, string> = {
-  1: 'bg-red-50 dark:bg-red-900/15',
-  2: 'bg-orange-50 dark:bg-orange-900/15',
+  1: 'bg-red-50 dark:bg-red-900/20',
+  2: 'bg-orange-50 dark:bg-orange-900/20',
   3: 'bg-yellow-50',
-  4: 'bg-green-50 dark:bg-green-900/15',
-  5: 'bg-teal-50 dark:bg-teal-900/15',
+  4: 'bg-green-50 dark:bg-green-900/20',
+  5: 'bg-teal-50 dark:bg-teal-900/20',
 }
 
 const FEEL_TEXT: Record<number, string> = {
@@ -210,7 +210,7 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
               </span>
             )}
             {s.avg_heart_rate != null && (
-              <span className="text-xs font-medium text-red-500 bg-red-50 dark:bg-red-900/15 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">
                 {s.avg_heart_rate} bpm{s.max_heart_rate != null ? ` / ${s.max_heart_rate} max` : ''}
               </span>
             )}
@@ -285,7 +285,7 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
       {badges.length > 0 && (
         <div className="flex flex-wrap gap-1.5 px-4 pb-3 -mt-1">
           {badges.map((m, i) => {
-            const badgeClasses = "inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-full"
+            const badgeClasses = "inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-full"
             const content = <>{m.icon ?? '🏆'} {m.label}{m.id && <span className="ml-1 text-amber-400">↗</span>}</>
 
             return m.id ? (
@@ -348,7 +348,7 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
               {([1, 2, 3, 4, 5] as Feel[]).map((v) => (
                 <button key={v} onClick={() => setFeel(v)}
                   className={`flex-1 flex flex-col items-center py-2.5 rounded-xl transition-all duration-200 ${
-                    feel === v ? 'bg-teal-50 dark:bg-teal-900/15 ring-2 ring-teal-400 shadow-sm scale-105' : 'bg-surface border border-border hover:bg-surface-raised active:scale-95'
+                    feel === v ? 'bg-teal-50 dark:bg-teal-900/20 ring-2 ring-teal-400 shadow-sm scale-105' : 'bg-surface border border-border hover:bg-surface-raised active:scale-95'
                   }`}
                   aria-label={FEEL_LABELS[v]} aria-pressed={feel === v}>
                   <span className="text-2xl">{FEEL_EMOJI[v]}</span>
@@ -447,7 +447,7 @@ export default function RunsTab({ sessions, milestones, photosBySession, weeklyD
       {!isReadOnly && (
         <button
           onClick={onLogRun}
-          className="w-full flex items-center justify-center gap-2 bg-teal-50 dark:bg-teal-900/15 hover:bg-teal-100 active:scale-[0.98] border border-teal-200 dark:border-teal-400/20 text-teal-700 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-300 rounded-xl py-3.5 text-sm font-semibold transition-all duration-150"
+          className="w-full flex items-center justify-center gap-2 bg-teal-50 dark:bg-teal-900/20 hover:bg-teal-100 active:scale-[0.98] border border-teal-200 dark:border-teal-400/20 text-teal-700 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-300 rounded-xl py-3.5 text-sm font-semibold transition-all duration-150"
         >
           <Plus size={18} strokeWidth={2.5} />
           Log a run

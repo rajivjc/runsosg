@@ -100,7 +100,7 @@ export default async function AthletesPage({
       </div>
 
       {searchParams.connected === 'strava' && (
-        <div className="mb-4 rounded-xl bg-green-50 dark:bg-green-900/15 border border-green-200 dark:border-green-400/20 px-4 py-3 text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
+        <div className="mb-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-400/20 px-4 py-3 text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
           <span className="text-green-600 dark:text-green-300 font-bold">✓</span>
           <span>Strava connected! Your runs will now sync automatically.</span>
         </div>

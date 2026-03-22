@@ -30,7 +30,7 @@ export default function DeleteAthleteButton({ athleteId, athleteName }: Props) {
   if (confirming) {
     return (
       <div className="space-y-2">
-        <div className="bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-400/20 rounded-xl p-3">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-400/20 rounded-xl p-3">
           <p className="text-sm text-red-700 dark:text-red-300 font-medium mb-2">
             Permanently delete {athleteName}?
           </p>

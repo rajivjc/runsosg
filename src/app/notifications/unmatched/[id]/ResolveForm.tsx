@@ -78,7 +78,7 @@ export function ResolveForm({
   return (
     <div>
       {/* Re-sync option */}
-      <div className="bg-orange-50 dark:bg-orange-900/15 border border-orange-200 dark:border-orange-400/20 rounded-xl p-4 mb-5">
+      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-400/20 rounded-xl p-4 mb-5">
         <p className="text-sm font-medium text-orange-800 mb-1">
           Already tagged in Strava?
         </p>
@@ -127,7 +127,7 @@ export function ResolveForm({
               disabled={busy}
               className={`w-full text-left px-4 py-3 text-sm border-b border-gray-50 last:border-b-0 transition-colors ${
                 selectedId === a.id
-                  ? 'bg-teal-50 dark:bg-teal-900/15 text-teal-900 font-medium'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-900 font-medium'
                   : 'text-text-secondary hover:bg-surface-raised'
               }`}
             >

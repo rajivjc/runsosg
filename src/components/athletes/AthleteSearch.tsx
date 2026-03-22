@@ -42,7 +42,7 @@ export default function AthleteSearch({ athletes }: AthleteSearchProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search athletes..."
-          className="block w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 pr-10 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:bg-surface focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] transition-all duration-200 [&::-webkit-search-cancel-button]:hidden"
+          className="block w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 pr-10 text-sm placeholder-text-hint focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-400 focus:bg-surface focus:shadow-[0_0_0_3px_rgba(13,148,136,0.08)] transition-all duration-200 [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
@@ -77,9 +77,9 @@ export default function AthleteSearch({ athletes }: AthleteSearchProps) {
       )}
 
       {hasAnyAvatar && !legendDismissed && (
-        <div className="flex items-center justify-between mt-4 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/15 border border-amber-100 dark:border-amber-400/20 text-xs text-amber-700 dark:text-amber-300">
+        <div className="flex items-center justify-between mt-4 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-400/20 text-xs text-amber-700 dark:text-amber-300">
           <span className="flex items-center gap-1.5">
-            <span className="w-4 h-4 rounded-full bg-amber-50 dark:bg-amber-900/15 border-[1.5px] border-amber-200 dark:border-amber-400/20 flex items-center justify-center text-[8px] leading-none">✌️</span>
+            <span className="w-4 h-4 rounded-full bg-amber-50 dark:bg-amber-900/20 border-[1.5px] border-amber-200 dark:border-amber-400/20 flex items-center justify-center text-[8px] leading-none">✌️</span>
             Avatar chosen by athlete
           </span>
           <button

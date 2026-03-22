@@ -158,7 +158,7 @@ export default async function StoryPage({ params }: PageProps) {
 
         {/* Streak callout */}
         {narrative.streakCallout && (
-          <p className="text-xs text-center text-teal-600 dark:text-teal-300 font-medium bg-teal-50 dark:bg-teal-900/15 rounded-lg py-2 px-3 mb-6">
+          <p className="text-xs text-center text-teal-600 dark:text-teal-300 font-medium bg-teal-50 dark:bg-teal-900/20 rounded-lg py-2 px-3 mb-6">
             {narrative.streakCallout}
           </p>
         )}

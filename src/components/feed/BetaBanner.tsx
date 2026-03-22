@@ -22,7 +22,7 @@ export default function BetaBanner() {
   if (!visible) return null
 
   return (
-    <div className="bg-teal-50 dark:bg-teal-900/15 border border-teal-200 dark:border-teal-400/20 rounded-xl px-4 py-3 mb-4 flex items-start gap-3">
+    <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-400/20 rounded-xl px-4 py-3 mb-4 flex items-start gap-3">
       <p className="text-sm text-teal-800 dark:text-teal-300 flex-1">
         <span className="font-semibold">Welcome to the SOSG Running Club beta!</span>{' '}
         We&apos;d love your feedback — let a coach or admin know what you think.

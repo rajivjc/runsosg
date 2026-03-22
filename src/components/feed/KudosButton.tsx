@@ -57,7 +57,7 @@ export default function KudosButton({ sessionId, initialCount, initialGiven, giv
         onClick={handleClick}
         className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full transition-all duration-150 select-none min-h-[36px] ${
           given
-            ? 'bg-red-50 dark:bg-red-900/15 text-red-500 border border-red-200 dark:border-red-400/20 px-3 py-2 active:bg-red-100 active:scale-[0.95]'
+            ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border border-red-200 dark:border-red-400/20 px-3 py-2 active:bg-red-100 active:scale-[0.95]'
             : 'bg-surface-raised text-text-hint border border-border px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/15 hover:text-red-400 hover:border-red-200 dark:hover:border-red-400/20 active:bg-red-100 active:scale-[0.95]'
         } ${animating ? 'scale-110' : ''}`}
         title={given ? 'Remove high five' : 'Give a high five'}
