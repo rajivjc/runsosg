@@ -28,31 +28,14 @@ export default function OnTrackCloud({ athletes, maxVisible = 8 }: Props) {
         <Link
           key={a.athleteId}
           href={`/athletes/${a.athleteId}`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-green-50 dark:bg-green-900/20 text-[13px] font-medium text-text-primary hover:bg-green-100 transition-colors min-h-[44px]"
-          style={{
-            padding: '8px 14px',
-            border: '0.5px solid #BBF7D0',
-          }}
+          className="inline-flex items-center gap-1.5 rounded-full bg-green-50 dark:bg-green-900/20 text-[13px] font-medium text-text-primary hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors min-h-[44px] px-3.5 py-2 border border-green-200 dark:border-green-400/20"
         >
-          <span
-            className="flex-shrink-0 rounded-full inline-block"
-            style={{
-              width: '7px',
-              height: '7px',
-              backgroundColor: '#059669',
-            }}
-          />
+          <span className="flex-shrink-0 w-[7px] h-[7px] rounded-full bg-green-600 dark:bg-green-400" />
           {a.athleteName}
         </Link>
       ))}
       {overflow > 0 && (
-        <span
-          className="inline-flex items-center rounded-full bg-surface-alt text-[13px] font-medium text-text-muted min-h-[44px]"
-          style={{
-            padding: '8px 14px',
-            border: '0.5px solid #E5E7EB',
-          }}
-        >
+        <span className="inline-flex items-center rounded-full bg-surface-alt text-[13px] font-medium text-text-muted min-h-[44px] px-3.5 py-2 border border-border">
           +{overflow} more
         </span>
       )}

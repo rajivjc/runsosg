@@ -254,7 +254,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
                   <Link
                     key={name}
                     href={`/athletes/${athleteMsg.athlete_id}`}
-                    className="inline-flex items-center gap-1 bg-white/70 hover:bg-surface text-teal-700 dark:text-teal-300 text-xs font-medium px-2.5 py-1 rounded-full border border-teal-200 dark:border-teal-400/20 transition-colors"
+                    className="inline-flex items-center gap-1 bg-white/70 dark:bg-white/10 hover:bg-surface text-teal-700 dark:text-teal-300 text-xs font-medium px-2.5 py-1 rounded-full border border-teal-200 dark:border-teal-400/20 transition-colors"
                   >
                     {name}
                     <span className="text-teal-400">&#x203A;</span>

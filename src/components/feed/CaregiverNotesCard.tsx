@@ -13,7 +13,7 @@ function NoteCard({ note }: { note: Props['notes'][number] }) {
   const isLong = note.content.length > 120
 
   return (
-    <div className="bg-gradient-to-br from-amber-50/60 to-orange-50/30 rounded-xl px-4 py-3.5 border border-amber-100 dark:border-amber-400/20/60">
+    <div className="bg-gradient-to-br from-amber-50/60 to-orange-50/30 dark:from-amber-950/20 dark:to-orange-950/10 rounded-xl px-4 py-3.5 border border-amber-100 dark:border-amber-400/20">
       <div className="flex gap-3">
         <span className="text-amber-300 text-2xl leading-none font-serif select-none" aria-hidden="true">&ldquo;</span>
         <div className="flex-1 min-w-0">

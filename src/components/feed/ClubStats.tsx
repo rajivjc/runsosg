@@ -79,7 +79,7 @@ export default function ClubStats({ stats, weeklyStats, weeklyRecap }: Props) {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-slate-50 border border-border/60 rounded-xl px-4 py-4 mb-5 shadow-sm">
+    <div className="bg-gradient-to-br from-gray-50 to-slate-50 dark:from-[#282842] dark:to-[#1E1E32] border border-border/60 rounded-xl px-4 py-4 mb-5 shadow-sm">
       {/* Collapsed header — always visible */}
       <button
         type="button"

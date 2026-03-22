@@ -22,16 +22,16 @@ type Props = {
 
 const VARIANT_STYLES: Record<Variant, { bg: string; border: string }> = {
   danger: {
-    bg: '#FEF2F2',
-    border: '#EF4444',
+    bg: 'bg-red-50 dark:bg-red-900/25',
+    border: 'border-l-[3px] border-l-red-500',
   },
   warning: {
-    bg: '#FFFBEB',
-    border: '#F59E0B',
+    bg: 'bg-amber-50 dark:bg-amber-900/25',
+    border: 'border-l-[3px] border-l-amber-500',
   },
   info: {
-    bg: '#EFF6FF',
-    border: '#3B82F6',
+    bg: 'bg-blue-50 dark:bg-blue-900/25',
+    border: 'border-l-[3px] border-l-blue-500',
   },
 }
 
@@ -48,12 +48,7 @@ export default function AthleteStatusCard({
   return (
     <Link
       href={`/athletes/${athleteId}`}
-      className="block min-h-[44px]"
-      style={{
-        backgroundColor: styles.bg,
-        borderLeft: `3px solid ${styles.border}`,
-        borderRadius: '0 10px 10px 0',
-      }}
+      className={`block min-h-[44px] ${styles.bg} ${styles.border} rounded-r-[10px]`}
     >
       <div className="flex items-center gap-3 px-3.5 py-3">
         <div className="flex-shrink-0 text-[22px]">

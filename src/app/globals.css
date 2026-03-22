@@ -135,17 +135,17 @@ nav.fixed.bottom-0 {
 }
 
 /* Dark mode form inputs — visually distinct from card surface */
-.dark input,
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .dark select,
 .dark textarea {
-  background-color: #2C2C42;
-  border-color: rgba(255,255,255,0.12);
-  color: #F0EDE8;
+  background-color: var(--color-surface-alt) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: var(--color-text-primary) !important;
 }
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #706D65;
+  color: var(--color-text-hint) !important;
 }
 
 /* Respect reduced motion */

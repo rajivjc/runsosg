@@ -17,22 +17,17 @@ type Props = {
 }
 
 const VARIANT_COLORS: Record<Variant, string> = {
-  danger: '#DC2626',
-  warning: '#D97706',
-  info: '#2563EB',
-  success: '#059669',
+  danger: 'text-red-600 dark:text-red-400',
+  warning: 'text-amber-600 dark:text-amber-400',
+  info: 'text-blue-600 dark:text-blue-400',
+  success: 'text-emerald-600 dark:text-emerald-400',
 }
 
 export default function PriorityBucket({ variant, label, children, isFirst }: Props) {
   return (
     <section className={isFirst ? 'mb-3' : 'mb-3'}>
       <h3
-        className="text-[11px] font-semibold uppercase tracking-wide mb-2"
-        style={{
-          color: VARIANT_COLORS[variant],
-          letterSpacing: '0.5px',
-          marginTop: isFirst ? '0' : '20px',
-        }}
+        className={`text-[11px] font-semibold uppercase tracking-wider mb-2 ${VARIANT_COLORS[variant]} ${isFirst ? '' : 'mt-5'}`}
       >
         {label}
       </h3>
