@@ -12,6 +12,8 @@ import { computeCaregiverOnboardingState } from '@/lib/onboarding'
 import { groupByDate } from '@/lib/feed/utils'
 import { loadClubStats } from '@/lib/feed/shared-queries'
 import { calculateStreakDetails } from '@/lib/streaks'
+import { getCaregiverDigestData } from '@/lib/digest/data'
+import { generateCaregiverNarrative, generateTeaserText } from '@/lib/digest/narrative'
 import type {
   CaregiverFeedData,
   FeedSession,
@@ -283,6 +285,18 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     workingOnCoachName = coachRow?.name ?? null
   }
 
+  // ─── Digest teaser ───────────────────────────────────────────
+  let digestTeaser: { text: string; weekLabel: string } | null = null
+  try {
+    const digestData = await getCaregiverDigestData(userId)
+    if (digestData) {
+      const narrative = generateCaregiverNarrative(digestData)
+      digestTeaser = { text: generateTeaserText(narrative), weekLabel: digestData.weekLabel }
+    }
+  } catch {
+    // Non-critical — teaser just doesn't show
+  }
+
   // ─── Caregiver onboarding ────────────────────────────────────
   const caregiverOnboarding = computeCaregiverOnboardingState({
     hasLinkedAthlete: !!caregiverAthlete,
@@ -323,6 +337,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       updatedAt: (caregiverAthlete as any)?.working_on_updated_at as string | null ?? null,
       coachName: workingOnCoachName,
     },
+    digestTeaser,
     monthlySummary: {
       thisMonth: { runs: thisMonthCount, km: thisMonthKm, durationSeconds: thisMonthDurationTotal },
       lastMonth: { runs: lastMonthCount, km: lastMonthKm },

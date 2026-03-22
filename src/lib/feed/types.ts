@@ -116,6 +116,7 @@ export interface CoachFeedData {
   onboarding: OnboardingState | null
   weeklyRecap: WeeklyRecap
   weeklyStats: { count: number; km: number; athletes: number }
+  digestTeaser: { text: string; weekLabel: string } | null
 }
 
 // ─── Caregiver feed data ─────────────────────────────────────────
@@ -166,6 +167,7 @@ export interface CaregiverFeedData {
     updatedAt: string | null
     coachName: string | null
   }
+  digestTeaser: { text: string; weekLabel: string } | null
   // Auto-generated monthly summary
   monthlySummary: {
     thisMonth: { runs: number; km: number; durationSeconds: number }

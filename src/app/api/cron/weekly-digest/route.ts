@@ -6,6 +6,8 @@ import {
   getCoachDigests,
   getCaregiverDigests,
 } from '@/lib/email/weekly-digest'
+import { getCoachDigestData, getCaregiverDigestData } from '@/lib/digest/data'
+import { generateCoachNarrative, generateCaregiverNarrative, narrativeToEmailHtml } from '@/lib/digest/narrative'
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
@@ -28,6 +30,18 @@ export async function GET(request: NextRequest) {
     const coachDigests = await getCoachDigests(weekStart, weekEnd)
 
     for (const digest of coachDigests) {
+      let narrativeHtml = ''
+      const digestUrl = `${appUrl}/digest`
+      try {
+        const narrativeData = await getCoachDigestData(digest.coachUserId)
+        if (narrativeData) {
+          const narrative = generateCoachNarrative(narrativeData)
+          narrativeHtml = narrativeToEmailHtml(narrative)
+        }
+      } catch {
+        // Fall back to current email format — narrativeHtml stays empty
+      }
+
       const result = await sendEmail({
         to: digest.coachEmail,
         subject: `Your week: ${digest.totalSessions} session${digest.totalSessions !== 1 ? 's' : ''} logged`,
@@ -37,6 +51,8 @@ export async function GET(request: NextRequest) {
           athleteNames: digest.athleteNames,
           weekDateRange,
           feedUrl: `${appUrl}/feed`,
+          narrativeHtml,
+          digestUrl,
         }),
       })
 
@@ -52,6 +68,18 @@ export async function GET(request: NextRequest) {
     const caregiverDigests = await getCaregiverDigests(weekStart, weekEnd)
 
     for (const digest of caregiverDigests) {
+      let cgNarrativeHtml = ''
+      const cgDigestUrl = `${appUrl}/digest`
+      try {
+        const cgNarrativeData = await getCaregiverDigestData(digest.caregiverUserId)
+        if (cgNarrativeData) {
+          const cgNarrative = generateCaregiverNarrative(cgNarrativeData)
+          cgNarrativeHtml = narrativeToEmailHtml(cgNarrative)
+        }
+      } catch {
+        // Fall back to current email format
+      }
+
       const result = await sendEmail({
         to: digest.caregiverEmail,
         subject: `${digest.athleteName}'s week: ${digest.totalSessions} session${digest.totalSessions !== 1 ? 's' : ''}`,
@@ -64,6 +92,8 @@ export async function GET(request: NextRequest) {
           nextMilestone: digest.nextMilestone,
           weekDateRange,
           athleteUrl: `${appUrl}/athletes/${digest.athleteId}`,
+          narrativeHtml: cgNarrativeHtml,
+          digestUrl: cgDigestUrl,
         }),
       })
 

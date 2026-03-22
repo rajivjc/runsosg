@@ -26,6 +26,9 @@ export interface AthleteWeekData {
     unit: string // 'sessions' | 'km'
   } | null
   bestWeekEver: boolean
+  totalSessionsAllTime: number       // cumulative sessions ever
+  totalKmAllTime: number             // cumulative km ever
+  lastSessionDate: string | null     // ISO date of most recent session
 }
 
 export interface CoachDigestInput {
@@ -50,6 +53,8 @@ export interface NarrativeParagraph {
   athleteId?: string // for linking in the UI
   athleteName?: string
   icon?: string // emoji for visual variety
+  avatar?: string | null // athlete avatar emoji
+  milestoneProgress?: { current: number; target: number; label: string }
 }
 
 export interface DigestNarrative {

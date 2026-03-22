@@ -97,13 +97,34 @@ export function weeklyDigestEmail({
   athleteNames,
   weekDateRange,
   feedUrl,
+  narrativeHtml,
+  digestUrl,
 }: {
   coachName: string
   totalSessions: number
   athleteNames: string[]
   weekDateRange: string
   feedUrl: string
+  narrativeHtml?: string
+  digestUrl?: string
 }): string {
+  // If narrative HTML is available, use the enhanced email
+  if (narrativeHtml) {
+    return layout(`
+      <h1 style="font-size:22px;font-weight:700;color:${BRAND_DARK};margin:0 0 8px 0;">
+        Hey ${escapeHtml(coachName)}, here&rsquo;s your week
+      </h1>
+      <p style="font-size:14px;color:#6B7280;margin:0 0 20px 0;">${weekDateRange}</p>
+      ${narrativeHtml}
+      <div style="text-align:center;margin-top:24px;">
+        <a href="${digestUrl ?? feedUrl}" style="display:inline-block;background-color:${BRAND_COLOR};color:white;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:24px;">
+          Read full notes in the app
+        </a>
+      </div>
+    `)
+  }
+
+  // Fallback: data-forward email
   const athleteList = athleteNames.map(n => `<li style="margin-bottom:4px;">${escapeHtml(n)}</li>`).join('')
 
   return layout(`
@@ -136,6 +157,8 @@ export function caregiverDigestEmail({
   nextMilestone,
   weekDateRange,
   athleteUrl,
+  narrativeHtml,
+  digestUrl,
 }: {
   caregiverName: string | null
   athleteName: string
@@ -145,8 +168,27 @@ export function caregiverDigestEmail({
   nextMilestone: { label: string; current: number; target: number } | null
   weekDateRange: string
   athleteUrl: string
+  narrativeHtml?: string
+  digestUrl?: string
 }): string {
   const greeting = caregiverName ? `Hi ${escapeHtml(caregiverName)}` : 'Hi there'
+
+  // If narrative HTML is available, use the enhanced email
+  if (narrativeHtml) {
+    return layout(`
+      <h1 style="font-size:22px;font-weight:700;color:${BRAND_DARK};margin:0 0 8px 0;">
+        ${greeting}, here&rsquo;s ${escapeHtml(athleteName)}&rsquo;s week
+      </h1>
+      <p style="font-size:14px;color:#6B7280;margin:0 0 20px 0;">${weekDateRange}</p>
+      ${narrativeHtml}
+      <div style="text-align:center;margin-top:24px;">
+        <a href="${digestUrl ?? athleteUrl}" style="display:inline-block;background-color:${BRAND_COLOR};color:white;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:24px;">
+          Read full notes in the app
+        </a>
+      </div>
+    `)
+  }
+
   const milestoneList = milestonesEarned
     .map(m => `<li style="margin-bottom:4px;">${escapeHtml(m.icon)} ${escapeHtml(m.label)}</li>`)
     .join('')

@@ -12,6 +12,7 @@ import HintCard from '@/components/ui/HintCard'
 import { HINT_KEYS } from '@/lib/hint-keys'
 import CaregiverWorkingOnCard from '@/components/feed/CaregiverWorkingOnCard'
 import CaregiverMonthlySummary from '@/components/feed/CaregiverMonthlySummary'
+import DigestTeaser from '@/components/feed/DigestTeaser'
 import type { CaregiverFeedData } from '@/lib/feed/types'
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -47,6 +48,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
     allowPublicSharing,
     onboarding,
     workingOn,
+    digestTeaser,
     monthlySummary,
   } = data
 
@@ -155,12 +157,6 @@ export default function CaregiverFeed({ data, userId }: Props) {
               >
                 View {athleteFirstName}&apos;s journey story &rarr;
               </Link>
-              <Link
-                href="/digest"
-                className="text-xs text-amber-600 dark:text-amber-300 hover:text-amber-800 font-medium block"
-              >
-                Weekly notes &rarr;
-              </Link>
             </div>
           </>
         ) : (
@@ -169,6 +165,11 @@ export default function CaregiverFeed({ data, userId }: Props) {
           </p>
         )}
       </div>
+
+      {/* Digest teaser card */}
+      {digestTeaser && (
+        <DigestTeaser teaserText={digestTeaser.text} weekLabel={digestTeaser.weekLabel} />
+      )}
 
       {/* Card 1.5 — Working On status */}
       {caregiverAthlete && workingOn.text && (

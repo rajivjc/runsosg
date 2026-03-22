@@ -44,20 +44,38 @@ export function generateCoachNarrative(input: CoachDigestInput): DigestNarrative
 
   // --- Opening ---
   if (isEmpty) {
+    // Compute club-wide cumulative totals for context
+    const totalAthleteCount = athletes.length
+    const totalSessionsAcrossAll = athletes.reduce((sum, a) => sum + a.totalSessionsAllTime, 0)
+    const cumulativeSuffix = totalAthleteCount > 0 && totalSessionsAcrossAll > 0
+      ? ` The club's been at it though: ${totalAthleteCount} athlete${totalAthleteCount !== 1 ? 's' : ''}, ${totalSessionsAcrossAll}+ sessions and counting.`
+      : ''
+
     const opening = pickVariant(
       [
-        `Quiet week — no sessions logged between ${weekLabel}. That's okay, everyone needs a rest week.`,
-        `No sessions this week (${weekLabel}). Rest is part of the process.`,
-        `Nothing logged between ${weekLabel}. A quiet week can be a good reset.`,
+        `Quiet week — no sessions logged between ${weekLabel}.${cumulativeSuffix || " That's okay, everyone needs a rest week."}`,
+        `No sessions this week (${weekLabel}).${cumulativeSuffix || ' Rest is part of the process.'}`,
+        `Nothing logged between ${weekLabel}.${cumulativeSuffix || ' A quiet week can be a good reset.'}`,
       ],
       weekLabel
     )
     paragraphs.push({ type: 'opening', text: opening })
-  } else if (totalSessionsAllAthletes === 1 && athletesWithSessions.length === 1) {
-    paragraphs.push({
-      type: 'opening',
-      text: `One session this week with ${athletesWithSessions[0].athleteName}. Here's what stood out.`,
-    })
+  } else if (totalSessionsAllAthletes <= 2 && athletesWithSessions.length <= 2) {
+    const firstAthlete = athletesWithSessions[0]
+    const cumulativeContext = firstAthlete.totalSessionsAllTime > 0
+      ? ` — that brings ${firstAthlete.athleteName.split(' ')[0] === firstAthlete.athleteName ? 'their' : (athletesWithSessions.length === 1 ? 'their' : 'the')} total to ${firstAthlete.totalSessionsAllTime} sessions and ${formatKm(firstAthlete.totalKmAllTime)}km`
+      : ''
+    if (totalSessionsAllAthletes === 1 && athletesWithSessions.length === 1) {
+      paragraphs.push({
+        type: 'opening',
+        text: `One session this week with ${firstAthlete.athleteName}${cumulativeContext}. Here's what stood out.`,
+      })
+    } else {
+      paragraphs.push({
+        type: 'opening',
+        text: `${pluralSessions(totalSessionsAllAthletes)} this week with ${athletesWithSessions.map(a => a.athleteName).join(' and ')}${cumulativeContext}. Here's what stood out.`,
+      })
+    }
   } else {
     const greeting = pickVariant(
       [
@@ -182,6 +200,7 @@ function generateAthleteHighlight(athlete: AthleteWeekData): NarrativeParagraph 
       athleteId,
       athleteName,
       icon: '🏆',
+      avatar: athlete.avatar,
     }
   }
 
@@ -194,6 +213,7 @@ function generateAthleteHighlight(athlete: AthleteWeekData): NarrativeParagraph 
       athleteId,
       athleteName,
       icon: '⭐',
+      avatar: athlete.avatar,
     }
   }
 
@@ -205,6 +225,7 @@ function generateAthleteHighlight(athlete: AthleteWeekData): NarrativeParagraph 
       athleteId,
       athleteName,
       icon: m.icon,
+      avatar: athlete.avatar,
     }
   }
 
@@ -213,10 +234,12 @@ function generateAthleteHighlight(athlete: AthleteWeekData): NarrativeParagraph 
     const remaining = ms.target - ms.current
     return {
       type: 'highlight',
-      text: `${athleteName} is ${remaining} ${ms.unit} away from '${ms.label}'. Getting close.`,
+      text: `${athleteName} is ${remaining} ${ms.unit} away from '${ms.label}' (${ms.current} of ${ms.target}). Getting close.`,
       athleteId,
       athleteName,
       icon: '🎯',
+      avatar: athlete.avatar,
+      milestoneProgress: { current: ms.current, target: ms.target, label: ms.label },
     }
   }
 
@@ -227,6 +250,7 @@ function generateAthleteHighlight(athlete: AthleteWeekData): NarrativeParagraph 
       athleteId,
       athleteName,
       icon: '😊',
+      avatar: athlete.avatar,
     }
   }
 
@@ -237,6 +261,7 @@ function generateAthleteHighlight(athlete: AthleteWeekData): NarrativeParagraph 
     athleteId,
     athleteName,
     icon: '🏃',
+    avatar: athlete.avatar,
   }
 }
 
@@ -287,7 +312,7 @@ export function generateCaregiverNarrative(input: CaregiverDigestInput): DigestN
     if (athlete.approachingMilestone) {
       const ms = athlete.approachingMilestone
       const remaining = ms.target - ms.current
-      parts.push(`${remaining} more ${ms.unit} until the next milestone: '${ms.label}'.`)
+      parts.push(`${remaining} more ${ms.unit} until the next milestone: '${ms.label}' (${ms.current} of ${ms.target}).`)
     }
 
     if (athlete.bestWeekEver) {
@@ -315,4 +340,62 @@ export function generateCaregiverNarrative(input: CaregiverDigestInput): DigestN
   paragraphs.push({ type: 'closing', text: closingText })
 
   return { weekLabel, paragraphs, isEmpty }
+}
+
+// ─── Teaser Text ──────────────────────────────────────────────
+
+/**
+ * Generate a single-line teaser for the feed card.
+ * Picks the most interesting observation from the week.
+ */
+export function generateTeaserText(narrative: DigestNarrative): string {
+  // Priority: first highlight paragraph text, truncated to ~80 chars
+  const highlight = narrative.paragraphs.find(p => p.type === 'highlight')
+  if (highlight) {
+    const text = highlight.text
+    return text.length > 80 ? text.slice(0, 77) + '...' : text
+  }
+  // Fallback to opening
+  const opening = narrative.paragraphs.find(p => p.type === 'opening')
+  return opening?.text ?? 'Your weekly notes are ready.'
+}
+
+// ─── Email HTML ───────────────────────────────────────────────
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/**
+ * Render a DigestNarrative as simple HTML paragraphs for email.
+ * No Tailwind — uses inline styles only (email-safe).
+ */
+export function narrativeToEmailHtml(narrative: DigestNarrative): string {
+  const BRAND = '#0F766E'
+  const MUTED = '#6B7280'
+
+  return narrative.paragraphs
+    .map(p => {
+      if (p.type === 'opening') {
+        return `<p style="font-size:15px;color:#111827;margin:0 0 16px 0;line-height:1.6;">${escapeHtml(p.text)}</p>`
+      }
+      if (p.type === 'highlight') {
+        const icon = p.icon ? `${p.icon} ` : ''
+        return `<p style="font-size:14px;color:#4B5563;margin:0 0 12px 0;line-height:1.6;padding-left:8px;border-left:2px solid ${BRAND};">${icon}${escapeHtml(p.text)}</p>`
+      }
+      if (p.type === 'heads-up') {
+        const icon = p.icon ? `${p.icon} ` : ''
+        return `<p style="font-size:14px;color:#92400E;margin:0 0 12px 0;line-height:1.6;padding-left:8px;border-left:2px solid #F59E0B;">${icon}${escapeHtml(p.text)}</p>`
+      }
+      if (p.type === 'closing') {
+        return `<p style="font-size:14px;color:${MUTED};font-style:italic;margin:16px 0 0 0;">${escapeHtml(p.text)}</p>`
+      }
+      return ''
+    })
+    .join('\n')
 }

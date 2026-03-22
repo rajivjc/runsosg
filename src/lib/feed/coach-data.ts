@@ -12,6 +12,8 @@ import { computeWeeklyRecap } from '@/lib/feed/weekly-recap'
 import { computeOnboardingState } from '@/lib/onboarding'
 import { groupByDate } from '@/lib/feed/utils'
 import { loadClubStats } from '@/lib/feed/shared-queries'
+import { getCoachDigestData } from '@/lib/digest/data'
+import { generateCoachNarrative, generateTeaserText } from '@/lib/digest/narrative'
 import type {
   CoachFeedData,
   FeedSession,
@@ -239,6 +241,18 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
   // ─── Await focus data ──────────────────────────────────────────
   const coachFocus = await coachFocusPromise
 
+  // ─── Digest teaser ───────────────────────────────────────────
+  let digestTeaser: { text: string; weekLabel: string } | null = null
+  try {
+    const digestData = await getCoachDigestData(userId)
+    if (digestData) {
+      const narrative = generateCoachNarrative(digestData)
+      digestTeaser = { text: generateTeaserText(narrative), weekLabel: digestData.weekLabel }
+    }
+  } catch {
+    // Non-critical — teaser just doesn't show
+  }
+
   return {
     user: { role: userRow?.role ?? 'coach', name: userRow?.name ?? null },
     sessions: feed,
@@ -263,5 +277,6 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     onboarding: onboarding.isNewUser ? onboarding : null,
     weeklyRecap,
     weeklyStats,
+    digestTeaser,
   }
 }

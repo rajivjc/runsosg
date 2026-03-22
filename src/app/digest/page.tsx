@@ -63,56 +63,61 @@ function DigestView({ narrative, role }: { narrative: DigestNarrative; role: 'co
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
-      {/* Header */}
-      <div className="mb-6">
-        <p className="text-lg font-bold text-text-primary flex items-center gap-2">
-          <span>📋</span> Your weekly notes
-        </p>
-        <p className="text-sm text-text-muted mt-0.5">{narrative.weekLabel}</p>
+      {/* Card wrapper */}
+      <div className="bg-surface border border-border-subtle rounded-2xl px-6 py-6 shadow-sm">
+        {/* Header */}
+        <div className="mb-6">
+          <p className="text-lg font-bold text-text-primary flex items-center gap-2">
+            <span>📋</span> Your weekly notes
+          </p>
+          <p className="text-sm text-text-muted mt-0.5">{narrative.weekLabel}</p>
+        </div>
+
+        {/* Opening */}
+        {opening && (
+          <p className="text-base text-text-primary mb-6 leading-relaxed">{opening.text}</p>
+        )}
+
+        {/* Highlights */}
+        {highlights.length > 0 && (
+          <>
+            <div className="border-t border-border-subtle my-6" />
+            <p className="text-xs uppercase tracking-wide font-semibold text-text-hint mb-4 border-l-2 border-teal-400 pl-2">
+              Highlights
+            </p>
+            <div className="space-y-4">
+              {highlights.map((p, i) => (
+                <HighlightParagraph key={i} paragraph={p} role={role} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Heads up (coach only) */}
+        {headsUp.length > 0 && (
+          <>
+            <div className="border-t border-border-subtle my-6" />
+            <p className="text-xs uppercase tracking-wide font-semibold text-text-hint mb-4 border-l-2 border-amber-400 pl-2">
+              Heads up
+            </p>
+            <div className="space-y-4">
+              {headsUp.map((p, i) => (
+                <HeadsUpParagraph key={i} paragraph={p} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Closing */}
+        {closing && (
+          <>
+            <div className="border-t border-border-subtle my-6" />
+            <div className="bg-surface-alt rounded-xl px-4 py-3 text-center">
+              <p className="text-sm text-text-muted">{closing.text}</p>
+            </div>
+          </>
+        )}
       </div>
-
-      {/* Opening */}
-      {opening && (
-        <p className="text-base text-text-primary mb-6 leading-relaxed">{opening.text}</p>
-      )}
-
-      {/* Highlights */}
-      {highlights.length > 0 && (
-        <>
-          <div className="border-t border-border-subtle my-6" />
-          <p className="text-xs uppercase tracking-wide font-semibold text-text-hint mb-4">
-            Highlights
-          </p>
-          <div className="space-y-4">
-            {highlights.map((p, i) => (
-              <HighlightParagraph key={i} paragraph={p} role={role} />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Heads up (coach only) */}
-      {headsUp.length > 0 && (
-        <>
-          <div className="border-t border-border-subtle my-6" />
-          <p className="text-xs uppercase tracking-wide font-semibold text-text-hint mb-4">
-            Heads up
-          </p>
-          <div className="space-y-4">
-            {headsUp.map((p, i) => (
-              <HeadsUpParagraph key={i} paragraph={p} />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Closing */}
-      {closing && (
-        <>
-          <div className="border-t border-border-subtle my-6" />
-          <p className="text-sm text-text-muted italic">{closing.text}</p>
-        </>
-      )}
 
       {/* Back link */}
       <div className="mt-8 text-center">
@@ -134,11 +139,26 @@ function HighlightParagraph({ paragraph, role }: { paragraph: NarrativeParagraph
 
   return (
     <div className="flex items-start gap-3">
-      {paragraph.icon && (
-        <span className="text-base flex-shrink-0 mt-0.5">{paragraph.icon}</span>
-      )}
+      {/* Avatar circle — show athlete avatar or fallback to icon */}
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-surface-alt flex items-center justify-center text-base">
+        {paragraph.avatar ?? paragraph.icon ?? '🏃'}
+      </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-text-secondary leading-relaxed">{paragraph.text}</p>
+        {paragraph.milestoneProgress && (
+          <div className="mt-2">
+            <div className="flex items-center justify-between text-[10px] text-text-hint mb-1">
+              <span>{paragraph.milestoneProgress.label}</span>
+              <span>{paragraph.milestoneProgress.current} / {paragraph.milestoneProgress.target}</span>
+            </div>
+            <div className="h-1.5 bg-surface-alt rounded-full overflow-hidden">
+              <div
+                className="h-full bg-teal-500 rounded-full transition-all"
+                style={{ width: `${Math.min(100, Math.round((paragraph.milestoneProgress.current / paragraph.milestoneProgress.target) * 100))}%` }}
+              />
+            </div>
+          </div>
+        )}
         {linkHref && paragraph.athleteName && (
           <Link
             href={linkHref}

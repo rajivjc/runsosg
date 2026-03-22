@@ -14,6 +14,7 @@ import PriorityBucket from '@/components/feed/PriorityBucket'
 import AthleteStatusCard from '@/components/feed/AthleteStatusCard'
 import OnTrackCloud from '@/components/feed/OnTrackCloud'
 import FeelTrendBars from '@/components/feed/FeelTrendBars'
+import DigestTeaser from '@/components/feed/DigestTeaser'
 import type { CoachFeedData } from '@/lib/feed/types'
 import type { CoachPriorities } from '@/lib/feed/coach-priorities'
 
@@ -42,6 +43,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
     onboarding,
     weeklyRecap,
     weeklyStats,
+    digestTeaser,
   } = data
 
   const hour = new Date().getHours()
@@ -106,14 +108,6 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
               </div>
             </div>
           )}
-          <div className="mt-2 text-right">
-            <Link
-              href="/digest"
-              className="text-xs text-teal-600 dark:text-teal-300 hover:text-teal-700 font-medium"
-            >
-              View weekly notes &rarr;
-            </Link>
-          </div>
         </div>
         <HintCard
           storageKey={HINT_KEYS.HINT_FEED_POST_ONBOARDING}
@@ -121,6 +115,11 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
           description="New sessions, milestones, and alerts from all athletes show up here. Tap any session card for details."
         />
         </>
+      )}
+
+      {/* Digest teaser card */}
+      {!showOnboarding && digestTeaser && (
+        <DigestTeaser teaserText={digestTeaser.text} weekLabel={digestTeaser.weekLabel} />
       )}
 
       {/* Priority status dashboard */}

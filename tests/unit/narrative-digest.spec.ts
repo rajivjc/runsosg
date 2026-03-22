@@ -30,6 +30,9 @@ function makeAthlete(overrides: Partial<AthleteWeekData> = {}): AthleteWeekData 
     goingQuiet: null,
     approachingMilestone: null,
     bestWeekEver: false,
+    totalSessionsAllTime: 15,
+    totalKmAllTime: 52.3,
+    lastSessionDate: '2026-03-15',
     ...overrides,
   }
 }

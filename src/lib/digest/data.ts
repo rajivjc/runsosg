@@ -250,6 +250,18 @@ export async function getCoachDigestData(userId: string): Promise<CoachDigestInp
       }
     }
 
+    // Cumulative totals
+    const totalSessionsAllTime = (allCompletedSessions ?? []).filter(s => s.athlete_id === athlete.id).length
+    const totalKmAllTime = Math.round(
+      (allSessions ?? [])
+        .filter(s => s.athlete_id === athlete.id)
+        .reduce((sum, s) => sum + (Number(s.distance_km) || 0), 0) * 10
+    ) / 10
+
+    // Last session date
+    const sortedDates = allAthleteSessions.map(s => s.date).filter(Boolean).sort()
+    const lastSessionDate = sortedDates.length > 0 ? sortedDates[sortedDates.length - 1] : null
+
     athleteWeekDataList.push({
       athleteId: athlete.id,
       athleteName: athlete.name,
@@ -263,6 +275,9 @@ export async function getCoachDigestData(userId: string): Promise<CoachDigestInp
       goingQuiet,
       approachingMilestone,
       bestWeekEver,
+      totalSessionsAllTime,
+      totalKmAllTime,
+      lastSessionDate,
     })
   }
 
@@ -412,6 +427,14 @@ export async function getCaregiverDigestData(userId: string): Promise<CaregiverD
     }
   }
 
+  // Cumulative totals
+  const cgTotalSessionsAllTime = (allCompletedSessions ?? []).length
+  const cgTotalKmAllTime = Math.round(
+    (allSessions ?? []).reduce((sum, s) => sum + (Number(s.distance_km) || 0), 0) * 10
+  ) / 10
+  const cgSortedDates = (allSessions ?? []).map(s => s.date).filter(Boolean).sort()
+  const cgLastSessionDate = cgSortedDates.length > 0 ? cgSortedDates[cgSortedDates.length - 1] : null
+
   // Caregiver doesn't see feel data, but we still populate the field for the type
   // The narrative generator will not use feel data for caregiver output
   const athleteData: AthleteWeekData = {
@@ -427,6 +450,9 @@ export async function getCaregiverDigestData(userId: string): Promise<CaregiverD
     goingQuiet: null, // Not shown to caregivers
     approachingMilestone,
     bestWeekEver,
+    totalSessionsAllTime: cgTotalSessionsAllTime,
+    totalKmAllTime: cgTotalKmAllTime,
+    lastSessionDate: cgLastSessionDate,
   }
 
   return {
