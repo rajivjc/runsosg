@@ -21,34 +21,26 @@ describe('FeelTrendBars', () => {
     content = fs.readFileSync(filePath, 'utf-8')
   })
 
-  it('renders correct number of bars by mapping over ratings', () => {
-    // Should map over ratings array to render bars
+  it('renders N bars for N ratings by mapping over ratings array', () => {
     expect(content).toContain('ratings.map')
 
-    // Each bar should have fixed dimensions (6px wide, 16px tall)
+    // Each bar should have fixed dimensions (6px wide, 18px tall)
     expect(content).toContain('width: 6')
-    expect(content).toContain('height: 16')
+    expect(content).toContain('height: 18')
   })
 
-  it('does not crash with empty ratings', () => {
-    // Should handle empty ratings gracefully
-    expect(content).toContain('ratings.length === 0')
-
-    // Should return null for empty ratings
-    expect(content).toContain('return null')
-  })
-
-  it('uses correct colour coding for feel ratings', () => {
-    // Green for good ratings (4-5)
-    expect(content).toContain('--color-success')
+  it('applies green style for rating >= 4', () => {
     expect(content).toContain('rating >= 4')
+    expect(content).toContain('#059669')
+  })
 
-    // Amber for mid ratings (3)
-    expect(content).toContain('--color-warning')
-    expect(content).toContain('rating === 3')
+  it('applies red style for rating <= 2', () => {
+    expect(content).toContain('#DC2626')
+  })
 
-    // Red for low ratings (1-2)
-    expect(content).toContain('--color-danger')
+  it('handles empty ratings array', () => {
+    expect(content).toContain('ratings.length === 0')
+    expect(content).toContain('return null')
   })
 
   it('has accessible labelling', () => {
@@ -56,7 +48,8 @@ describe('FeelTrendBars', () => {
   })
 
   it('uses compact layout with proper spacing', () => {
-    expect(content).toContain('gap-[2px]')
-    expect(content).toContain('rounded-sm')
+    // 3px gap between bars, 2px border radius
+    expect(content).toContain("gap: '3px'")
+    expect(content).toContain('borderRadius: 2')
   })
 })

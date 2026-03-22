@@ -29,11 +29,8 @@ export default function PrioritySummary({
   if (allOnTrack) {
     return (
       <div
-        className="rounded-xl px-4 py-3 mb-4 text-center"
-        style={{
-          backgroundColor: 'var(--color-success-light)',
-          color: 'var(--color-success)',
-        }}
+        className="bg-emerald-100 text-emerald-600 px-4 py-3 mb-4 text-center"
+        style={{ borderRadius: '10px', border: '0.5px solid #A7F3D0' }}
       >
         <p className="text-sm font-semibold">
           All {totalAthletes} athletes on track
@@ -46,51 +43,54 @@ export default function PrioritySummary({
     {
       count: needsAttentionCount,
       label: 'Needs attention',
-      bg: 'var(--color-danger-light)',
-      text: 'var(--color-danger)',
-      border: 'rgba(220, 38, 38, 0.25)',
+      bgClass: 'bg-red-100',
+      borderColor: '#FECACA',
+      numberClass: 'text-red-600',
+      labelClass: 'text-red-800',
     },
     {
       count: goingQuietCount,
       label: 'Going quiet',
-      bg: 'var(--color-warning-light)',
-      text: 'var(--color-warning)',
-      border: 'rgba(217, 119, 6, 0.25)',
+      bgClass: 'bg-amber-100',
+      borderColor: '#FDE68A',
+      numberClass: 'text-amber-600',
+      labelClass: 'text-amber-800',
     },
     {
       count: nearMilestoneCount,
       label: 'Near milestone',
-      bg: 'var(--color-info-light)',
-      text: 'var(--color-info)',
-      border: 'rgba(37, 99, 235, 0.25)',
+      bgClass: 'bg-blue-100',
+      borderColor: '#BFDBFE',
+      numberClass: 'text-blue-600',
+      labelClass: 'text-blue-800',
     },
     {
       count: onTrackCount,
       label: 'On track',
-      bg: 'var(--color-success-light)',
-      text: 'var(--color-success)',
-      border: 'rgba(5, 150, 105, 0.25)',
+      bgClass: 'bg-emerald-100',
+      borderColor: '#A7F3D0',
+      numberClass: 'text-emerald-600',
+      labelClass: 'text-emerald-800',
     },
   ]
 
   return (
-    <div className="flex gap-2 mb-4">
+    <div className="flex gap-1.5 mb-4">
       {counters.map((c) => (
         <div
           key={c.label}
-          className="flex-1 rounded-xl px-3 py-2.5 text-center"
+          className={`flex-1 ${c.bgClass} py-2.5 px-1 text-center`}
           style={{
-            backgroundColor: c.bg,
-            border: `0.5px solid ${c.border}`,
+            borderRadius: '10px',
+            border: `0.5px solid ${c.borderColor}`,
           }}
         >
           <p
-            className="text-xl font-bold leading-tight"
-            style={{ color: c.text }}
+            className={`text-[22px] font-semibold leading-tight ${c.numberClass}`}
           >
             {c.count}
           </p>
-          <p className="text-[11px] leading-tight mt-0.5 text-gray-500">
+          <p className={`text-[10px] leading-tight mt-px ${c.labelClass}`}>
             {c.label}
           </p>
         </div>

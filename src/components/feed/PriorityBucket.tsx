@@ -13,28 +13,30 @@ type Props = {
   variant: Variant
   label: string
   children: ReactNode
+  isFirst?: boolean
 }
 
 const VARIANT_COLORS: Record<Variant, string> = {
-  danger: 'var(--color-danger)',
-  warning: 'var(--color-warning)',
-  info: 'var(--color-info)',
-  success: 'var(--color-success)',
+  danger: '#DC2626',
+  warning: '#D97706',
+  info: '#2563EB',
+  success: '#059669',
 }
 
-export default function PriorityBucket({ variant, label, children }: Props) {
+export default function PriorityBucket({ variant, label, children, isFirst }: Props) {
   return (
-    <section className="mt-4 mb-4">
+    <section className={isFirst ? 'mb-3' : 'mb-3'}>
       <h3
-        className="text-[11px] font-semibold uppercase mb-2"
+        className="text-[11px] font-semibold uppercase tracking-wide mb-2"
         style={{
           color: VARIANT_COLORS[variant],
           letterSpacing: '0.5px',
+          marginTop: isFirst ? '0' : '20px',
         }}
       >
         {label}
       </h3>
-      <div className="space-y-2">{children}</div>
+      <div className="flex flex-col gap-1.5">{children}</div>
     </section>
   )
 }

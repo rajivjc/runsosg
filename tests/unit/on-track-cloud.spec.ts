@@ -59,7 +59,7 @@ describe('OnTrackCloud', () => {
   })
 
   it('shows a green dot indicator on each pill', () => {
-    expect(content).toContain('--color-success')
+    expect(content).toContain('#059669')
     expect(content).toContain('rounded-full')
   })
 })

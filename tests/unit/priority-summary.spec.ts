@@ -30,11 +30,11 @@ describe('PrioritySummary', () => {
     // Should render each count value
     expect(content).toContain('{c.count}')
 
-    // Should use semantic colour tokens
-    expect(content).toContain('--color-danger')
-    expect(content).toContain('--color-warning')
-    expect(content).toContain('--color-info')
-    expect(content).toContain('--color-success')
+    // Should use coloured backgrounds per bucket
+    expect(content).toContain('bg-red-100')
+    expect(content).toContain('bg-amber-100')
+    expect(content).toContain('bg-blue-100')
+    expect(content).toContain('bg-emerald-100')
   })
 
   it('renders collapsed view when all athletes are on track', () => {
@@ -46,9 +46,9 @@ describe('PrioritySummary', () => {
     expect(content).toContain('goingQuietCount === 0')
     expect(content).toContain('nearMilestoneCount === 0')
 
-    // Collapsed view uses success colour
-    expect(content).toContain('--color-success-light')
-    expect(content).toContain('--color-success')
+    // Collapsed view uses emerald colour
+    expect(content).toContain('bg-emerald-100')
+    expect(content).toContain('text-emerald-600')
   })
 
   it('accepts the required props', () => {
