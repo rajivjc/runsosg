@@ -173,8 +173,8 @@ export default function PhotosTab({
     return (
       <div className="text-center py-12">
         <p className="text-4xl mb-3">📷</p>
-        <p className="text-sm font-semibold text-text-primary mb-1">No photos yet</p>
-        <p className="text-xs text-text-muted">Photos from Strava syncs and manual uploads will appear here.</p>
+        <p className="text-base font-semibold text-text-primary mb-1">No photos yet</p>
+        <p className="text-sm text-text-muted">Photos added during session logging or synced from Strava will appear here.</p>
       </div>
     )
   }

@@ -59,9 +59,13 @@ export default async function NotificationsPage() {
       />
 
       {notifications.length === 0 ? (
-        <p className="text-sm text-text-hint text-center py-12">
-          No notifications yet.
-        </p>
+        <div className="text-center py-16">
+          <p className="text-4xl mb-3">🔔</p>
+          <p className="text-base font-semibold text-text-primary mb-1">All caught up</p>
+          <p className="text-sm text-text-muted">
+            Milestone awards, feel alerts, and Strava updates will appear here.
+          </p>
+        </div>
       ) : (
         <div className="space-y-2">
           {notifications.map((n) => (

@@ -109,9 +109,22 @@ export default async function AthletesPage({
 
       {athleteList.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-4xl mb-3">🏃</p>
+          <p className="text-4xl mb-3">👟</p>
           <p className="text-base font-semibold text-text-primary mb-1">No athletes yet</p>
-          <p className="text-sm text-text-muted">Add your first athlete to get started.</p>
+          <p className="text-sm text-text-muted mb-4">
+            {isAdmin
+              ? 'Add your first athlete to start tracking their running journey.'
+              : 'Athletes will appear here once an admin adds them.'}
+          </p>
+          {isAdmin && (
+            <Link
+              href="/admin/athletes/new"
+              className="inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-400 dark:text-gray-950 text-sm font-semibold rounded-lg px-5 py-2.5 transition-colors"
+              style={{ minHeight: '44px' }}
+            >
+              + Add athlete
+            </Link>
+          )}
         </div>
       ) : (
         <AthleteSearch athletes={athleteList} />
