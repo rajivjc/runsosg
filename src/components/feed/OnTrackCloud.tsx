@@ -28,17 +28,31 @@ export default function OnTrackCloud({ athletes, maxVisible = 8 }: Props) {
         <Link
           key={a.athleteId}
           href={`/athletes/${a.athleteId}`}
-          className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors min-h-[44px]"
+          className="inline-flex items-center gap-1.5 rounded-full bg-green-50 text-[13px] font-medium text-gray-900 hover:bg-green-100 transition-colors min-h-[44px]"
+          style={{
+            padding: '8px 14px',
+            border: '0.5px solid #BBF7D0',
+          }}
         >
           <span
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ backgroundColor: 'var(--color-success)' }}
+            className="flex-shrink-0 rounded-full inline-block"
+            style={{
+              width: '7px',
+              height: '7px',
+              backgroundColor: '#059669',
+            }}
           />
           {a.athleteName}
         </Link>
       ))}
       {overflow > 0 && (
-        <span className="inline-flex items-center rounded-full px-3 py-2 text-xs font-medium bg-gray-100 text-gray-500 min-h-[44px]">
+        <span
+          className="inline-flex items-center rounded-full bg-gray-100 text-[13px] font-medium text-gray-500 min-h-[44px]"
+          style={{
+            padding: '8px 14px',
+            border: '0.5px solid #E5E7EB',
+          }}
+        >
           +{overflow} more
         </span>
       )}

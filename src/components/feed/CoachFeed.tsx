@@ -127,7 +127,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
           />
 
           {priorities.needsAttention.length > 0 && (
-            <PriorityBucket variant="danger" label="Needs attention">
+            <PriorityBucket variant="danger" label="Needs attention" isFirst>
               {priorities.needsAttention.map((a) => (
                 <AthleteStatusCard
                   key={a.athleteId}
@@ -143,7 +143,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
           )}
 
           {priorities.goingQuiet.length > 0 && (
-            <PriorityBucket variant="warning" label="Going quiet">
+            <PriorityBucket variant="warning" label="Going quiet" isFirst={priorities.needsAttention.length === 0}>
               {priorities.goingQuiet.map((a) => (
                 <AthleteStatusCard
                   key={a.athleteId}
@@ -158,7 +158,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
           )}
 
           {priorities.nearMilestone.length > 0 && (
-            <PriorityBucket variant="info" label="Approaching milestone">
+            <PriorityBucket variant="info" label="Approaching milestone" isFirst={priorities.needsAttention.length === 0 && priorities.goingQuiet.length === 0}>
               {priorities.nearMilestone.map((a) => {
                 const remaining = Math.round((a.target - a.current) * 10) / 10
                 return (
@@ -170,7 +170,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
                     detail={`${remaining} ${a.unit} away from ${a.milestoneName}`}
                     variant="info"
                     rightContent={
-                      <span className="text-xs font-semibold text-gray-500">
+                      <span className="text-[13px] font-semibold text-blue-600">
                         {a.current} / {a.target} {a.unit}
                       </span>
                     }
@@ -181,7 +181,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
           )}
 
           {priorities.onTrack.length > 0 && (
-            <PriorityBucket variant="success" label={`On track · ${priorities.onTrack.length} athletes`}>
+            <PriorityBucket variant="success" label={`On track · ${priorities.onTrack.length} athletes`} isFirst={priorities.needsAttention.length === 0 && priorities.goingQuiet.length === 0 && priorities.nearMilestone.length === 0}>
               <OnTrackCloud athletes={priorities.onTrack} />
             </PriorityBucket>
           )}
@@ -201,8 +201,8 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
             </Link>
           )}
 
-          <div className="mt-6 mb-5 border-t-2 border-gray-200 pt-4">
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Recent activity</p>
+          <div className="mt-2 mb-5 border-t border-gray-200 pt-5">
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide" style={{ letterSpacing: '0.5px' }}>Recent activity</p>
           </div>
         </>
       )}
