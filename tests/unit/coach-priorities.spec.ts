@@ -269,6 +269,29 @@ describe('computeNearMilestone', () => {
     expect(milestone100km!.unit).toBe('km')
   })
 
+  it('rounds milestone distance to 1 decimal place', () => {
+    const athletes = [makeAthlete('a1', 'Alice')]
+    // Distances that produce floating point artifacts: 4.1 + 3.2 + 2.3 + 1.4 + 86.1 = 97.1
+    // But JS may produce 97.09999... or 97.10000...001
+    const sessions = {
+      a1: [
+        makeSession('a1', '2026-01-01', null, 4.1),
+        makeSession('a1', '2026-01-05', null, 3.2),
+        makeSession('a1', '2026-01-10', null, 2.3),
+        makeSession('a1', '2026-01-15', null, 1.4),
+        makeSession('a1', '2026-01-20', null, 86.1),
+      ],
+    }
+
+    const result = computeNearMilestone(athletes, sessions, {}, milestoneDefs)
+    const milestone100km = result.find(r => r.milestoneName === '100 km total')
+    expect(milestone100km).toBeDefined()
+    // current should be cleanly rounded, not a floating point artifact
+    expect(milestone100km!.current).toBe(97.1)
+    expect(String(milestone100km!.current)).not.toContain('999')
+    expect(String(milestone100km!.current)).not.toContain('001')
+  })
+
   it('does NOT flag athlete who already earned the milestone', () => {
     const athletes = [makeAthlete('a1', 'Alice')]
     const sessions = {

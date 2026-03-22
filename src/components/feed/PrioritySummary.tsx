@@ -48,24 +48,28 @@ export default function PrioritySummary({
       label: 'Needs attention',
       bg: 'var(--color-danger-light)',
       text: 'var(--color-danger)',
+      border: 'rgba(220, 38, 38, 0.25)',
     },
     {
       count: goingQuietCount,
       label: 'Going quiet',
       bg: 'var(--color-warning-light)',
       text: 'var(--color-warning)',
+      border: 'rgba(217, 119, 6, 0.25)',
     },
     {
       count: nearMilestoneCount,
       label: 'Near milestone',
       bg: 'var(--color-info-light)',
       text: 'var(--color-info)',
+      border: 'rgba(37, 99, 235, 0.25)',
     },
     {
       count: onTrackCount,
       label: 'On track',
       bg: 'var(--color-success-light)',
       text: 'var(--color-success)',
+      border: 'rgba(5, 150, 105, 0.25)',
     },
   ]
 
@@ -75,7 +79,10 @@ export default function PrioritySummary({
         <div
           key={c.label}
           className="flex-1 rounded-xl px-3 py-2.5 text-center"
-          style={{ backgroundColor: c.bg }}
+          style={{
+            backgroundColor: c.bg,
+            border: `0.5px solid ${c.border}`,
+          }}
         >
           <p
             className="text-xl font-bold leading-tight"
@@ -83,10 +90,7 @@ export default function PrioritySummary({
           >
             {c.count}
           </p>
-          <p
-            className="text-[11px] leading-tight mt-0.5"
-            style={{ color: c.text, opacity: 0.8 }}
-          >
+          <p className="text-[11px] leading-tight mt-0.5 text-gray-500">
             {c.label}
           </p>
         </div>

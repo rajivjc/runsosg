@@ -24,10 +24,13 @@ const VARIANT_COLORS: Record<Variant, string> = {
 
 export default function PriorityBucket({ variant, label, children }: Props) {
   return (
-    <section className="mb-4">
+    <section className="mt-4 mb-4">
       <h3
-        className="text-[11px] font-bold uppercase tracking-widest mb-2"
-        style={{ color: VARIANT_COLORS[variant] }}
+        className="text-[11px] font-semibold uppercase mb-2"
+        style={{
+          color: VARIANT_COLORS[variant],
+          letterSpacing: '0.5px',
+        }}
       >
         {label}
       </h3>
