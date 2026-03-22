@@ -2,6 +2,7 @@
 
 import { useFormStatus } from 'react-dom'
 import { useState, useCallback } from 'react'
+import Link from 'next/link'
 import { setAthletePin } from '@/app/my/[athleteId]/actions'
 
 type AthleteProfile = {
@@ -216,14 +217,12 @@ export default function EditAthleteForm({ athlete, onUpdate }: Props) {
             </p>
             {sharingEnabled && (
               <div className="pt-1 space-y-1">
-                <a
+                <Link
                   href={`/story/${athlete.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="text-[10px] text-teal-700 dark:text-teal-300 hover:text-teal-900 font-medium underline"
                 >
                   Preview what the link looks like →
-                </a>
+                </Link>
                 {athlete.caregiver_user_id && (
                   <p className="text-[10px] text-amber-600 dark:text-amber-300">
                     {athlete.name}&apos;s caregiver will be notified and can turn this off anytime.

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { disableSharingAsCaregiver } from '@/app/feed/sharing-actions'
 
 interface Props {
@@ -40,14 +41,12 @@ export default function CaregiverSharingControl({ athleteId, athleteName }: Prop
         Milestones and journey stats can be shared with family via a link. Notes and personal info are never included.
       </p>
       <div className="flex items-center gap-2">
-        <a
+        <Link
           href={`/story/${athleteId}`}
-          target="_blank"
-          rel="noopener noreferrer"
           className="text-[10px] text-amber-600 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-300 font-medium underline"
         >
           See what&apos;s shared
-        </a>
+        </Link>
         <button
           onClick={handleDisable}
           disabled={isPending}

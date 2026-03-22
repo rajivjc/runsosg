@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { Plus, ChevronRight } from 'lucide-react'
 import { formatDate, formatDistance, formatDuration, toDateOnly } from '@/lib/utils/dates'
 import type { SessionData, MilestoneData, PhotoData } from './AthleteTabs'
@@ -298,15 +299,13 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
             return (
               <span key={i} className="inline-flex items-center gap-0.5">
                 {m.id ? (
-                  <a
+                  <Link
                     href={`/milestone/${m.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className={`${badgeClasses} hover:bg-amber-100 dark:hover:bg-amber-900/12 transition-colors`}
                     title="View and share this milestone"
                   >
                     {content}
-                  </a>
+                  </Link>
                 ) : (
                   <span className={badgeClasses}>{content}</span>
                 )}

@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf'
+import { guardIOSDownload } from '@/lib/utils/ios-download-fix'
 
 const THEME_HEX: Record<string, { primary: string; light: string }> = {
   teal:   { primary: '#0F766E', light: '#CCFBF1' },
@@ -129,5 +130,6 @@ export function generateCertificatePdf(data: CertificateData): void {
 
   // ─── Save ─────────────────────────────────────────────────────
   const filename = `${slugify(data.athleteName)}-${slugify(data.milestoneLabel)}.pdf`
+  guardIOSDownload()
   doc.save(filename)
 }
