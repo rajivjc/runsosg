@@ -47,7 +47,7 @@ export type CuesData = {
   version: number
   previous_cues: Json | null
   updated_by: string | null
-  updated_at: string
+  updated_at: string | null
 }
 
 export type NoteData = {

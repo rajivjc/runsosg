@@ -138,7 +138,7 @@ export default async function AdminPage() {
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <p className="text-xs text-gray-400">
-                    {new Date(inv.created_at).toLocaleDateString('en-SG')}
+                    {inv.created_at ? new Date(inv.created_at).toLocaleDateString('en-SG') : ''}
                   </p>
                   <CancelInviteButton invitationId={inv.id} email={inv.email} />
                 </div>
@@ -162,7 +162,7 @@ export default async function AdminPage() {
                 email={emailMap[u.id] ?? '—'}
                 role={u.role}
                 active={u.active}
-                createdAt={u.created_at}
+                createdAt={u.created_at ?? ''}
                 isSelf={u.id === currentUserId}
                 athletes={athletes ?? []}
                 linkedAthleteName={caregiverAthleteMap[u.id] ?? null}

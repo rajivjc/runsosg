@@ -1,514 +1,93 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+// Re-export the generated database types
+export type { Database, Json } from './database.types'
+import type { Database, Json } from './database.types'
 
-export interface Database {
-  public: {
-    Tables: {
-      club_settings: {
-        Row: ClubSettings & Record<string, unknown>
-        Insert: Omit<ClubSettings, 'id'> & { id?: string }
-        Update: Partial<ClubSettings>
-        Relationships: []
-      }
-      users: {
-        Row: User & Record<string, unknown>
-        Insert: Omit<User, 'created_at' | 'active' | 'pwa_token' | 'pwa_token_expires_at'> & { created_at?: string; active?: boolean; pwa_token?: string | null; pwa_token_expires_at?: string | null }
-        Update: Partial<User>
-        Relationships: []
-      }
-      athletes: {
-        Row: Athlete & Record<string, unknown>
-        Insert: Omit<Athlete, 'id' | 'created_at' | 'updated_at' | 'updated_by' | 'goal_type' | 'goal_target' | 'allow_public_sharing' | 'sharing_disabled_by_caregiver' | 'athlete_pin' | 'pin_attempts' | 'pin_locked_until' | 'working_on' | 'recent_progress' | 'working_on_updated_at' | 'working_on_updated_by'> & { id?: string; created_at?: string | null; updated_at?: string | null; updated_by?: string | null; goal_type?: Athlete['goal_type']; goal_target?: number | null; allow_public_sharing?: boolean; sharing_disabled_by_caregiver?: boolean; athlete_pin?: string | null; pin_attempts?: number; pin_locked_until?: string | null; working_on?: string | null; recent_progress?: string | null; working_on_updated_at?: string | null; working_on_updated_by?: string | null }
-        Update: Partial<Athlete>
-        Relationships: []
-      }
-      sessions: {
-        Row: Session & Record<string, unknown>
-        Insert: {
-          id?: string
-          athlete_id: string
-          coach_user_id?: string | null
-          planned_coach_user_id?: string | null
-          strava_activity_id?: number | null
-          status: 'planned' | 'completed' | 'cancelled'
-          date: string
-          distance_km?: number | null
-          duration_seconds?: number | null
-          feel?: 1 | 2 | 3 | 4 | 5 | null
-          note?: string | null
-          route_name?: string | null
-          map_polyline?: string | null
-          weather?: string | null
-          sync_source?: 'strava_webhook' | 'manual' | 'backfill' | null
-          match_method?: 'hashtag' | 'schedule' | 'manual_review' | null
-          match_confidence?: 'high' | 'medium' | 'manual' | null
-          strava_title?: string | null
-          avg_heart_rate?: number | null
-          max_heart_rate?: number | null
-          strava_deleted_at?: string | null
-          created_at?: string
-        } & Record<string, unknown>
-        Update: Partial<Session> & Record<string, unknown>
-        Relationships: []
-      }
-      cues: {
-        Row: Cue & Record<string, unknown>
-        Insert: Omit<Cue, 'id'> & { id?: string }
-        Update: Partial<Cue>
-        Relationships: []
-      }
-      coach_notes: {
-        Row: CoachNote & Record<string, unknown>
-        Insert: Omit<CoachNote, 'id' | 'created_at' | 'include_in_story'> & { id?: string; created_at?: string; include_in_story?: boolean }
-        Update: Partial<CoachNote>
-        Relationships: []
-      }
-      story_updates: {
-        Row: StoryUpdate & Record<string, unknown>
-        Insert: Omit<StoryUpdate, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<StoryUpdate>
-        Relationships: []
-      }
-      milestone_definitions: {
-        Row: MilestoneDefinition & Record<string, unknown>
-        Insert: Omit<MilestoneDefinition, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<MilestoneDefinition>
-        Relationships: []
-      }
-      milestones: {
-        Row: Milestone & Record<string, unknown>
-        Insert: Omit<Milestone, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<Milestone>
-        Relationships: []
-      }
-      media: {
-        Row: Media & Record<string, unknown>
-        Insert: Omit<Media, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<Media>
-        Relationships: []
-      }
-      strava_connections: {
-        Row: StravaConnection & Record<string, unknown>
-        Insert: Omit<StravaConnection, 'created_at'> & { created_at?: string }
-        Update: Partial<StravaConnection>
-        Relationships: []
-      }
-      strava_sync_log: {
-        Row: StravaSyncLog & Record<string, unknown>
-        Insert: {
-          id?: string
-          strava_activity_id: number
-          coach_user_id?: string | null
-          event_type: 'create' | 'update' | 'delete'
-          event_time?: string | null
-          received_at?: string
-          processed_at?: string | null
-          status: 'pending' | 'matched' | 'unmatched' | 'skipped' | 'error'
-          result_session_id?: string | null
-          error_message?: string | null
-          raw_payload: Json
-        } & Record<string, unknown>
-        Update: Partial<StravaSyncLog> & Record<string, unknown>
-        Relationships: []
-      }
-      strava_unmatched: {
-        Row: StravaUnmatched & Record<string, unknown>
-        Insert: {
-          id?: string
-          coach_user_id?: string | null
-          strava_activity_id: number
-          activity_data: Json
-          created_at?: string
-          resolved_at?: string | null
-          resolved_by?: string | null
-          resolved_session_id?: string | null
-          resolution_type?: 'linked' | 'dismissed' | null
-        } & Record<string, unknown>
-        Update: Partial<StravaUnmatched> & Record<string, unknown>
-        Relationships: []
-      }
-      session_rsvp: {
-        Row: SessionRsvp & Record<string, unknown>
-        Insert: Omit<SessionRsvp, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<SessionRsvp>
-        Relationships: []
-      }
-      notifications: {
-        Row: Notification & Record<string, unknown>
-        Insert: {
-          id?: string
-          user_id: string
-          type: 'milestone' | 'feel_prompt' | 'low_feel_alert' | 'unmatched_run' | 'strava_disconnected' | 'general'
-          payload: Json
-          read?: boolean
-          channel: 'in_app' | 'email' | 'push'
-          delivered_at?: string | null
-          created_at?: string
-        } & Record<string, unknown>
-        Update: Partial<Notification> & Record<string, unknown>
-        Relationships: []
-      }
-      invitations: {
-        Row: Invitation & Record<string, unknown>
-        Insert: Omit<Invitation, 'id' | 'created_at' | 'token' | 'expires_at'> & { id?: string; created_at?: string; token?: string; expires_at?: string }
-        Update: Partial<Invitation>
-        Relationships: []
-      }
-      kudos: {
-        Row: Kudos & Record<string, unknown>
-        Insert: Omit<Kudos, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<Kudos>
-        Relationships: []
-      }
-      coach_badges: {
-        Row: CoachBadge & Record<string, unknown>
-        Insert: Omit<CoachBadge, 'id' | 'earned_at'> & { id?: string; earned_at?: string }
-        Update: Partial<CoachBadge>
-        Relationships: []
-      }
-      cheers: {
-        Row: Cheer & Record<string, unknown>
-        Insert: Omit<Cheer, 'id' | 'created_at' | 'viewed_at'> & { id?: string; created_at?: string; viewed_at?: string | null }
-        Update: Partial<Cheer>
-        Relationships: []
-      }
-      push_subscriptions: {
-        Row: PushSubscriptionRow & Record<string, unknown>
-        Insert: Omit<PushSubscriptionRow, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<PushSubscriptionRow>
-        Relationships: []
-      }
-      athlete_messages: {
-        Row: AthleteMessage & Record<string, unknown>
-        Insert: Omit<AthleteMessage, 'id' | 'created_at' | 'viewed_by_coach_at'> & { id?: string; created_at?: string; viewed_by_coach_at?: string | null }
-        Update: Partial<AthleteMessage>
-        Relationships: []
-      }
-      athlete_moods: {
-        Row: AthleteMood & Record<string, unknown>
-        Insert: Omit<AthleteMood, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<AthleteMood>
-        Relationships: []
-      }
-      athlete_favorites: {
-        Row: AthleteFavorite & Record<string, unknown>
-        Insert: Omit<AthleteFavorite, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<AthleteFavorite>
-        Relationships: []
-      }
-      audit_log: {
-        Row: AuditLog & Record<string, unknown>
-        Insert: Omit<AuditLog, 'id' | 'created_at'> & { id?: string; created_at?: string }
-        Update: Partial<AuditLog>
-        Relationships: []
-      }
-    }
-    Views: Record<string, never>
-    Functions: {
-      get_my_role: {
-        Args: Record<string, never>
-        Returns: string
-      }
-      get_total_km: {
-        Args: Record<string, never>
-        Returns: number
-      }
-      get_weekly_stats: {
-        Args: { since: string }
-        Returns: { session_count: number; total_km: number; athlete_count: number }[]
-      }
-    }
-    Enums: Record<string, never>
-  }
-}
+// ─── Row types (convenience aliases) ─────────────────────────────────────────
 
-// ─── Row types ────────────────────────────────────────────────────────────────
+export type ClubSettings = Database['public']['Tables']['club_settings']['Row']
 
-export interface ClubSettings {
-  id: string
-  name: string
-  logo_url: string | null
-  home_location: string | null
-  session_day: string | null
-  session_time: string | null
-  strava_club_id: number | null
-  timezone: string
-  updated_at: string | null
-}
-
-export interface User {
-  id: string
-  email: string
-  name: string | null
+export type User = Database['public']['Tables']['users']['Row'] & {
   role: 'admin' | 'coach' | 'caregiver'
-  active: boolean
-  created_at: string
-  pwa_token: string | null
-  pwa_token_expires_at: string | null
 }
 
-export interface Athlete {
-  id: string
-  name: string
-  photo_url: string | null
-  active: boolean
-  date_of_birth: string | null
-  joined_at: string | null
-  running_goal: string | null
+export type Athlete = Database['public']['Tables']['athletes']['Row'] & {
   goal_type: 'distance_total' | 'distance_single' | 'session_count' | null
-  goal_target: number | null
-  communication_notes: string | null
-  medical_notes: string | null
-  emergency_contact: string | null
-  caregiver_user_id: string | null
-  allow_public_sharing: boolean
-  sharing_disabled_by_caregiver: boolean
-  athlete_pin: string | null
-  pin_attempts: number
-  pin_locked_until: string | null
-  working_on: string | null
-  recent_progress: string | null
-  working_on_updated_at: string | null
-  working_on_updated_by: string | null
-  theme_color?: string
-  avatar?: string | null
-  athlete_goal_choice?: 'run_further' | 'run_more' | 'feel_stronger' | null
-  updated_by: string | null
-  updated_at: string | null
-  created_at: string | null
+  athlete_goal_choice: 'run_further' | 'run_more' | 'feel_stronger' | null
 }
 
-export interface Session {
-  id: string
-  athlete_id: string
-  coach_user_id: string | null
-  planned_coach_user_id: string | null
-  strava_activity_id: number | null
+export type Session = Database['public']['Tables']['sessions']['Row'] & {
   status: 'planned' | 'completed' | 'cancelled'
-  date: string
-  distance_km: number | null
-  duration_seconds: number | null
   feel: 1 | 2 | 3 | 4 | 5 | null
-  note: string | null
-  route_name: string | null
-  map_polyline: string | null
-  weather: string | null
   sync_source: 'strava_webhook' | 'manual' | 'backfill' | null
   match_method: 'hashtag' | 'schedule' | 'manual_review' | null
   match_confidence: 'high' | 'medium' | 'manual' | null
-  strava_title: string | null
-  avg_heart_rate: number | null
-  max_heart_rate: number | null
-  strava_deleted_at: string | null
-  created_at: string
 }
 
-export interface Cue {
-  id: string
-  athlete_id: string
+export type Cue = Database['public']['Tables']['cues']['Row'] & {
   helps: string[]
   avoid: string[]
   best_cues: string[]
   kit: string[]
-  version: number
   previous_cues: Json | null
-  updated_by: string | null
-  updated_at: string
 }
 
-export interface CoachNote {
-  id: string
-  athlete_id: string
-  coach_user_id: string | null
-  content: string
+export type CoachNote = Database['public']['Tables']['coach_notes']['Row'] & {
   note_type: 'general' | 'milestone' | 'observation'
   visibility: 'all' | 'coaches_only'
-  include_in_story: boolean
-  created_at: string
 }
 
-export interface StoryUpdate {
-  id: string
-  athlete_id: string
-  coach_user_id: string | null
-  content: string
-  created_at: string
-}
+export type StoryUpdate = Database['public']['Tables']['story_updates']['Row']
 
-export interface MilestoneDefinition {
-  id: string
-  label: string
+export type MilestoneDefinition = Database['public']['Tables']['milestone_definitions']['Row'] & {
   type: 'automatic' | 'manual'
-  condition: Json | null
-  icon: string | null
-  display_order: number
-  active: boolean
-  created_by: string | null
-  created_at: string
 }
 
-export interface Milestone {
-  id: string
-  athlete_id: string
-  milestone_definition_id: string | null
-  label: string
-  achieved_at: string
-  awarded_by: string | null
-  session_id: string | null
-  share_image_url: string | null
-  created_at: string
-}
+export type Milestone = Database['public']['Tables']['milestones']['Row']
 
-export interface Media {
-  id: string
-  athlete_id: string
-  session_id: string | null
-  milestone_id: string | null
-  url: string
-  caption: string | null
-  uploaded_by: string | null
-  created_at: string
+export type Media = Database['public']['Tables']['media']['Row'] & {
   source: 'strava' | 'upload' | 'strava_archived' | null
-  storage_path: string | null
 }
 
-export interface StravaConnection {
-  user_id: string
-  strava_athlete_id: number
-  access_token: string
-  refresh_token: string
-  token_expires_at: string
-  last_sync_at: string | null
+export type StravaConnection = Database['public']['Tables']['strava_connections']['Row'] & {
   last_sync_status: 'ok' | 'token_expired' | 'error' | null
-  last_error: string | null
-  created_at: string
 }
 
-export interface StravaSyncLog {
-  id: string
-  strava_activity_id: number
-  coach_user_id: string | null
+export type StravaSyncLog = Database['public']['Tables']['strava_sync_log']['Row'] & {
   event_type: 'create' | 'update' | 'delete'
-  event_time: string | null
-  received_at: string
-  processed_at: string | null
   status: 'pending' | 'matched' | 'unmatched' | 'skipped' | 'error'
-  result_session_id: string | null
-  error_message: string | null
-  raw_payload: Json
 }
 
-export interface StravaUnmatched {
-  id: string
-  coach_user_id: string | null
-  strava_activity_id: number
-  activity_data: Json
-  created_at: string
-  resolved_at: string | null
-  resolved_by: string | null
-  resolved_session_id: string | null
+export type StravaUnmatched = Database['public']['Tables']['strava_unmatched']['Row'] & {
   resolution_type: 'linked' | 'dismissed' | null
 }
 
-export interface SessionRsvp {
-  id: string
-  session_id: string
-  user_id: string
+export type SessionRsvp = Database['public']['Tables']['session_rsvp']['Row'] & {
   status: 'confirmed' | 'absent'
-  note: string | null
-  created_at: string
 }
 
-export interface Notification {
-  id: string
-  user_id: string
+export type Notification = Database['public']['Tables']['notifications']['Row'] & {
   type: 'milestone' | 'feel_prompt' | 'low_feel_alert' | 'unmatched_run' | 'strava_disconnected' | 'general'
-  payload: Json
-  read: boolean
   channel: 'in_app' | 'email' | 'push'
-  delivered_at: string | null
-  created_at: string
 }
 
-export interface Invitation {
-  id: string
-  email: string
+export type Invitation = Database['public']['Tables']['invitations']['Row'] & {
   role: 'admin' | 'coach' | 'caregiver'
-  athlete_id: string | null
-  invited_by: string | null
-  accepted_at: string | null
-  created_at: string
-  token: string
-  expires_at: string
 }
 
-export interface Kudos {
-  id: string
-  session_id: string
-  user_id: string
-  created_at: string
-}
+export type Kudos = Database['public']['Tables']['kudos']['Row']
 
-export interface CoachBadge {
-  id: string
-  user_id: string
-  badge_key: string
-  earned_at: string
-}
+export type CoachBadge = Database['public']['Tables']['coach_badges']['Row']
 
-export interface Cheer {
-  id: string
-  athlete_id: string
-  user_id: string
-  message: string
-  viewed_at: string | null
-  created_at: string
-}
+export type Cheer = Database['public']['Tables']['cheers']['Row']
 
-export interface PushSubscriptionRow {
-  id: string
-  user_id: string
-  endpoint: string
-  p256dh: string
-  auth: string
-  created_at: string
-}
+export type PushSubscriptionRow = Database['public']['Tables']['push_subscriptions']['Row']
 
-export interface AthleteMessage {
-  id: string
-  athlete_id: string
-  message: string
-  created_at: string
-  viewed_by_coach_at: string | null
-}
+export type AthleteMessage = Database['public']['Tables']['athlete_messages']['Row']
 
-export interface AthleteMood {
-  id: string
-  athlete_id: string
+export type AthleteMood = Database['public']['Tables']['athlete_moods']['Row'] & {
   mood: 1 | 2 | 3 | 4 | 5
-  created_at: string
 }
 
-export interface AthleteFavorite {
-  id: string
-  athlete_id: string
-  session_id: string
-  created_at: string
-}
+export type AthleteFavorite = Database['public']['Tables']['athlete_favorites']['Row']
 
-export interface AuditLog {
-  id: string
-  actor_id: string
-  actor_email: string | null
-  actor_role: string | null
-  action: string
-  target_type: string | null
-  target_id: string | null
-  metadata: Json
-  created_at: string
-}
+export type AuditLog = Database['public']['Tables']['audit_log']['Row']

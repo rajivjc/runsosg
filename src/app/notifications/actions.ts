@@ -79,7 +79,7 @@ export async function fetchUnreadNotifications(userId: string): Promise<{
     id: string
     type: string
     payload: Json
-    created_at: string
+    created_at: string | null
     read: boolean
   }>
 }> {
