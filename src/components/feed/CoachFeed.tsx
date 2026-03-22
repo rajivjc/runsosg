@@ -4,7 +4,7 @@ import OnboardingCard from '@/components/feed/OnboardingCard'
 import AppContextCard from '@/components/feed/AppContextCard'
 import CheerViewTracker from '@/components/feed/CheerViewTracker'
 import { formatDate } from '@/lib/utils/dates'
-import ClubStats from '@/components/feed/ClubStats'
+import ThisWeekStory from '@/components/feed/ThisWeekStory'
 import CoachSessionFeed from '@/components/feed/CoachSessionFeed'
 import BetaBanner from '@/components/feed/BetaBanner'
 import HintCard from '@/components/ui/HintCard'
@@ -204,9 +204,6 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
             </Link>
           )}
 
-          <div className="mt-2 mb-5 border-t border-border pt-5">
-            <p className="text-[11px] font-semibold text-text-hint uppercase tracking-wide" style={{ letterSpacing: '0.5px' }}>Recent activity</p>
-          </div>
         </>
       )}
 
@@ -234,7 +231,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
         </div>
       )}
 
-      {/* Athlete messages — collapsed summary */}
+      {/* Messages from athletes — moved up for emotional pull */}
       {athleteMessages.length > 0 && (() => {
         const uniqueAthletes = new Set(athleteMessages.map(m => m.athlete_name))
         const names = Array.from(uniqueAthletes)
@@ -273,34 +270,22 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
         )
       })()}
 
-      {/* Today's Focus */}
-      {coachFocus && coachFocus.items.length > 0 && (
-        <div className="bg-surface border border-border-subtle rounded-xl px-4 py-3 mb-5 shadow-sm">
-          <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-2.5">Today&apos;s focus</p>
-          <div className="space-y-2">
-            {coachFocus.items.map((item, i) => {
-              const bgClass = item.type === 'feel_declining' ? 'hover:bg-orange-50 dark:hover:bg-orange-900/15 bg-orange-50/40 dark:bg-orange-900/10'
-                : item.type === 'personal_best' || item.type === 'best_week_ever' ? 'hover:bg-teal-50 dark:hover:bg-teal-900/12 bg-teal-50/40 dark:bg-teal-900/10'
-                : 'hover:bg-surface-raised'
-              return (
-                <Link key={i} href={`/athletes/${item.athleteId}`}>
-                  <div className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${bgClass}`}>
-                    <span className="text-base flex-shrink-0">{item.type === 'approaching_milestone' ? '⭐' : item.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">{item.title}</p>
-                      <p className="text-xs text-text-muted">{item.subtitle}</p>
-                    </div>
-                    <span className="text-text-hint flex-shrink-0 text-sm">&#x203A;</span>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
+      {/* This Week's Story — unified weekly card */}
+      {!showOnboarding && (
+        <ThisWeekStory
+          weeklyStats={weeklyStats}
+          weeklyRecap={weeklyRecap}
+          celebrations={coachFocus?.items.filter(
+            i => i.type === 'personal_best' || i.type === 'best_week_ever'
+          ) ?? []}
+          clubStats={clubStats}
+        />
       )}
 
-      {/* Club statistics (with weekly recap merged in) */}
-      <ClubStats stats={clubStats} weeklyStats={weeklyStats} weeklyRecap={weeklyRecap} />
+      {/* Recent sessions label */}
+      <p className="text-[11px] font-semibold text-text-hint uppercase tracking-wide mb-3" style={{ letterSpacing: '0.5px' }}>
+        Recent sessions
+      </p>
 
       {/* Session timeline with athlete filtering */}
       <CoachSessionFeed

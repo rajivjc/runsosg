@@ -40,3 +40,31 @@ export function buildLookupMap(rows: { id: string; name?: string | null; email?:
     rows.map(r => [r.id, r.name ?? r.email?.split('@')[0] ?? 'Unknown'])
   )
 }
+
+// ─── Distance equivalent helpers ────────────────────────────────
+
+export const SINGAPORE_PERIMETER_KM = 140
+export const EARTH_CIRCUMFERENCE_KM = 40075
+export const SINGAPORE_LAPS_THRESHOLD = 4
+
+export function getDistanceEquivalent(km: number) {
+  if (km < SINGAPORE_PERIMETER_KM * SINGAPORE_LAPS_THRESHOLD) {
+    const laps = km / SINGAPORE_PERIMETER_KM
+    const progressInCurrentLap = (km % SINGAPORE_PERIMETER_KM) / SINGAPORE_PERIMETER_KM
+    if (laps < 1) {
+      return {
+        label: `${Math.round(progressInCurrentLap * 100)}% of a lap around Singapore`,
+        progress: progressInCurrentLap,
+      }
+    }
+    return {
+      label: `${laps.toFixed(1)} laps around Singapore`,
+      progress: progressInCurrentLap,
+    }
+  }
+  const progress = km / EARTH_CIRCUMFERENCE_KM
+  return {
+    label: `${(progress * 100).toFixed(1)}% of the way around Earth`,
+    progress: Math.min(progress, 1),
+  }
+}

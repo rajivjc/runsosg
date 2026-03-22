@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { getDistanceEquivalent } from '@/lib/feed/utils'
 import type { ClubBestWeek } from '@/lib/analytics/club-records'
 import type { WeeklyRecap } from '@/lib/feed/weekly-recap'
 
@@ -25,32 +26,6 @@ interface Props {
 }
 
 const STORAGE_KEY = 'sosg_club_stats_expanded'
-
-const SINGAPORE_PERIMETER_KM = 140
-const EARTH_CIRCUMFERENCE_KM = 40075
-const SINGAPORE_LAPS_THRESHOLD = 4
-
-function getDistanceEquivalent(km: number) {
-  if (km < SINGAPORE_PERIMETER_KM * SINGAPORE_LAPS_THRESHOLD) {
-    const laps = km / SINGAPORE_PERIMETER_KM
-    const progressInCurrentLap = (km % SINGAPORE_PERIMETER_KM) / SINGAPORE_PERIMETER_KM
-    if (laps < 1) {
-      return {
-        label: `${Math.round(progressInCurrentLap * 100)}% of a lap around Singapore`,
-        progress: progressInCurrentLap,
-      }
-    }
-    return {
-      label: `${laps.toFixed(1)} laps around Singapore`,
-      progress: progressInCurrentLap,
-    }
-  }
-  const progress = km / EARTH_CIRCUMFERENCE_KM
-  return {
-    label: `${(progress * 100).toFixed(1)}% of the way around Earth`,
-    progress: Math.min(progress, 1),
-  }
-}
 
 function TrendArrow({ current, previous, label }: { current: number; previous: number; label: string }) {
   const diff = current - previous
@@ -167,11 +142,10 @@ export default function ClubStats({ stats, weeklyStats, weeklyRecap }: Props) {
           {/* Total training hours */}
           {stats.totalDurationSeconds > 0 && (() => {
             const totalHours = stats.totalDurationSeconds / 3600
-            const movies = Math.floor(totalHours / 2)
             return (
               <div className="mt-2">
                 <p className="text-xs font-semibold text-text-secondary">
-                  {totalHours.toFixed(1)} hours of running together{movies >= 1 && ` — that\u2019s ${movies} movie${movies !== 1 ? 's' : ''} 🎬`}
+                  {totalHours.toFixed(1)} hours of running together
                 </p>
               </div>
             )
