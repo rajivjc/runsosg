@@ -40,7 +40,9 @@ export default function ExportButton({ athleteId }: { athleteId: string }) {
       } else {
         await generateProgressReport(result.data, result.athleteName)
       }
-    } catch {
+    } catch (err) {
+      // User cancelled the iOS share sheet — not an error
+      if (err instanceof DOMException && err.name === 'AbortError') return
       alert('Export failed. Please try again.')
     } finally {
       setLoading(false)
