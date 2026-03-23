@@ -4,7 +4,9 @@ import type { Database, Json } from './database.types'
 
 // ─── Row types (convenience aliases) ─────────────────────────────────────────
 
-export type ClubSettings = Database['public']['Tables']['club_settings']['Row']
+export type Club = Database['public']['Tables']['clubs']['Row']
+/** @deprecated Use Club instead */
+export type ClubSettings = Club
 
 export type User = Database['public']['Tables']['users']['Row'] & {
   role: 'admin' | 'coach' | 'caregiver'
