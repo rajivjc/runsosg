@@ -194,14 +194,14 @@ export default function AthleteTabs({
   return (
     <>
       {/* Tab bar */}
-      <div className="flex border-b border-border mb-4" role="tablist">
+      <div className="flex overflow-x-auto scrollbar-hide border-b border-border mb-4 -mx-4 px-4" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             role="tab"
             aria-selected={activeTab === tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`relative px-5 py-3 text-sm font-semibold cursor-pointer transition-colors ${
+            className={`relative px-3 py-3 text-sm font-semibold cursor-pointer transition-colors whitespace-nowrap flex-shrink-0 ${
               activeTab === tab.key
                 ? 'text-teal-600 dark:text-teal-300'
                 : 'text-text-hint hover:text-text-secondary'

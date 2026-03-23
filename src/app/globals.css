@@ -148,6 +148,15 @@ nav.fixed.bottom-0 {
   color: var(--color-text-hint);
 }
 
+/* Hide scrollbar for tab bars */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   main {
