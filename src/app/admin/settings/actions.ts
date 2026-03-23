@@ -29,9 +29,22 @@ export async function updateClubSettings(
   const stravaClubId = stravaClubIdStr ? parseInt(stravaClubIdStr, 10) : null
   const tagline = (formData.get('tagline') as string ?? '').trim() || null
   const locale = (formData.get('locale') as string ?? '').trim() || 'en-SG'
+  const timezone = (formData.get('timezone') as string ?? '').trim() || 'Asia/Singapore'
   const stravaHashtagPrefix = (formData.get('strava_hashtag_prefix') as string ?? '').trim() || null
 
   if (!name) return { error: 'Club name is required.' }
+
+  function isValidTimezone(tz: string): boolean {
+    try {
+      Intl.DateTimeFormat(undefined, { timeZone: tz })
+      return true
+    } catch {
+      return false
+    }
+  }
+  if (!isValidTimezone(timezone)) {
+    return { error: 'Invalid timezone. Please select a timezone from the dropdown.' }
+  }
 
   // Fetch existing settings to determine insert vs update
   const { data: existing } = await adminClient
@@ -51,6 +64,7 @@ export async function updateClubSettings(
         strava_club_id: stravaClubId && !isNaN(stravaClubId) ? stravaClubId : null,
         tagline,
         locale,
+        timezone,
         strava_hashtag_prefix: stravaHashtagPrefix,
         updated_at: new Date().toISOString(),
       })
@@ -70,7 +84,7 @@ export async function updateClubSettings(
         tagline,
         locale,
         strava_hashtag_prefix: stravaHashtagPrefix,
-        timezone: 'Asia/Singapore',
+        timezone,
         updated_at: new Date().toISOString(),
       })
 

@@ -48,6 +48,7 @@ export default async function AdminSettingsPage() {
           sessionTime={club.session_time}
           stravaClubId={club.strava_club_id}
           tagline={club.tagline}
+          timezone={club.timezone ?? 'Asia/Singapore'}
           locale={club.locale}
           stravaHashtagPrefix={club.strava_hashtag_prefix}
         />

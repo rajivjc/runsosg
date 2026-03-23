@@ -10,6 +10,7 @@ type ClubSettingsFormProps = {
   sessionTime: string | null
   stravaClubId: number | null
   tagline: string | null
+  timezone: string
   locale: string
   stravaHashtagPrefix: string | null
 }
@@ -29,6 +30,28 @@ function SubmitButton() {
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
+const TIMEZONES = [
+  { value: 'Pacific/Auckland', label: 'Auckland (UTC+12)' },
+  { value: 'Australia/Sydney', label: 'Sydney (UTC+11)' },
+  { value: 'Australia/Adelaide', label: 'Adelaide (UTC+10:30)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (UTC+9)' },
+  { value: 'Asia/Singapore', label: 'Singapore (UTC+8)' },
+  { value: 'Asia/Bangkok', label: 'Bangkok (UTC+7)' },
+  { value: 'Asia/Kolkata', label: 'Kolkata (UTC+5:30)' },
+  { value: 'Asia/Dubai', label: 'Dubai (UTC+4)' },
+  { value: 'Europe/Moscow', label: 'Moscow (UTC+3)' },
+  { value: 'Africa/Johannesburg', label: 'Johannesburg (UTC+2)' },
+  { value: 'Europe/Berlin', label: 'Berlin (UTC+1)' },
+  { value: 'Europe/London', label: 'London (UTC+0)' },
+  { value: 'America/Sao_Paulo', label: 'São Paulo (UTC-3)' },
+  { value: 'America/New_York', label: 'New York (UTC-5)' },
+  { value: 'America/Chicago', label: 'Chicago (UTC-6)' },
+  { value: 'America/Denver', label: 'Denver (UTC-7)' },
+  { value: 'America/Los_Angeles', label: 'Los Angeles (UTC-8)' },
+  { value: 'America/Anchorage', label: 'Anchorage (UTC-9)' },
+  { value: 'Pacific/Honolulu', label: 'Honolulu (UTC-10)' },
+]
+
 export default function ClubSettingsForm({
   name,
   homeLocation,
@@ -36,6 +59,7 @@ export default function ClubSettingsForm({
   sessionTime,
   stravaClubId,
   tagline,
+  timezone,
   locale,
   stravaHashtagPrefix,
 }: ClubSettingsFormProps) {
@@ -141,6 +165,20 @@ export default function ClubSettingsForm({
           placeholder="e.g. en-SG"
           className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
         />
+      </div>
+
+      <div>
+        <label htmlFor="timezone" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+          Timezone
+        </label>
+        <select
+          id="timezone"
+          name="timezone"
+          defaultValue={timezone}
+          className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+        >
+          {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
+        </select>
       </div>
 
       <div>
