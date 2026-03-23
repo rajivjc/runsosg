@@ -128,7 +128,7 @@ describe('unmatched notification uses dynamic prefix', () => {
     expect(payload.message).not.toContain('#sosg')
   })
 
-  it('falls back to #SOSG when club has no strava_hashtag_prefix', async () => {
+  it('falls back to #club when club has no strava_hashtag_prefix', async () => {
     mockGetClub.mockResolvedValue({
       strava_hashtag_prefix: null,
     })
@@ -145,6 +145,6 @@ describe('unmatched notification uses dynamic prefix', () => {
 
     expect(unmatchedNotif).toBeDefined()
     const payload = unmatchedNotif!.payload as Record<string, string>
-    expect(payload.message).toContain('#SOSG')
+    expect(payload.message).toContain('#club')
   })
 })

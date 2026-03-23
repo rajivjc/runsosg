@@ -3,11 +3,11 @@
  *
  * Tests:
  * 1. getClub() returns all expected fields
- * 2. getClub() returns cached result on second call
- * 3. resetClubCache() clears the cache
- * 4. getClub() throws on database error
- * 5. Coach feed uses club name from getClub()
- * 6. Caregiver feed uses club name from getClub()
+ * 2. getClub() returns fallback on database error
+ * 3. getClub() returns fallback when data is null
+ * 4. Coach feed uses club name from getClub()
+ * 5. Caregiver feed uses club name from getClub()
+ * 6. CLUB_CACHE_TAG is exported
  */
 
 // ── Mocks (must be before imports) ───────────────────────────────────────────
@@ -22,7 +22,13 @@ jest.mock('@/lib/supabase/admin', () => {
   return { adminClient: handler }
 })
 
-import { getClub, resetClubCache } from '@/lib/club'
+// Mock unstable_cache to just call the function directly (no caching in tests)
+jest.mock('next/cache', () => ({
+  unstable_cache: (fn: Function) => fn,
+  revalidateTag: jest.fn(),
+}))
+
+import { getClub, CLUB_CACHE_TAG } from '@/lib/club'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,7 +57,6 @@ function setupMock(response: { data: unknown; error: unknown }) {
 describe('getClub()', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    resetClubCache()
   })
 
   it('returns all expected fields', async () => {
@@ -63,28 +68,8 @@ describe('getClub()', () => {
     expect(club.timezone).toBe('Asia/Singapore')
     expect(club.locale).toBe('en-SG')
     expect(club.tagline).toBe('Growing Together')
-    expect(club.slug).toBe('sosg')
     expect(club.strava_hashtag_prefix).toBe('#SOSG')
     expect(mockFrom).toHaveBeenCalledWith('clubs')
-  })
-
-  it('returns cached result on second call', async () => {
-    setupMock({ data: MOCK_CLUB, error: null })
-
-    await getClub()
-    await getClub()
-
-    expect(mockFrom).toHaveBeenCalledTimes(1)
-  })
-
-  it('clears cache when resetClubCache() is called', async () => {
-    setupMock({ data: MOCK_CLUB, error: null })
-
-    await getClub()
-    resetClubCache()
-    await getClub()
-
-    expect(mockFrom).toHaveBeenCalledTimes(2)
   })
 
   it('returns fallback on database error', async () => {
@@ -100,6 +85,10 @@ describe('getClub()', () => {
 
     const club = await getClub()
     expect(club.name).toBe('Running Club')
+  })
+
+  it('exports CLUB_CACHE_TAG', () => {
+    expect(CLUB_CACHE_TAG).toBe('club-config')
   })
 })
 
@@ -119,7 +108,6 @@ describe('coach feed uses club name from getClub()', () => {
 describe('caregiver feed uses club name from getClub()', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    resetClubCache()
   })
 
   it('getClub() returns club name without fallback', async () => {

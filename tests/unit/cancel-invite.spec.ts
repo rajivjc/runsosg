@@ -38,6 +38,8 @@ jest.mock('@/lib/supabase/server', () => ({
 
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
+  revalidateTag: jest.fn(),
+  unstable_cache: (fn: Function) => fn,
 }))
 
 import { cancelInvitation } from '@/app/admin/actions'

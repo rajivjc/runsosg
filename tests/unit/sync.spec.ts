@@ -38,6 +38,27 @@ jest.mock('@/lib/milestones', () => ({
     mockCheckAndAwardMilestones(...args),
 }))
 
+jest.mock('@/lib/club', () => ({
+  getClub: jest.fn().mockResolvedValue({
+    id: 'club-1',
+    name: 'Test Club',
+    tagline: 'Test',
+    timezone: 'Asia/Singapore',
+    locale: 'en-SG',
+    settings: {},
+    strava_hashtag_prefix: '#sosg',
+    created_at: '2026-01-01T00:00:00Z',
+    logo_url: null,
+    home_location: null,
+    session_day: null,
+    session_time: null,
+    strava_club_id: null,
+    default_session_duration_minutes: null,
+    contact_email: null,
+  }),
+  CLUB_CACHE_TAG: 'club-config',
+}))
+
 import { processStravaActivity } from '@/lib/strava/sync'
 import type { StravaActivity } from '@/lib/strava/client'
 
