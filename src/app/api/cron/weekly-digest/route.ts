@@ -8,6 +8,7 @@ import {
 } from '@/lib/email/weekly-digest'
 import { getCoachDigestData, getCaregiverDigestData } from '@/lib/digest/data'
 import { generateCoachNarrative, generateCaregiverNarrative, narrativeToEmailHtml } from '@/lib/digest/narrative'
+import { getClub } from '@/lib/club'
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
 
   const { weekStart, weekEnd, label: weekDateRange } = getPreviousWeekRange()
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const club = await getClub()
 
   let coachEmailsSent = 0
   let caregiverEmailsSent = 0
@@ -54,6 +56,8 @@ export async function GET(request: NextRequest) {
         feedUrl: `${appUrl}/feed`,
         narrativeHtml,
         digestUrl,
+        clubName: club.name,
+        tagline: club.tagline ?? undefined,
       })
 
       if (dryRun) {
@@ -98,6 +102,8 @@ export async function GET(request: NextRequest) {
         athleteUrl: `${appUrl}/athletes/${digest.athleteId}`,
         narrativeHtml: cgNarrativeHtml,
         digestUrl: cgDigestUrl,
+        clubName: club.name,
+        tagline: club.tagline ?? undefined,
       })
 
       if (dryRun) {

@@ -7,7 +7,7 @@ import { formatSessionsAsCSV } from '@/lib/csv'
 import { generateProgressReport } from '@/lib/pdf-report'
 import { shareCsv } from '@/lib/utils/ios-download-fix'
 
-export default function ExportButton({ athleteId }: { athleteId: string }) {
+export default function ExportButton({ athleteId, clubName }: { athleteId: string; clubName?: string }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState<'csv' | 'pdf' | false>(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -38,7 +38,7 @@ export default function ExportButton({ athleteId }: { athleteId: string }) {
           .replace(/\s+/g, '-') + '-sessions.csv'
         await shareCsv(csv, filename)
       } else {
-        await generateProgressReport(result.data, result.athleteName)
+        await generateProgressReport(result.data, result.athleteName, clubName)
       }
     } catch (err) {
       // User cancelled the iOS share sheet — not an error

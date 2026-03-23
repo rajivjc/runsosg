@@ -51,6 +51,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
     digestTeaser,
     planData,
     monthlySummary,
+    clubName,
   } = data
 
   const hour = new Date().getHours()
@@ -78,7 +79,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
-      <BetaBanner />
+      <BetaBanner clubName={clubName} />
 
       {/* Milestone celebration overlay */}
       {celebrationMilestones.length > 0 && (
@@ -194,7 +195,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
           </>
         ) : (
           <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-            Welcome to the SOSG Running Club! Your athlete hasn&apos;t been linked yet — please ask a coach.
+            Welcome to {clubName}! Your athlete hasn&apos;t been linked yet — please ask a coach.
           </p>
         )}
       </div>

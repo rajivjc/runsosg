@@ -7,7 +7,11 @@ import EditAthleteForm from '@/components/athlete/EditAthleteForm'
 import DeleteAthleteButton from '@/components/admin/DeleteAthleteButton'
 import { updateAthlete } from '../actions'
 
-export const metadata: Metadata = { title: 'Edit Athlete — SOSG Running Club' }
+export async function generateMetadata(): Promise<Metadata> {
+  const { getClub } = await import('@/lib/club')
+  const club = await getClub()
+  return { title: `Edit Athlete — ${club.name}` }
+}
 
 interface PageProps {
   params: { id: string }

@@ -87,16 +87,19 @@ describe('getClub()', () => {
     expect(mockFrom).toHaveBeenCalledTimes(2)
   })
 
-  it('throws on database error', async () => {
+  it('returns fallback on database error', async () => {
     setupMock({ data: null, error: { message: 'fail' } })
 
-    await expect(getClub()).rejects.toThrow('Failed to load club settings')
+    const club = await getClub()
+    expect(club.name).toBe('Running Club')
+    expect(club.tagline).toBe('Growing Together')
   })
 
-  it('throws when data is null', async () => {
+  it('returns fallback when data is null', async () => {
     setupMock({ data: null, error: null })
 
-    await expect(getClub()).rejects.toThrow('Failed to load club settings')
+    const club = await getClub()
+    expect(club.name).toBe('Running Club')
   })
 })
 

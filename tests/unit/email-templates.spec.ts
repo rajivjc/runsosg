@@ -18,7 +18,7 @@ describe('Email templates', () => {
       expect(html).toContain('Sarah')
       expect(html).toContain('15 February 2026')
       expect(html).toContain('https://app.test/milestone/123')
-      expect(html).toContain('SOSG Running Club')
+      expect(html).toContain('Running Club')
       expect(html).toContain('Milestone Achieved')
     })
 

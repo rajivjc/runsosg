@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import WelcomeForm from './welcome-form'
+import { getClub } from '@/lib/club'
 
 export default async function WelcomePage() {
   const supabase = await createClient()
@@ -21,6 +22,7 @@ export default async function WelcomePage() {
   }
 
   const role = userRow?.role ?? 'coach'
+  const club = await getClub()
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-surface-raised px-4">
@@ -34,7 +36,7 @@ export default async function WelcomePage() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-text-primary">
-              Welcome to SOSG Running Club!
+              Welcome to {club.name}!
             </h1>
             <p className="text-sm text-text-muted mt-2">
               {role === 'coach'

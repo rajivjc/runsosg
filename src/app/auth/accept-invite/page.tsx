@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { adminClient } from '@/lib/supabase/admin'
 import { AcceptInviteButton } from './accept-invite-button'
+import { getClub } from '@/lib/club'
 
 export default async function AcceptInvitePage({
   searchParams,
@@ -33,6 +34,8 @@ export default async function AcceptInvitePage({
       `/login?email=${encodeURIComponent(invitation.email)}&expired=true`
     )
   }
+
+  const club = await getClub()
 
   const roleLabel =
     invitation.role === 'coach'
@@ -78,7 +81,7 @@ export default async function AcceptInvitePage({
         </div>
 
         <h1 className="text-xl font-bold text-text-primary mb-2">
-          Welcome to SOSG Running Club
+          Welcome to {club.name}
         </h1>
         <p className="text-sm text-text-secondary mb-6">
           You have been invited to join as <strong>{roleLabel}</strong>.

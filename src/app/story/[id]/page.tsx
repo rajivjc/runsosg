@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import CloseButton from '@/components/milestone/CloseButton'
 import { getStoryData } from '@/lib/story/data'
 import { generateNarrative } from '@/lib/story/narrative'
+import { getClub } from '@/lib/club'
 import StoryHero from '@/components/story/StoryHero'
 import StoryChapter from '@/components/story/StoryChapter'
 import StoryProgress from '@/components/story/StoryProgress'
@@ -26,9 +27,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { athlete, sessions, milestones, heroPhotoUrl } = data
   const isPublic = athlete.allow_public_sharing === true
 
+  const club = await getClub()
+
   if (!isPublic) {
     return {
-      title: 'Private — SOSG Running Club',
+      title: `Private — ${club.name}`,
       robots: { index: false, follow: false },
     }
   }
@@ -37,10 +40,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
   const ogImageUrl = `${appUrl}/api/story/${params.id}/image`
 
-  const description = `${athlete.name} has completed ${sessions.length} session${sessions.length !== 1 ? 's' : ''} covering ${totalKm.toFixed(1)}km with ${milestones.length} milestone${milestones.length !== 1 ? 's' : ''} at SOSG Running Club.`
+  const description = `${athlete.name} has completed ${sessions.length} session${sessions.length !== 1 ? 's' : ''} covering ${totalKm.toFixed(1)}km with ${milestones.length} milestone${milestones.length !== 1 ? 's' : ''} at ${club.name}.`
 
   return {
-    title: `${athlete.name}'s Journey — SOSG Running Club`,
+    title: `${athlete.name}'s Journey — ${club.name}`,
     description,
     openGraph: {
       title: `${athlete.name}'s Running Journey`,
@@ -86,6 +89,7 @@ export default async function StoryPage({ params }: PageProps) {
   }
 
   if (!canView) {
+    const club = await getClub()
     if (user) {
       return (
         <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6">
@@ -101,7 +105,7 @@ export default async function StoryPage({ params }: PageProps) {
             >
               Back to home
             </Link>
-            <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-6">SOSG Running Club</p>
+            <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-6">{club.name}</p>
           </div>
         </div>
       )
@@ -121,11 +125,13 @@ export default async function StoryPage({ params }: PageProps) {
           >
             Sign in
           </Link>
-          <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-6">SOSG Running Club</p>
+          <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-6">{club.name}</p>
         </div>
       </div>
     )
   }
+
+  const club = await getClub()
 
   // Generate narrative
   const narrative = generateNarrative({
@@ -138,6 +144,7 @@ export default async function StoryPage({ params }: PageProps) {
       achieved_at: m.achieved_at,
       icon: m.icon,
     })),
+    clubName: club.name,
   })
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
@@ -218,6 +225,8 @@ export default async function StoryPage({ params }: PageProps) {
           totalSessions={narrative.totalSessions}
           totalKm={narrative.totalKm}
           storyUrl={`${appUrl}/story/${params.id}`}
+          clubName={club.name}
+          tagline={club.tagline ?? 'Growing Together'}
         />
       </div>
       <PoweredByBadge />

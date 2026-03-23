@@ -86,7 +86,7 @@ function wasDismissedRecently(): boolean {
   return Date.now() - ts < DISMISS_DURATION_MS
 }
 
-export default function InstallBanner() {
+export default function InstallBanner({ clubName }: { clubName?: string }) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [visible, setVisible] = useState(false)
 
@@ -148,7 +148,7 @@ export default function InstallBanner() {
       className="bg-accent-bg border-b border-border flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary leading-snug"
     >
       <p className="m-0 flex-1">
-        For the best experience, install SOSG Run on your device.{' '}
+        For the best experience, install {clubName ?? 'the app'} on your device.{' '}
         {!deferredPrompt && (
           <Link
             href="/setup"

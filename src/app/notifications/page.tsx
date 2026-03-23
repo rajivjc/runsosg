@@ -6,7 +6,11 @@ import { NotificationList } from './NotificationList'
 import HintCard from '@/components/ui/HintCard'
 import { HINT_KEYS } from '@/lib/hint-keys'
 
-export const metadata: Metadata = { title: 'Notifications — SOSG Running Club' }
+export async function generateMetadata(): Promise<Metadata> {
+  const { getClub } = await import('@/lib/club')
+  const club = await getClub()
+  return { title: `Notifications — ${club.name}` }
+}
 
 export default async function NotificationsPage() {
   const supabase = await createClient()

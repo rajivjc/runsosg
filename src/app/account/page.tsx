@@ -4,8 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import SignOutButton from '@/components/account/SignOutButton'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = { title: 'My Account — SOSG Running Club' }
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return { title: `My Account — ${club.name}` }
+}
 import StravaStatus from '@/components/account/StravaStatus'
 import DisplayNameForm from '@/components/account/DisplayNameForm'
 import PushToggle from '@/components/account/PushToggle'
@@ -502,7 +506,7 @@ export default async function AccountPage({
           <span className="text-xl flex-shrink-0">💚</span>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-text-primary">{isCaregiver ? 'Our Running Club' : 'Why I Built This'}</p>
-            <p className="text-xs text-text-muted">The story behind SOSG Running Club</p>
+            <p className="text-xs text-text-muted">The story behind our running club</p>
           </div>
           <span className="text-text-hint flex-shrink-0">&#x203A;</span>
         </Link>

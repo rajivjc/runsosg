@@ -128,7 +128,7 @@ export default function CelebrationOverlay({
               milestoneIcon,
               achievedAt: achievedAt ?? new Date().toISOString(),
               coachName: coachName ?? null,
-              clubName: clubName ?? 'SOSG Running Club',
+              clubName: clubName ?? 'Running Club',
               themeColor: themeColor ?? null,
               avatar: avatar ?? null,
             }}

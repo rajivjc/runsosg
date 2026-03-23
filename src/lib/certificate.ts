@@ -126,7 +126,7 @@ export async function generateCertificatePdf(data: CertificateData): Promise<voi
   doc.setFontSize(10)
   doc.setTextColor(156, 163, 175) // #9CA3AF
   doc.text(data.clubName, 25, pageH - 22, { align: 'left' })
-  doc.text('SOSG Running Club Hub', pageW - 25, pageH - 22, { align: 'right' })
+  doc.text(data.clubName, pageW - 25, pageH - 22, { align: 'right' })
 
   // ─── Save ─────────────────────────────────────────────────────
   const filename = `${slugify(data.athleteName)}-${slugify(data.milestoneLabel)}.pdf`

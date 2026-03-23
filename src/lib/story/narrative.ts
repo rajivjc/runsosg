@@ -32,6 +32,7 @@ export interface NarrativeInput {
   runningGoal: string | null
   sessions: NarrativeSession[]
   milestones: NarrativeMilestone[]
+  clubName?: string
 }
 
 // ─── Output types ─────────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ function findPersonalBest(
 // ─── Main generator ───────────────────────────────────────────────────────────
 
 export function generateNarrative(input: NarrativeInput): StoryNarrative {
-  const { athleteName, joinedAt, sessions, milestones } = input
+  const { athleteName, joinedAt, sessions, milestones, clubName = 'the running club' } = input
   const sorted = [...sessions].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   )
@@ -126,8 +127,8 @@ export function generateNarrative(input: NarrativeInput): StoryNarrative {
   // Handle empty case
   if (sorted.length === 0) {
     const startSentence = joinedAt
-      ? `${athleteName} joined SOSG Running Club in ${formatMonthYear(joinedAt)}.`
-      : `${athleteName} is part of the SOSG Running Club family.`
+      ? `${athleteName} joined ${clubName} in ${formatMonthYear(joinedAt)}.`
+      : `${athleteName} is part of the ${clubName} family.`
 
     return {
       chapters: [
@@ -243,7 +244,7 @@ export function generateNarrative(input: NarrativeInput): StoryNarrative {
       if (idx === 0) {
         const startDate = joinedAt ?? sorted[0].date
         paragraphs.push(
-          `${athleteName} started running with SOSG Running Club in ${formatMonthYear(startDate)}.`
+          `${athleteName} started running with ${clubName} in ${formatMonthYear(startDate)}.`
         )
       }
 

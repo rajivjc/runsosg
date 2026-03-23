@@ -318,7 +318,7 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
                       milestoneIcon: m.icon ?? '🏆',
                       achievedAt: m.achieved_at,
                       coachName: null,
-                      clubName: clubName ?? 'SOSG Running Club',
+                      clubName: clubName ?? 'Running Club',
                       themeColor: themeColor ?? null,
                       avatar: avatar ?? null,
                     }}

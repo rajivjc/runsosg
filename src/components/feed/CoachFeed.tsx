@@ -44,6 +44,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
     weeklyRecap,
     weeklyStats,
     digestTeaser,
+    clubName,
   } = data
 
   const hour = new Date().getHours()
@@ -53,7 +54,7 @@ export default function CoachFeed({ data, userId, priorities }: Props) {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">
-      <BetaBanner />
+      <BetaBanner clubName={clubName} />
 
       {/* Milestone celebration overlay */}
       {celebrationMilestones.length > 0 && (

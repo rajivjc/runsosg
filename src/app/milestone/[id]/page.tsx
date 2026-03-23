@@ -45,19 +45,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
   const imageUrl = `${appUrl}/api/milestone/${params.id}/image`
 
+  const club = await getClub()
+
   if (!isPublic) {
     return {
-      title: 'Private — SOSG Running Club',
+      title: `Private — ${club.name}`,
       robots: { index: false, follow: false },
     }
   }
 
   return {
-    title: `${athleteName} — ${label} | SOSG Running Club`,
-    description: `${athleteName} achieved a milestone: ${label}. Growing together at SOSG Running Club.`,
+    title: `${athleteName} — ${label} | ${club.name}`,
+    description: `${athleteName} achieved a milestone: ${label}. ${club.tagline ?? 'Growing together'} at ${club.name}.`,
     openGraph: {
       title: `${athleteName} — ${label}`,
-      description: `${athleteName} achieved a milestone: ${label}. Growing together at SOSG Running Club.`,
+      description: `${athleteName} achieved a milestone: ${label}. ${club.tagline ?? 'Growing together'} at ${club.name}.`,
       images: [{ url: imageUrl, width: 1200, height: 630, alt: `${athleteName} - ${label}` }],
       type: 'article',
     },
@@ -97,6 +99,7 @@ export default async function MilestoneSharePage({ params }: PageProps) {
   }
 
   if (!canView) {
+    const club = await getClub()
     if (user) {
       return (
         <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6">
@@ -112,7 +115,7 @@ export default async function MilestoneSharePage({ params }: PageProps) {
             >
               Back to home
             </Link>
-            <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-6">SOSG Running Club</p>
+            <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-6">{club.name}</p>
           </div>
         </div>
       )
@@ -132,7 +135,7 @@ export default async function MilestoneSharePage({ params }: PageProps) {
           >
             Sign in
           </Link>
-          <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-6">SOSG Running Club</p>
+          <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-6">{club.name}</p>
         </div>
       </div>
     )
@@ -173,7 +176,7 @@ export default async function MilestoneSharePage({ params }: PageProps) {
         <div className="mt-8 pt-6 border-t border-border-subtle w-full flex flex-col items-center gap-4">
           <ShareButton
             title={`${athleteName} — ${label}`}
-            text={`${athleteName} achieved a milestone: ${label}. Growing together at SOSG Running Club!`}
+            text={`${athleteName} achieved a milestone: ${label}. ${club.tagline ?? 'Growing together'} at ${club.name}!`}
             url={`${process.env.NEXT_PUBLIC_APP_URL ?? ''}/milestone/${params.id}`}
           />
           {canView && user && (
@@ -190,7 +193,7 @@ export default async function MilestoneSharePage({ params }: PageProps) {
               }}
             />
           )}
-          <p className="text-xs text-text-hint font-medium uppercase tracking-widest">SOSG Running Club — Growing Together</p>
+          <p className="text-xs text-text-hint font-medium uppercase tracking-widest">{club.name} — {club.tagline ?? 'Growing Together'}</p>
         </div>
         <p className="text-[10px] text-white/40 text-center mt-4 max-w-xs">
           This page shows {athleteName}&apos;s running achievements only. No personal details, notes, or contact information are included.

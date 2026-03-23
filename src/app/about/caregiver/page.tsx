@@ -1,21 +1,24 @@
 import type { Metadata } from 'next'
 import ShareButton from '@/components/milestone/ShareButton'
 import CloseButton from '@/components/milestone/CloseButton'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = {
-  title: 'Our Running Club — SOSG Running Club',
-  description:
-    'This app exists because every run deserves to be remembered.',
-  openGraph: {
-    title: 'Our Running Club — SOSG Running Club',
-    description:
-      'This app exists because every run deserves to be remembered.',
-    type: 'article',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return {
+    title: `Our Running Club — ${club.name}`,
+    description: 'This app exists because every run deserves to be remembered.',
+    openGraph: {
+      title: `Our Running Club — ${club.name}`,
+      description: 'This app exists because every run deserves to be remembered.',
+      type: 'article',
+    },
+  }
 }
 
-export default function CaregiverAboutPage() {
+export default async function CaregiverAboutPage() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const club = await getClub()
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6 py-12">
@@ -65,13 +68,13 @@ export default function CaregiverAboutPage() {
         {/* Footer */}
         <div className="mt-8 flex flex-col items-center gap-4">
           <ShareButton
-            title="Our Running Club — SOSG Running Club"
+            title={`Our Running Club — ${club.name}`}
             text="This app exists because every run deserves to be remembered."
             url={`${appUrl}/about/caregiver`}
             buttonText="Share this"
           />
           <p className="text-xs text-text-hint font-medium uppercase tracking-widest">
-            SOSG Running Club — Growing Together
+            {club.name} — {club.tagline ?? 'Growing Together'}
           </p>
         </div>
       </div>

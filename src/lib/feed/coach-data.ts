@@ -279,5 +279,6 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     weeklyRecap,
     weeklyStats,
     digestTeaser,
+    clubName,
   }
 }

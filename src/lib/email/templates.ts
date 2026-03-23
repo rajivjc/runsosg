@@ -1,4 +1,4 @@
-// HTML email templates for SOSG Running Club
+// HTML email templates
 // Uses inline styles for maximum email client compatibility
 
 const BRAND_COLOR = '#0D9488'
@@ -14,7 +14,7 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;')
 }
 
-function layout(content: string): string {
+function layout(content: string, clubName: string = 'Running Club', tagline: string = 'Growing Together'): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -30,7 +30,7 @@ function layout(content: string): string {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
           <tr>
             <td style="font-size:16px;font-weight:700;color:${BRAND_COLOR};text-transform:uppercase;letter-spacing:2px;">
-              SOSG Running Club
+              ${escapeHtml(clubName)}
             </td>
           </tr>
         </table>
@@ -46,7 +46,7 @@ function layout(content: string): string {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
           <tr>
             <td style="font-size:12px;color:#9CA3AF;text-align:center;">
-              SOSG Running Club — Growing Together
+              ${escapeHtml(clubName)} — ${escapeHtml(tagline)}
             </td>
           </tr>
         </table>
@@ -64,6 +64,8 @@ export function milestoneEmail({
   coachName,
   date,
   milestoneUrl,
+  clubName,
+  tagline,
 }: {
   athleteName: string
   milestoneLabel: string
@@ -71,6 +73,8 @@ export function milestoneEmail({
   coachName: string | null
   date: string
   milestoneUrl: string
+  clubName?: string
+  tagline?: string
 }): string {
   return layout(`
     <div style="text-align:center;">
@@ -88,7 +92,7 @@ export function milestoneEmail({
         </a>
       </div>
     </div>
-  `)
+  `, clubName, tagline)
 }
 
 export function weeklyDigestEmail({
@@ -99,6 +103,8 @@ export function weeklyDigestEmail({
   feedUrl,
   narrativeHtml,
   digestUrl,
+  clubName,
+  tagline,
 }: {
   coachName: string
   totalSessions: number
@@ -107,6 +113,8 @@ export function weeklyDigestEmail({
   feedUrl: string
   narrativeHtml?: string
   digestUrl?: string
+  clubName?: string
+  tagline?: string
 }): string {
   // If narrative HTML is available, use the enhanced email
   if (narrativeHtml) {
@@ -121,7 +129,7 @@ export function weeklyDigestEmail({
           Read full notes in the app
         </a>
       </div>
-    `)
+    `, clubName, tagline)
   }
 
   // Fallback: data-forward email
@@ -145,7 +153,7 @@ export function weeklyDigestEmail({
         View Club Feed
       </a>
     </div>
-  `)
+  `, clubName, tagline)
 }
 
 export function caregiverDigestEmail({
@@ -159,6 +167,8 @@ export function caregiverDigestEmail({
   athleteUrl,
   narrativeHtml,
   digestUrl,
+  clubName,
+  tagline,
 }: {
   caregiverName: string | null
   athleteName: string
@@ -170,6 +180,8 @@ export function caregiverDigestEmail({
   athleteUrl: string
   narrativeHtml?: string
   digestUrl?: string
+  clubName?: string
+  tagline?: string
 }): string {
   const greeting = caregiverName ? `Hi ${escapeHtml(caregiverName)}` : 'Hi there'
 
@@ -186,7 +198,7 @@ export function caregiverDigestEmail({
           Read full notes in the app
         </a>
       </div>
-    `)
+    `, clubName, tagline)
   }
 
   const milestoneList = milestonesEarned
@@ -236,21 +248,26 @@ export function caregiverDigestEmail({
         View ${escapeHtml(athleteName)}&rsquo;s Journey
       </a>
     </div>
-  `)
+  `, clubName, tagline)
 }
 
 export function invitationEmail({
   role,
   inviterName,
   acceptUrl,
+  clubName,
+  tagline,
 }: {
   role: string
   inviterName: string | null
   acceptUrl: string
+  clubName?: string
+  tagline?: string
 }): string {
+  const clubDisplayName = clubName ?? 'Running Club'
   return layout(`
     <h1 style="font-size:22px;font-weight:700;color:${BRAND_DARK};margin:0 0 12px 0;">
-      You&rsquo;re invited to SOSG Running Club
+      You&rsquo;re invited to ${escapeHtml(clubDisplayName)}
     </h1>
     <p style="font-size:15px;color:#4B5563;margin:0 0 8px 0;">
       ${inviterName ? `${escapeHtml(inviterName)} has invited you` : 'You&rsquo;ve been invited'} to join as a <strong>${escapeHtml(role)}</strong>.
@@ -303,5 +320,5 @@ export function invitationEmail({
     <p style="font-size:12px;color:#9CA3AF;margin:16px 0 0 0;text-align:center;">
       This link expires in 7 days. If it has expired, you can sign in at the login page.
     </p>
-  `)
+  `, clubName, tagline)
 }

@@ -5,7 +5,7 @@ import { X } from 'lucide-react'
 
 const STORAGE_KEY = 'sosg-beta-banner-dismissed'
 
-export default function BetaBanner() {
+export default function BetaBanner({ clubName }: { clubName?: string }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function BetaBanner() {
   return (
     <div className="bg-teal-50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-400/20 rounded-xl px-4 py-3 mb-4 flex items-start gap-3">
       <p className="text-sm text-teal-800 dark:text-teal-300 flex-1">
-        <span className="font-semibold">Welcome to the SOSG Running Club beta!</span>{' '}
+        <span className="font-semibold">Welcome to the {clubName ?? 'Running Club'} beta!</span>{' '}
         We&apos;d love your feedback — let a coach or admin know what you think.
       </p>
       <button

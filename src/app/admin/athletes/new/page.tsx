@@ -5,7 +5,11 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AddAthleteForm from '@/components/admin/AddAthleteForm'
 
-export const metadata: Metadata = { title: 'Add Athlete — SOSG Running Club' }
+export async function generateMetadata(): Promise<Metadata> {
+  const { getClub } = await import('@/lib/club')
+  const club = await getClub()
+  return { title: `Add Athlete — ${club.name}` }
+}
 
 export default async function NewAthletePage() {
   const supabase = await createClient()

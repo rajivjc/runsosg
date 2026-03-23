@@ -1,7 +1,11 @@
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = { title: 'Athletes — SOSG Running Club' }
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return { title: `Athletes — ${club.name}` }
+}
 import AthleteSearch from '@/components/athletes/AthleteSearch'
 import { adminClient } from '@/lib/supabase/admin'
 import StravaConnectBanner from '@/components/athletes/StravaConnectBanner'

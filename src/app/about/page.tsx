@@ -1,21 +1,25 @@
 import type { Metadata } from 'next'
 import ShareButton from '@/components/milestone/ShareButton'
 import CloseButton from '@/components/milestone/CloseButton'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = {
-  title: 'Why I Built This — SOSG Running Club',
-  description:
-    'The story behind SOSG Running Club Hub — a running app built for athletes with special needs, designed with dignity.',
-  openGraph: {
-    title: 'Why I Built This — SOSG Running Club',
-    description:
-      'The story behind SOSG Running Club Hub — a running app built for athletes with special needs, designed with dignity.',
-    type: 'article',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  const description = `The story behind ${club.name} — a running app built for athletes with special needs, designed with dignity.`
+  return {
+    title: `Why I Built This — ${club.name}`,
+    description,
+    openGraph: {
+      title: `Why I Built This — ${club.name}`,
+      description,
+      type: 'article',
+    },
+  }
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const club = await getClub()
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6 py-12">
@@ -173,13 +177,13 @@ export default function AboutPage() {
         {/* Footer */}
         <div className="mt-8 flex flex-col items-center gap-4">
           <ShareButton
-            title="Why I Built This — SOSG Running Club"
-            text="The story behind SOSG Running Club Hub — a running app built for athletes with special needs, designed with dignity."
+            title={`Why I Built This — ${club.name}`}
+            text={`The story behind ${club.name} — a running app built for athletes with special needs, designed with dignity.`}
             url={`${appUrl}/about`}
             buttonText="Share this story"
           />
           <p className="text-xs text-text-hint font-medium uppercase tracking-widest">
-            SOSG Running Club — Growing Together
+            {club.name} — {club.tagline ?? 'Growing Together'}
           </p>
         </div>
       </div>

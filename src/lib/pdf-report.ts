@@ -45,7 +45,7 @@ export function calculateSummaryStats(sessions: ExportSession[]): {
   return { totalSessions, totalDistanceKm, averagePace, dateRange }
 }
 
-export async function generateProgressReport(data: ExportSession[], athleteName: string): Promise<void> {
+export async function generateProgressReport(data: ExportSession[], athleteName: string, clubName: string = 'Running Club'): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const pageHeight = doc.internal.pageSize.getHeight()
@@ -156,7 +156,7 @@ export async function generateProgressReport(data: ExportSession[], athleteName:
     doc.setFont('helvetica', 'normal')
 
     const footerY = pageHeight - 15
-    doc.text(`Generated from SOSG Running Club Hub · ${generatedDate}`, margin, footerY)
+    doc.text(`Generated from ${clubName} · ${generatedDate}`, margin, footerY)
     doc.text(`Page ${i} of ${numPages}`, pageWidth - margin, footerY, { align: 'right' })
   }
 

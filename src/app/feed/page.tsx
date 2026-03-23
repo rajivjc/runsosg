@@ -6,8 +6,12 @@ import { loadCaregiverFeedData } from '@/lib/feed/caregiver-data'
 import { getCoachPriorities } from '@/lib/feed/coach-priorities'
 import CoachFeed from '@/components/feed/CoachFeed'
 import CaregiverFeed from '@/components/feed/CaregiverFeed'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = { title: 'Feed — SOSG Running Club' }
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return { title: `Feed — ${club.name}` }
+}
 
 export default async function FeedPage() {
   const supabase = await createClient()

@@ -7,6 +7,7 @@ import { parseValidDate } from '@/lib/utils/dates'
 import { sendEmail } from '@/lib/email/resend'
 import { invitationEmail } from '@/lib/email/templates'
 import { logAudit } from '@/lib/audit'
+import { getClub } from '@/lib/club'
 
 export type InviteFormState = {
   error?: string
@@ -72,13 +73,16 @@ export async function inviteUser(
 
   // Send branded invitation email via Resend with one-click auth link
   const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/accept-invite?token=${inviteRow.token}`
+  const club = await getClub()
   const emailResult = await sendEmail({
     to: email,
-    subject: "You're invited to SOSG Running Club",
+    subject: `You're invited to ${club.name}`,
     html: invitationEmail({
       role,
       inviterName: callerUser?.name ?? null,
       acceptUrl,
+      clubName: club.name,
+      tagline: club.tagline ?? undefined,
     }),
   })
 

@@ -34,9 +34,8 @@ describe('about page (public)', () => {
     expect(content).not.toContain("redirect('/feed')")
   })
 
-  it('is not an async function', () => {
-    expect(content).toContain('export default function AboutPage()')
-    expect(content).not.toContain('export default async function AboutPage()')
+  it('is an async function (uses getClub() for dynamic club name)', () => {
+    expect(content).toContain('export default async function AboutPage()')
   })
 
   it('preserves essay content', () => {
@@ -83,9 +82,8 @@ describe('caregiver about page (public)', () => {
     expect(content).not.toContain("redirect('/feed')")
   })
 
-  it('is not an async function', () => {
-    expect(content).toContain('export default function CaregiverAboutPage()')
-    expect(content).not.toContain('export default async function CaregiverAboutPage()')
+  it('is an async function (uses getClub() for dynamic club name)', () => {
+    expect(content).toContain('export default async function CaregiverAboutPage()')
   })
 
   it('preserves essay content', () => {

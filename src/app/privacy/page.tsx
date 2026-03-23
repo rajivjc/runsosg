@@ -1,13 +1,17 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy — SOSG Running Club',
-  description:
-    'How SOSG Running Club Hub collects, stores, and protects your data.',
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return {
+    title: `Privacy Policy — ${club.name}`,
+    description: `How ${club.name} collects, stores, and protects your data.`,
+  }
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const club = await getClub()
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6 py-12">
       <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-2xl px-8 py-10 sm:px-12 sm:py-14">
@@ -59,7 +63,7 @@ export default function PrivacyPage() {
               Who we are
             </h2>
             <p>
-              SOSG Running Club Hub is a volunteer-built tool for managing
+              {club.name} is a volunteer-built tool for managing
               running sessions for athletes with intellectual and developmental
               disabilities. It helps coaches log runs, track progress, and
               celebrate achievements.
@@ -317,7 +321,7 @@ export default function PrivacyPage() {
             </Link>
           </p>
           <p className="text-xs text-text-hint font-medium uppercase tracking-widest mt-4">
-            SOSG Running Club
+            {club.name}
           </p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { ImageResponse } from '@vercel/og'
 import { adminClient } from '@/lib/supabase/admin'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { getClub } from '@/lib/club'
 
 export const runtime = 'nodejs'
 
@@ -29,10 +30,11 @@ export async function GET(
     milestone_definitions: { icon: string; label: string } | null
   }
 
+  const club = await getClub()
   const athleteName = milestone.athletes?.name ?? 'Athlete'
   const icon = milestone.milestone_definitions?.icon ?? '🏆'
   const label = milestone.label
-  const date = new Date(milestone.achieved_at).toLocaleDateString('en-SG', {
+  const date = new Date(milestone.achieved_at).toLocaleDateString(club.locale ?? 'en-SG', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -125,7 +127,7 @@ export async function GET(
               letterSpacing: '3px',
             }}
           >
-            SOSG Running Club — Growing Together
+            {club.name} — {club.tagline ?? 'Growing Together'}
           </p>
         </div>
       </div>

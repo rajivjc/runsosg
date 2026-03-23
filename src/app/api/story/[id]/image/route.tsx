@@ -1,6 +1,7 @@
 import { ImageResponse } from '@vercel/og'
 import { adminClient } from '@/lib/supabase/admin'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { getClub } from '@/lib/club'
 
 export const runtime = 'nodejs'
 
@@ -38,6 +39,8 @@ export async function GET(
   if (!athlete || !athlete.allow_public_sharing) {
     return new Response('Not found', { status: 404 })
   }
+
+  const club = await getClub()
 
   const { data: distanceRows } = await adminClient
     .from('sessions')
@@ -136,7 +139,7 @@ export async function GET(
               letterSpacing: '3px',
             }}
           >
-            SOSG Running Club — Growing Together
+            {club.name} — {club.tagline ?? 'Growing Together'}
           </p>
         </div>
       </div>

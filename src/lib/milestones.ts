@@ -3,6 +3,7 @@ import { sendEmail } from '@/lib/email/resend'
 import { milestoneEmail } from '@/lib/email/templates'
 import { getMilestoneDefinitions } from '@/lib/feed/shared-queries'
 import { sendPushToUser } from '@/lib/push'
+import { getClub } from '@/lib/club'
 
 export async function checkAndAwardMilestones(
   athleteId: string,
@@ -121,6 +122,7 @@ export async function checkAndAwardMilestones(
           ? await adminClient.from('users').select('name').eq('id', coachUserId).single()
           : { data: null }
         const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+        const club = await getClub()
 
         if (caregiverAuth?.email) {
           for (const def of toAward) {
@@ -138,6 +140,8 @@ export async function checkAndAwardMilestones(
                 coachName: coach?.name ?? null,
                 date,
                 milestoneUrl: `${appUrl}/milestone/${milestoneId ?? ''}`,
+                clubName: club.name,
+                tagline: club.tagline ?? undefined,
               }),
             })
           }

@@ -17,7 +17,7 @@ import * as path from 'path'
 describe('login page redesign', () => {
   const filePath = path.join(
     __dirname,
-    '../../src/app/login/page.tsx'
+    '../../src/app/login/LoginForm.tsx'
   )
   let content: string
 
@@ -47,7 +47,7 @@ describe('login page redesign', () => {
     })
 
     it('has branded tagline', () => {
-      expect(content).toContain('Growing together, one run at a time')
+      expect(content).toContain('one run at a time')
     })
 
     it('does not use old gray subtitle', () => {

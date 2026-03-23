@@ -348,7 +348,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
           >
             <Share2 size={18} />
           </Link>
-          {!isReadOnly && <ExportButton athleteId={id} />}
+          {!isReadOnly && <ExportButton athleteId={id} clubName={clubName} />}
           {!isReadOnly && (
             <Link
               href={`/athletes/${id}/edit`}

@@ -394,6 +394,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       goalProgress,
       recentAchievement: recentAchievedFocus?.title ?? null,
     },
+    clubName,
     monthlySummary: {
       thisMonth: { runs: thisMonthCount, km: thisMonthKm, durationSeconds: thisMonthDurationTotal },
       lastMonth: { runs: lastMonthCount, km: lastMonthKm },

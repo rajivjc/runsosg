@@ -6,7 +6,11 @@ import Link from 'next/link'
 import { formatDate, formatDuration } from '@/lib/utils/dates'
 import { ResolveForm } from './ResolveForm'
 
-export const metadata: Metadata = { title: 'Link Run to Athlete — SOSG Running Club' }
+export async function generateMetadata(): Promise<Metadata> {
+  const { getClub } = await import('@/lib/club')
+  const club = await getClub()
+  return { title: `Link Run to Athlete — ${club.name}` }
+}
 
 export default async function UnmatchedRunPage({
   params,

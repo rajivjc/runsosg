@@ -7,16 +7,20 @@ import SplashHider from '@/components/nav/SplashHider'
 import ScrollRestorer from '@/components/nav/ScrollRestorer'
 import ThemeProvider from '@/components/theme/ThemeProvider'
 import type { Metadata, Viewport } from 'next'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = {
-  title: 'SOSG Running Club',
-  description: 'Running club hub for coaches and athletes — growing together',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'SOSG Run',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return {
+    title: club.name,
+    description: `Running club hub for coaches and athletes — ${(club.tagline ?? 'growing together').toLowerCase()}`,
+    manifest: '/manifest.json',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: club.name,
+    },
+  }
 }
 
 export const viewport: Viewport = {
@@ -26,7 +30,8 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const club = await getClub()
   return (
     <html lang="en">
       <head>
@@ -122,7 +127,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               fontFamily: 'system-ui, -apple-system, sans-serif',
             }}
           >
-            SOSG Running Club
+            {club.name}
           </p>
           {/* Loading dots */}
           <div style={{ display: 'flex', gap: '6px', marginTop: '24px' }}>
@@ -138,7 +143,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <BottomNav />
         </Suspense>
-        <InstallBanner />
+        <InstallBanner clubName={club.name} />
         {children}
         </ThemeProvider>
       </body>

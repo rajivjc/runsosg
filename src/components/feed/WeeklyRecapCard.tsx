@@ -5,9 +5,10 @@ import type { WeeklyRecap } from '@/lib/feed/weekly-recap'
 interface Props {
   weeklyStats: { count: number; km: number; athletes: number }
   weeklyRecap: WeeklyRecap
+  tagline?: string
 }
 
-export default function WeeklyRecapCard({ weeklyStats, weeklyRecap }: Props) {
+export default function WeeklyRecapCard({ weeklyStats, weeklyRecap, tagline }: Props) {
   if (weeklyStats.count === 0) return null
 
   return (
@@ -21,7 +22,7 @@ export default function WeeklyRecapCard({ weeklyStats, weeklyRecap }: Props) {
             {weeklyStats.count} run{weeklyStats.count !== 1 ? 's' : ''} this week
           </p>
           <p className="text-xs text-text-muted">
-            {weeklyStats.km.toFixed(1)} km across {weeklyStats.athletes} athlete{weeklyStats.athletes !== 1 ? 's' : ''} — growing together
+            {weeklyStats.km.toFixed(1)} km across {weeklyStats.athletes} athlete{weeklyStats.athletes !== 1 ? 's' : ''} — {(tagline ?? 'growing together').toLowerCase()}
           </p>
         </div>
       </div>

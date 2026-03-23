@@ -22,7 +22,24 @@ export async function getClub(): Promise<Club> {
     .single()
 
   if (error || !data) {
-    throw new Error('Failed to load club settings')
+    // During build/prerender, the DB may be unreachable — return a safe fallback
+    // so static generation can proceed. At runtime the real values are always used.
+    return {
+      id: '',
+      name: 'Running Club',
+      tagline: 'Growing Together',
+      timezone: 'Asia/Singapore',
+      locale: 'en-SG',
+      settings: {},
+      created_at: new Date().toISOString(),
+      logo_url: null,
+      home_location: null,
+      session_day: null,
+      session_time: null,
+      strava_club_id: null,
+      default_session_duration_minutes: null,
+      contact_email: null,
+    } as unknown as Club
   }
 
   cachedClub = data

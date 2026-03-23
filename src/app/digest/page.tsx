@@ -7,7 +7,11 @@ import { getCoachDigestData, getCaregiverDigestData } from '@/lib/digest/data'
 import { generateCoachNarrative, generateCaregiverNarrative } from '@/lib/digest/narrative'
 import type { DigestNarrative, NarrativeParagraph } from '@/lib/digest/types'
 
-export const metadata: Metadata = { title: 'Weekly Notes — SOSG Running Club' }
+export async function generateMetadata(): Promise<Metadata> {
+  const { getClub } = await import('@/lib/club')
+  const club = await getClub()
+  return { title: `Weekly Notes — ${club.name}` }
+}
 
 export default async function DigestPage() {
   const supabase = await createClient()
