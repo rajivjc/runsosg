@@ -12,6 +12,8 @@ import type { OnboardingState } from '@/lib/onboarding'
 import type { BadgeDefinition } from '@/lib/badges'
 import type { StreakDetails } from '@/lib/streaks'
 import type { ClubBestWeek } from '@/lib/analytics/club-records'
+import type { ProgressLevel } from '@/lib/supabase/types'
+import type { GoalProgress } from '@/lib/goals'
 
 // ─── Session & Milestone shapes ──────────────────────────────────
 
@@ -166,6 +168,17 @@ export interface CaregiverFeedData {
     recentProgress: string | null
     updatedAt: string | null
     coachName: string | null
+  }
+  // Plan data (focus areas + goal tracking)
+  planData: {
+    focusTitle: string | null
+    focusProgressNote: string | null
+    focusProgressLevel: ProgressLevel | null
+    focusUpdatedAt: string | null
+    focusCoachName: string | null
+    runningGoal: string | null
+    goalProgress: GoalProgress | null
+    recentAchievement: string | null
   }
   digestTeaser: { text: string; weekLabel: string } | null
   // Auto-generated monthly summary

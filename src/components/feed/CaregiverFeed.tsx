@@ -10,7 +10,7 @@ import SessionGroup from '@/components/feed/SessionGroup'
 import BetaBanner from '@/components/feed/BetaBanner'
 import HintCard from '@/components/ui/HintCard'
 import { HINT_KEYS } from '@/lib/hint-keys'
-import CaregiverWorkingOnCard from '@/components/feed/CaregiverWorkingOnCard'
+import CaregiverPlanCard from '@/components/feed/CaregiverPlanCard'
 import DigestTeaser from '@/components/feed/DigestTeaser'
 import { formatPace } from '@/lib/utils/dates'
 import type { CaregiverFeedData } from '@/lib/feed/types'
@@ -49,6 +49,7 @@ export default function CaregiverFeed({ data, userId }: Props) {
     onboarding,
     workingOn,
     digestTeaser,
+    planData,
     monthlySummary,
   } = data
 
@@ -211,14 +212,18 @@ export default function CaregiverFeed({ data, userId }: Props) {
         <DigestTeaser teaserText={digestTeaser.text} weekLabel={digestTeaser.weekLabel} />
       )}
 
-      {/* 4. Working On status */}
-      {caregiverAthlete && workingOn.text && (
-        <CaregiverWorkingOnCard
+      {/* 4. Coach's Plan */}
+      {caregiverAthlete && (
+        <CaregiverPlanCard
           athleteFirstName={athleteFirstName}
-          workingOn={workingOn.text}
-          recentProgress={workingOn.recentProgress}
-          updatedAt={workingOn.updatedAt}
-          coachName={workingOn.coachName}
+          focusTitle={planData.focusTitle}
+          focusProgressNote={planData.focusProgressNote}
+          focusProgressLevel={planData.focusProgressLevel}
+          focusUpdatedAt={planData.focusUpdatedAt}
+          focusCoachName={planData.focusCoachName}
+          runningGoal={planData.runningGoal}
+          goalProgress={planData.goalProgress}
+          recentAchievement={planData.recentAchievement}
         />
       )}
 

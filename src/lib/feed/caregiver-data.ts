@@ -14,6 +14,9 @@ import { loadClubStats } from '@/lib/feed/shared-queries'
 import { calculateStreakDetails } from '@/lib/streaks'
 import { getCaregiverDigestData } from '@/lib/digest/data'
 import { generateCaregiverNarrative, generateTeaserText } from '@/lib/digest/narrative'
+import { calculateGoalProgress } from '@/lib/goals'
+import type { GoalType } from '@/lib/goals'
+import type { ProgressLevel } from '@/lib/supabase/types'
 import type {
   CaregiverFeedData,
   FeedSession,
@@ -53,7 +56,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       .select('id, athlete_id, session_id, label, achieved_at, awarded_by, athletes(name, theme_color, avatar), milestone_definitions(icon)')
       .order('achieved_at', { ascending: false })
       .limit(20),
-    adminClient.from('athletes').select('id, name, allow_public_sharing, sharing_disabled_by_caregiver, working_on, recent_progress, working_on_updated_at, working_on_updated_by, avatar').eq('caregiver_user_id', userId).maybeSingle(),
+    adminClient.from('athletes').select('id, name, allow_public_sharing, sharing_disabled_by_caregiver, working_on, recent_progress, working_on_updated_at, working_on_updated_by, avatar, goal_type, goal_target, running_goal').eq('caregiver_user_id', userId).maybeSingle(),
     // Issue 1 & 2: Shared helper for club stats (includes get_total_km RPC)
     loadClubStats(),
     // Issue 8: DB-level weekly stats instead of JS filtering
@@ -80,6 +83,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     { count: cheerTodayCount },
     { data: sentCheers },
     { data: athleteSessionDates },
+    { data: focusAreasRows },
   ] = await Promise.all([
     // Kudos counts
     sessionIds.length > 0
@@ -108,6 +112,10 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     // All athlete session dates (for streak calculation)
     caregiverAthlete
       ? adminClient.from('sessions').select('date').eq('athlete_id', caregiverAthlete.id).eq('status', 'completed').is('strava_deleted_at', null)
+      : Promise.resolve({ data: [] }),
+    // Focus areas for plan card
+    caregiverAthlete
+      ? adminClient.from('focus_areas').select('title, progress_note, progress_level, status, created_by, updated_at, achieved_at').eq('athlete_id', caregiverAthlete.id).order('updated_at', { ascending: false })
       : Promise.resolve({ data: [] }),
   ])
 
@@ -297,6 +305,43 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     // Non-critical — teaser just doesn't show
   }
 
+  // ─── Plan data (focus areas + goal tracking) ────────────────
+  const allFocusAreas = (focusAreasRows ?? []) as { title: string; progress_note: string | null; progress_level: string | null; status: string; created_by: string | null; updated_at: string | null; achieved_at: string | null }[]
+  const activeFocus = allFocusAreas.find(f => f.status === 'active') ?? null
+  const recentAchievedFocus = allFocusAreas.find(f => f.status === 'achieved') ?? null
+
+  // Look up focus coach name
+  let focusCoachName: string | null = null
+  if (activeFocus?.created_by) {
+    const { data: focusCoachRow } = await adminClient
+      .from('users')
+      .select('name')
+      .eq('id', activeFocus.created_by)
+      .single()
+    focusCoachName = focusCoachRow?.name ?? null
+  }
+
+  // Compute goal progress if athlete has goal tracking fields
+  const athleteGoalType = (caregiverAthlete as any)?.goal_type as string | null ?? null
+  const athleteGoalTarget = (caregiverAthlete as any)?.goal_target as number | null ?? null
+  const athleteRunningGoal = (caregiverAthlete as any)?.running_goal as string | null ?? null
+
+  let goalProgress: import('@/lib/goals').GoalProgress | null = null
+  if (athleteGoalType && athleteGoalTarget && caregiverAthlete) {
+    // Use all completed sessions for goal progress (not just this month)
+    const { data: allSessions } = await adminClient
+      .from('sessions')
+      .select('distance_km')
+      .eq('athlete_id', caregiverAthlete.id)
+      .eq('status', 'completed')
+      .is('strava_deleted_at', null)
+    goalProgress = calculateGoalProgress(
+      athleteGoalType as GoalType,
+      Number(athleteGoalTarget),
+      (allSessions ?? []) as { distance_km: number | null }[]
+    )
+  }
+
   // ─── Caregiver onboarding ────────────────────────────────────
   const caregiverOnboarding = computeCaregiverOnboardingState({
     hasLinkedAthlete: !!caregiverAthlete,
@@ -338,6 +383,16 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
       coachName: workingOnCoachName,
     },
     digestTeaser,
+    planData: {
+      focusTitle: activeFocus?.title ?? null,
+      focusProgressNote: activeFocus?.progress_note ?? null,
+      focusProgressLevel: (activeFocus?.progress_level as ProgressLevel) ?? null,
+      focusUpdatedAt: activeFocus?.updated_at ?? null,
+      focusCoachName,
+      runningGoal: athleteRunningGoal,
+      goalProgress,
+      recentAchievement: recentAchievedFocus?.title ?? null,
+    },
     monthlySummary: {
       thisMonth: { runs: thisMonthCount, km: thisMonthKm, durationSeconds: thisMonthDurationTotal },
       lastMonth: { runs: lastMonthCount, km: lastMonthKm },
