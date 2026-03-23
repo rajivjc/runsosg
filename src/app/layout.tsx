@@ -6,6 +6,7 @@ import InstallBanner from '@/components/nav/InstallBanner'
 import SplashHider from '@/components/nav/SplashHider'
 import ScrollRestorer from '@/components/nav/ScrollRestorer'
 import ThemeProvider from '@/components/theme/ThemeProvider'
+import ClubConfigProvider from '@/components/providers/ClubConfigProvider'
 import type { Metadata, Viewport } from 'next'
 import { getClub } from '@/lib/club'
 
@@ -48,6 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-dvh pb-16 bg-bg text-text-primary">
         <ThemeProvider>
+        <ClubConfigProvider timezone={club.timezone ?? 'Asia/Singapore'} locale={club.locale ?? 'en-SG'}>
         {/* Inline PWA splash screen — renders before React hydrates */}
         <div
           id="pwa-splash"
@@ -145,6 +147,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </Suspense>
         <InstallBanner clubName={club.name} />
         {children}
+        </ClubConfigProvider>
         </ThemeProvider>
       </body>
     </html>
