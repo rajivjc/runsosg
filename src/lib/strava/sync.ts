@@ -7,6 +7,7 @@ import { matchActivityToAthlete } from './matching'
 import type { AthleteMatch } from './matching'
 import { checkAndAwardMilestones } from '@/lib/milestones'
 import { syncBadges } from '@/lib/badges'
+import { getClub } from '@/lib/club'
 
 const RUN_SPORT_TYPES = ['Run', 'TrailRun', 'VirtualRun'] as const
 
@@ -325,6 +326,10 @@ export async function processStravaActivity(
     return
   }
 
+  // ── Step 6b: Fetch club config (once, not per-athlete) ──────────────────
+  const club = await getClub()
+  const stravaPrefix = club.strava_hashtag_prefix ?? '#SOSG'
+
   // ── Step 7: Match activity to athlete(s) ─────────────────────────────────
   const matchResult = await matchActivityToAthlete(activity, coachUserId)
 
@@ -513,7 +518,7 @@ export async function processStravaActivity(
     const unmatchedMessage =
       matchResult.ambiguousIdentifiers.length > 0
         ? `${activityDesc} matched multiple athletes for "${matchResult.ambiguousIdentifiers.join(', ')}". Tap to pick the right athlete.`
-        : `${activityDesc} couldn't be linked. Tap to pick an athlete, or add #sosg <name> to the Strava title and re-sync.`
+        : `${activityDesc} couldn't be linked. Tap to pick an athlete, or add ${stravaPrefix} <name> to the Strava title and re-sync.`
 
     await adminClient.from('notifications').insert({
       user_id: coachUserId,

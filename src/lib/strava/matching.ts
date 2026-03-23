@@ -1,4 +1,5 @@
 import { adminClient } from '@/lib/supabase/admin'
+import { getClub } from '@/lib/club'
 import type { StravaActivity } from './client'
 
 export interface AthleteMatch {
@@ -19,8 +20,11 @@ export interface MatchResult {
  * Extract athlete identifiers from activity text.
  *
  * Supports two patterns:
- *   1. #sosg <name>  — captures everything after #sosg until the next # or end of string
- *   2. #<name>       — any plain hashtag that isn't #sosg itself
+ *   1. #<prefix> <name>  — captures everything after the prefix until the next # or end of string
+ *   2. #<name>           — any plain hashtag that isn't the prefix itself
+ *
+ * @param text    Activity title/description to parse
+ * @param prefix  Club hashtag prefix, e.g. '#SOSG' or '#SUNBEAM'
  *
  * Examples:
  *   "Morning run #sosg Alex Tan"          → ["Alex Tan"]
@@ -28,27 +32,31 @@ export interface MatchResult {
  *   "#sosg Daniel #sosg Ben"              → ["Daniel", "Ben"]
  *   "#sosg Alex Tan #Ben"                 → ["Alex Tan", "Ben"]
  */
-export function extractIdentifiers(text: string): string[] {
+export function extractIdentifiers(text: string, prefix: string): string[] {
+  // Escape special regex characters in the prefix, strip leading # if present
+  const cleanPrefix = prefix.replace(/^#/, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
   const identifiers: string[] = []
 
-  // Pattern 1: #sosg <name> — greedy capture until next # or end of string
-  const sosgPattern = /(?:#sosg|sosg)\s+([^#]+)/gi
+  // Pattern 1: #<prefix> <name> — greedy capture until next # or end of string
+  const prefixPattern = new RegExp(`(?:#${cleanPrefix}|${cleanPrefix})\\s+([^#]+)`, 'gi')
   let match: RegExpExecArray | null
-  while ((match = sosgPattern.exec(text)) !== null) {
+  while ((match = prefixPattern.exec(text)) !== null) {
     const name = match[1].trim()
     if (name.length > 0) {
       identifiers.push(name)
     }
   }
 
-  // Pattern 2: plain #<name> — any hashtag that isn't #sosg
+  // Pattern 2: plain #<name> — any hashtag that isn't the prefix
   // Supports hyphens, apostrophes, and Unicode letters (e.g. #Wei-Lin, #O'Brien, #José)
-  // Remove all #sosg... segments first so we don't double-match
-  const withoutSosg = text.replace(/(?:#sosg|sosg)\s*[^#]*/gi, '')
+  // Remove all #<prefix>... segments first so we don't double-match
+  const removePrefixPattern = new RegExp(`(?:#${cleanPrefix}|${cleanPrefix})\\s*[^#]*`, 'gi')
+  const withoutPrefix = text.replace(removePrefixPattern, '')
   const plainPattern = /#([\p{L}][\p{L}\p{N}'\u2019-]*)/gu
-  while ((match = plainPattern.exec(withoutSosg)) !== null) {
-    // Skip if the captured word is "sosg" (standalone #sosg with no name)
-    if (match[1].toLowerCase() === 'sosg') continue
+  while ((match = plainPattern.exec(withoutPrefix)) !== null) {
+    // Skip if the captured word is the prefix itself (standalone #prefix with no name)
+    if (match[1].toLowerCase() === cleanPrefix.toLowerCase()) continue
     // Strip trailing hyphens/apostrophes from the match
     const cleaned = match[1].replace(/[-'\u2019]+$/, '')
     if (cleaned.length > 0) identifiers.push(cleaned)
@@ -86,8 +94,10 @@ export async function matchActivityToAthlete(
   activity: StravaActivity,
   _coachUserId: string
 ): Promise<MatchResult> {
+  const club = await getClub()
+  const prefix = club.strava_hashtag_prefix ?? '#SOSG'
   const combined = [activity.name, activity.description ?? ''].join(' ')
-  const identifiers = extractIdentifiers(combined)
+  const identifiers = extractIdentifiers(combined, prefix)
 
   if (identifiers.length === 0) {
     return { matched: false, athletes: [], ambiguousIdentifiers: [] }

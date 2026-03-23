@@ -15,6 +15,12 @@ jest.mock('@/lib/supabase/admin', () => ({
   },
 }))
 
+jest.mock('@/lib/club', () => ({
+  getClub: jest.fn().mockResolvedValue({
+    strava_hashtag_prefix: '#SOSG',
+  }),
+}))
+
 import { matchActivityToAthlete, extractIdentifiers } from '@/lib/strava/matching'
 import type { StravaActivity } from '@/lib/strava/client'
 
@@ -54,83 +60,103 @@ beforeEach(() => {
 // ── extractIdentifiers (pure function) ───────────────────────────────────────
 
 describe('extractIdentifiers', () => {
+  const SOSG = '#SOSG'
+
   it('extracts single #sosg name', () => {
-    expect(extractIdentifiers('Run with #sosg Daniel')).toEqual(['Daniel'])
+    expect(extractIdentifiers('Run with #sosg Daniel', SOSG)).toEqual(['Daniel'])
   })
 
   it('extracts multi-word #sosg name (captures until next # or end)', () => {
-    expect(extractIdentifiers('Run #sosg Alex Tan')).toEqual(['Alex Tan'])
+    expect(extractIdentifiers('Run #sosg Alex Tan', SOSG)).toEqual(['Alex Tan'])
   })
 
   it('extracts plain hashtag', () => {
-    expect(extractIdentifiers('Morning run #Daniel')).toEqual(['Daniel'])
+    expect(extractIdentifiers('Morning run #Daniel', SOSG)).toEqual(['Daniel'])
   })
 
   it('extracts multiple plain hashtags', () => {
-    expect(extractIdentifiers('Group run #Daniel #Ben')).toEqual([
+    expect(extractIdentifiers('Group run #Daniel #Ben', SOSG)).toEqual([
       'Daniel',
       'Ben',
     ])
   })
 
   it('extracts mixed #sosg and plain hashtags', () => {
-    expect(extractIdentifiers('#sosg Alex Tan #Ben')).toEqual([
+    expect(extractIdentifiers('#sosg Alex Tan #Ben', SOSG)).toEqual([
       'Alex Tan',
       'Ben',
     ])
   })
 
   it('extracts multiple #sosg tags', () => {
-    expect(extractIdentifiers('#sosg Daniel #sosg Ben')).toEqual([
+    expect(extractIdentifiers('#sosg Daniel #sosg Ben', SOSG)).toEqual([
       'Daniel',
       'Ben',
     ])
   })
 
   it('is case-insensitive for #sosg / SOSG', () => {
-    expect(extractIdentifiers('Run SOSG Daniel')).toEqual(['Daniel'])
-    expect(extractIdentifiers('Run #SOSG Daniel')).toEqual(['Daniel'])
+    expect(extractIdentifiers('Run SOSG Daniel', SOSG)).toEqual(['Daniel'])
+    expect(extractIdentifiers('Run #SOSG Daniel', SOSG)).toEqual(['Daniel'])
   })
 
   it('returns empty array when no hashtags', () => {
-    expect(extractIdentifiers('Just a morning run')).toEqual([])
+    expect(extractIdentifiers('Just a morning run', SOSG)).toEqual([])
   })
 
   it('returns empty when #sosg has no name after it', () => {
-    expect(extractIdentifiers('#sosg')).toEqual([])
-    expect(extractIdentifiers('#sosg   ')).toEqual([])
+    expect(extractIdentifiers('#sosg', SOSG)).toEqual([])
+    expect(extractIdentifiers('#sosg   ', SOSG)).toEqual([])
   })
 
   it('does not treat #sosg itself as a plain hashtag', () => {
     // #sosg without a name should not produce "sosg" as a plain hashtag match
-    const result = extractIdentifiers('#sosg')
+    const result = extractIdentifiers('#sosg', SOSG)
     expect(result).not.toContain('sosg')
   })
 
   it('extracts hyphenated names (#Wei-Lin)', () => {
-    expect(extractIdentifiers('Run with #Wei-Lin')).toEqual(['Wei-Lin'])
+    expect(extractIdentifiers('Run with #Wei-Lin', SOSG)).toEqual(['Wei-Lin'])
   })
 
   it('extracts names with apostrophes (#O\'Brien)', () => {
-    expect(extractIdentifiers("Run with #O'Brien")).toEqual(["O'Brien"])
+    expect(extractIdentifiers("Run with #O'Brien", SOSG)).toEqual(["O'Brien"])
   })
 
   it('extracts Unicode names (#José)', () => {
-    expect(extractIdentifiers('Run with #José')).toEqual(['José'])
+    expect(extractIdentifiers('Run with #José', SOSG)).toEqual(['José'])
   })
 
   it('extracts names with smart quotes (#O\u2019Brien)', () => {
-    expect(extractIdentifiers('Run with #O\u2019Brien')).toEqual([
+    expect(extractIdentifiers('Run with #O\u2019Brien', SOSG)).toEqual([
       'O\u2019Brien',
     ])
   })
 
   it('strips trailing hyphens from match', () => {
-    expect(extractIdentifiers('#Daniel- next run')).toEqual(['Daniel'])
+    expect(extractIdentifiers('#Daniel- next run', SOSG)).toEqual(['Daniel'])
   })
 
   it('handles #sosg with hyphenated multi-word name', () => {
-    expect(extractIdentifiers('#sosg Wei-Lin Tan')).toEqual(['Wei-Lin Tan'])
+    expect(extractIdentifiers('#sosg Wei-Lin Tan', SOSG)).toEqual(['Wei-Lin Tan'])
+  })
+
+  // ── Dynamic prefix tests ────────────────────────────────────────────────
+
+  it('works with custom prefix', () => {
+    expect(extractIdentifiers('Morning run #SUNBEAM Wei Lin', '#SUNBEAM')).toEqual(['Wei Lin'])
+  })
+
+  it('is case-insensitive on custom prefix', () => {
+    expect(extractIdentifiers('Morning run #Sunbeam Wei', '#SUNBEAM')).toEqual(['Wei'])
+  })
+
+  it('handles prefix with special regex characters', () => {
+    expect(extractIdentifiers('Morning run #C++ Alex', '#C++')).toEqual(['Alex'])
+  })
+
+  it('extracts multiple names with custom prefix', () => {
+    expect(extractIdentifiers('#SUNBEAM Wei #SUNBEAM Alex Tan', '#SUNBEAM')).toEqual(['Wei', 'Alex Tan'])
   })
 })
 
