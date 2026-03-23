@@ -95,7 +95,7 @@ export async function matchActivityToAthlete(
   _coachUserId: string
 ): Promise<MatchResult> {
   const club = await getClub()
-  const prefix = club.strava_hashtag_prefix ?? '#SOSG'
+  const prefix = club.strava_hashtag_prefix ?? '#club'
   const combined = [activity.name, activity.description ?? ''].join(' ')
   const identifiers = extractIdentifiers(combined, prefix)
 

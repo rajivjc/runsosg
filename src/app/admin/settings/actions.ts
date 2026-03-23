@@ -2,9 +2,9 @@
 
 import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { logAudit } from '@/lib/audit'
-import { resetClubCache } from '@/lib/club'
+import { CLUB_CACHE_TAG } from '@/lib/club'
 
 export async function updateClubSettings(
   _prev: { error?: string; success?: string },
@@ -77,7 +77,7 @@ export async function updateClubSettings(
     if (error) return { error: 'Could not save settings. Please try again.' }
   }
 
-  resetClubCache()
+  revalidateTag(CLUB_CACHE_TAG)
 
   logAudit({
     actorId: user.id,

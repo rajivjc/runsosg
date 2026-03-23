@@ -105,8 +105,8 @@ export default function SetupContent({ clubName }: { clubName: string }) {
           </div>
 
           <div className="px-5 py-4 text-sm text-text-secondary">
-            {activeTab === 'iphone' && <IOSInstructions />}
-            {activeTab === 'android' && <AndroidInstructions />}
+            {activeTab === 'iphone' && <IOSInstructions clubName={clubName} />}
+            {activeTab === 'android' && <AndroidInstructions clubName={clubName} />}
             {activeTab === 'desktop' && <DesktopInstructions />}
           </div>
         </section>
@@ -118,7 +118,7 @@ export default function SetupContent({ clubName }: { clubName: string }) {
             <h2 className="text-base font-semibold text-text-primary">You&apos;re all set!</h2>
           </div>
           <div className="px-5 py-4 text-sm text-text-secondary space-y-2">
-            <p>Open the <strong>SOSG Run</strong> app from your home screen. It works like a regular app — no app store needed.</p>
+            <p>Open the <strong>{clubName}</strong> app from your home screen. It works like a regular app — no app store needed.</p>
             <p className="text-xs text-text-hint">You may need to sign in again the first time you open it.</p>
           </div>
         </section>
@@ -135,7 +135,7 @@ export default function SetupContent({ clubName }: { clubName: string }) {
   )
 }
 
-function IOSInstructions() {
+function IOSInstructions({ clubName }: { clubName: string }) {
   return (
     <div className="space-y-4">
       <div className="rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-400/20 px-3 py-2.5 text-xs text-amber-800 dark:text-amber-300">
@@ -166,13 +166,13 @@ function IOSInstructions() {
         </li>
       </ol>
       <p className="text-xs text-text-hint">
-        The SOSG Run icon will appear on your home screen just like a regular app.
+        The {clubName} icon will appear on your home screen just like a regular app.
       </p>
     </div>
   )
 }
 
-function AndroidInstructions() {
+function AndroidInstructions({ clubName }: { clubName: string }) {
   return (
     <div className="space-y-4">
       <p className="text-text-muted text-xs">
@@ -183,7 +183,7 @@ function AndroidInstructions() {
         <ol className="space-y-3 pl-0" style={{ listStyle: 'none', paddingLeft: 0 }}>
           <li className="flex gap-3 items-start">
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-surface-alt text-text-secondary text-xs font-bold flex items-center justify-center mt-0.5">1</span>
-            <span>You should see an <strong>&quot;Install SOSG Run&quot;</strong> banner at the bottom of your screen when you first visit. Tap <strong>Install</strong>.</span>
+            <span>You should see an <strong>&quot;Install {clubName}&quot;</strong> banner at the bottom of your screen when you first visit. Tap <strong>Install</strong>.</span>
           </li>
           <li className="flex gap-3 items-start">
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-surface-alt text-text-secondary text-xs font-bold flex items-center justify-center mt-0.5">2</span>

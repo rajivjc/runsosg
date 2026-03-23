@@ -13,6 +13,13 @@ jest.mock('@/lib/supabase/admin', () => ({
   },
 }))
 
+jest.mock('@/lib/club', () => ({
+  getClub: jest.fn().mockResolvedValue({
+    strava_hashtag_prefix: '#sosg',
+  }),
+  CLUB_CACHE_TAG: 'club-config',
+}))
+
 import { matchActivityToAthlete } from '@/lib/strava/matching'
 import type { StravaActivity } from '@/lib/strava/client'
 

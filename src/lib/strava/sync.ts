@@ -328,7 +328,7 @@ export async function processStravaActivity(
 
   // ── Step 6b: Fetch club config (once, not per-athlete) ──────────────────
   const club = await getClub()
-  const stravaPrefix = club.strava_hashtag_prefix ?? '#SOSG'
+  const stravaPrefix = club.strava_hashtag_prefix ?? '#club'
 
   // ── Step 7: Match activity to athlete(s) ─────────────────────────────────
   const matchResult = await matchActivityToAthlete(activity, coachUserId)
