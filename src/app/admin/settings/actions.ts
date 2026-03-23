@@ -4,6 +4,7 @@ import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logAudit } from '@/lib/audit'
+import { resetClubCache } from '@/lib/club'
 
 export async function updateClubSettings(
   _prev: { error?: string; success?: string },
@@ -26,25 +27,31 @@ export async function updateClubSettings(
   const sessionTime = (formData.get('session_time') as string ?? '').trim() || null
   const stravaClubIdStr = (formData.get('strava_club_id') as string ?? '').trim()
   const stravaClubId = stravaClubIdStr ? parseInt(stravaClubIdStr, 10) : null
+  const tagline = (formData.get('tagline') as string ?? '').trim() || null
+  const locale = (formData.get('locale') as string ?? '').trim() || 'en-SG'
+  const stravaHashtagPrefix = (formData.get('strava_hashtag_prefix') as string ?? '').trim() || null
 
   if (!name) return { error: 'Club name is required.' }
 
   // Fetch existing settings to determine insert vs update
   const { data: existing } = await adminClient
-    .from('club_settings')
+    .from('clubs')
     .select('id')
     .limit(1)
     .maybeSingle()
 
   if (existing) {
     const { error } = await adminClient
-      .from('club_settings')
+      .from('clubs')
       .update({
         name,
         home_location: homeLocation,
         session_day: sessionDay,
         session_time: sessionTime,
         strava_club_id: stravaClubId && !isNaN(stravaClubId) ? stravaClubId : null,
+        tagline,
+        locale,
+        strava_hashtag_prefix: stravaHashtagPrefix,
         updated_at: new Date().toISOString(),
       })
       .eq('id', existing.id)
@@ -52,7 +59,7 @@ export async function updateClubSettings(
     if (error) return { error: 'Could not save settings. Please try again.' }
   } else {
     const { error } = await adminClient
-      .from('club_settings')
+      .from('clubs')
       .insert({
         name,
         logo_url: null,
@@ -60,12 +67,17 @@ export async function updateClubSettings(
         session_day: sessionDay,
         session_time: sessionTime,
         strava_club_id: stravaClubId && !isNaN(stravaClubId) ? stravaClubId : null,
+        tagline,
+        locale,
+        strava_hashtag_prefix: stravaHashtagPrefix,
         timezone: 'Asia/Singapore',
         updated_at: new Date().toISOString(),
       })
 
     if (error) return { error: 'Could not save settings. Please try again.' }
   }
+
+  resetClubCache()
 
   logAudit({
     actorId: user.id,

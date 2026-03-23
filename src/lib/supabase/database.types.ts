@@ -309,7 +309,7 @@ export type Database = {
           },
         ]
       }
-      club_settings: {
+      clubs: {
         Row: {
           id: string
           name: string
@@ -320,6 +320,10 @@ export type Database = {
           strava_club_id: number | null
           timezone: string
           updated_at: string | null
+          slug: string
+          tagline: string | null
+          strava_hashtag_prefix: string | null
+          locale: string
         }
         Insert: {
           id?: string
@@ -331,6 +335,10 @@ export type Database = {
           strava_club_id?: number | null
           timezone?: string
           updated_at?: string | null
+          slug?: string
+          tagline?: string | null
+          strava_hashtag_prefix?: string | null
+          locale?: string
         }
         Update: {
           id?: string
@@ -342,6 +350,58 @@ export type Database = {
           strava_club_id?: number | null
           timezone?: string
           updated_at?: string | null
+          slug?: string
+          tagline?: string | null
+          strava_hashtag_prefix?: string | null
+          locale?: string
+        }
+        Relationships: []
+      }
+      club_settings: {
+        Row: {
+          id: string
+          name: string
+          logo_url: string | null
+          home_location: string | null
+          session_day: string | null
+          session_time: string | null
+          strava_club_id: number | null
+          timezone: string
+          updated_at: string | null
+          slug: string
+          tagline: string | null
+          strava_hashtag_prefix: string | null
+          locale: string
+        }
+        Insert: {
+          id?: string
+          name?: string
+          logo_url?: string | null
+          home_location?: string | null
+          session_day?: string | null
+          session_time?: string | null
+          strava_club_id?: number | null
+          timezone?: string
+          updated_at?: string | null
+          slug?: string
+          tagline?: string | null
+          strava_hashtag_prefix?: string | null
+          locale?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          logo_url?: string | null
+          home_location?: string | null
+          session_day?: string | null
+          session_time?: string | null
+          strava_club_id?: number | null
+          timezone?: string
+          updated_at?: string | null
+          slug?: string
+          tagline?: string | null
+          strava_hashtag_prefix?: string | null
+          locale?: string
         }
         Relationships: []
       }

@@ -4,8 +4,14 @@ import { adminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = { title: 'Activity Log — SOSG Running Club' }
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return { title: `Activity Log — ${club.name}` }
+}
 
 type AuditRow = {
   id: string

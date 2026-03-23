@@ -5,8 +5,14 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import MilestoneDefinitionRow from '@/components/admin/MilestoneDefinitionRow'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = { title: 'Milestone Definitions — SOSG Running Club' }
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return { title: `Milestone Definitions — ${club.name}` }
+}
 import MilestoneDefinitionForm from '@/components/admin/MilestoneDefinitionForm'
 
 export default async function AdminMilestonesPage() {

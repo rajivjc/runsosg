@@ -4,8 +4,14 @@ import { adminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminInviteForm from '@/components/admin/AdminInviteForm'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = { title: 'Admin — SOSG Running Club' }
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return { title: `Admin — ${club.name}` }
+}
 import UserRow from '@/components/admin/UserRow'
 import CancelInviteButton from '@/components/admin/CancelInviteButton'
 

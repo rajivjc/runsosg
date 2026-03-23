@@ -8,6 +8,7 @@ import AthleteTabs from '@/components/athlete/AthleteTabs'
 import AthleteQrCode from '@/components/athlete/AthleteQrCode'
 import ExportButton from '@/components/athlete/ExportButton'
 import StickyHeader from '@/components/athlete/StickyHeader'
+import { getClub } from '@/lib/club'
 import { formatDate } from '@/lib/utils/dates'
 import { calculateGoalProgress } from '@/lib/goals'
 import type { GoalType } from '@/lib/goals'
@@ -69,7 +70,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .select('name')
     .eq('id', params.id)
     .single()
-  return { title: athlete ? `${athlete.name} — SOSG Running Club` : 'Athlete — SOSG Running Club' }
+  const club = await getClub()
+  return { title: athlete ? `${athlete.name} — ${club.name}` : `Athlete — ${club.name}` }
 }
 
 export default async function AthleteHubPage({ params }: PageProps) {
@@ -172,7 +174,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
   const workingOnUpdatedBy = (athlete as any)?.working_on_updated_by as string | null
   const coachIds = [...new Set([...(sessions ?? []).map((s: any) => s.coach_user_id), workingOnUpdatedBy].filter(Boolean))]
   const sessionIds = (sessions ?? []).map((s: any) => s.id)
-  const [{ data: coachUsers }, { photos: paginatedPhotos, nextCursor }, photoCount, rawSessionPhotos, { data: kudosRows }, { data: clubSettingsRow }] = await Promise.all([
+  const [{ data: coachUsers }, { photos: paginatedPhotos, nextCursor }, photoCount, rawSessionPhotos, { data: kudosRows }, club] = await Promise.all([
     coachIds.length > 0
       ? adminClient.from('users').select('id, name, email').in('id', coachIds)
       : Promise.resolve({ data: [] }),
@@ -182,10 +184,10 @@ export default async function AthleteHubPage({ params }: PageProps) {
     sessionIds.length > 0
       ? adminClient.from('kudos').select('session_id, user_id').in('session_id', sessionIds)
       : Promise.resolve({ data: [] as { session_id: string; user_id: string }[] }),
-    adminClient.from('club_settings').select('name').limit(1).single(),
+    getClub(),
   ])
 
-  const clubName = clubSettingsRow?.name ?? 'SOSG Running Club'
+  const clubName = club.name
 
   // Build kudos data maps
   // Fetch giver names separately (kudos.user_id → auth.users, not public.users, so join fails)

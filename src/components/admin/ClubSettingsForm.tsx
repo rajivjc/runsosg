@@ -9,6 +9,9 @@ type ClubSettingsFormProps = {
   sessionDay: string | null
   sessionTime: string | null
   stravaClubId: number | null
+  tagline: string | null
+  locale: string
+  stravaHashtagPrefix: string | null
 }
 
 function SubmitButton() {
@@ -32,6 +35,9 @@ export default function ClubSettingsForm({
   sessionDay,
   sessionTime,
   stravaClubId,
+  tagline,
+  locale,
+  stravaHashtagPrefix,
 }: ClubSettingsFormProps) {
   const [state, formAction] = useFormState(updateClubSettings, {})
 
@@ -105,6 +111,48 @@ export default function ClubSettingsForm({
           type="number"
           defaultValue={stravaClubId ?? ''}
           placeholder="Numeric Strava club ID"
+          className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="tagline" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+          Tagline
+        </label>
+        <input
+          id="tagline"
+          name="tagline"
+          type="text"
+          defaultValue={tagline ?? ''}
+          placeholder="e.g. Growing Together"
+          className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="locale" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+          Locale
+        </label>
+        <input
+          id="locale"
+          name="locale"
+          type="text"
+          defaultValue={locale}
+          placeholder="e.g. en-SG"
+          className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="strava_hashtag_prefix" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+          Strava hashtag prefix
+        </label>
+        <input
+          id="strava_hashtag_prefix"
+          name="strava_hashtag_prefix"
+          type="text"
+          defaultValue={stravaHashtagPrefix ?? ''}
+          placeholder="e.g. #SOSG"
           className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
         />
       </div>

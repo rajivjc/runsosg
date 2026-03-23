@@ -6,6 +6,7 @@
  */
 
 import { adminClient } from '@/lib/supabase/admin'
+import { getClub } from '@/lib/club'
 import { BADGE_DEFINITIONS } from '@/lib/badges'
 import { getCoachFocusData } from '@/lib/feed/today-focus'
 import { computeWeeklyRecap } from '@/lib/feed/weekly-recap'
@@ -154,13 +155,13 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
 
   // Fetch club name and coach names for celebration milestones
   const celebrationCoachIds = [...new Set(recentCelebrationRaw.map(m => (m as { awarded_by?: string }).awarded_by).filter(Boolean))] as string[]
-  const [{ data: clubSettingsRow }, { data: celebCoachRows }] = await Promise.all([
-    adminClient.from('club_settings').select('name').limit(1).single(),
+  const [club, { data: celebCoachRows }] = await Promise.all([
+    getClub(),
     celebrationCoachIds.length > 0
       ? adminClient.from('users').select('id, name').in('id', celebrationCoachIds)
       : Promise.resolve({ data: [] as { id: string; name: string | null }[] }),
   ])
-  const clubName = clubSettingsRow?.name ?? 'SOSG Running Club'
+  const clubName = club.name
   const celebCoachNameMap = Object.fromEntries((celebCoachRows ?? []).map(u => [u.id, u.name]))
 
   const celebrationMilestones: CelebrationMilestone[] = recentCelebrationRaw.map(m => {
