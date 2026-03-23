@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { adminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { getClub } from '@/lib/club'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -138,11 +139,11 @@ export default async function MilestoneSharePage({ params }: PageProps) {
   }
 
   const coachId = milestone.awarded_by ?? null
-  const [{ data: coach }, { data: clubRow }] = await Promise.all([
+  const [{ data: coach }, club] = await Promise.all([
     coachId
       ? adminClient.from('users').select('name').eq('id', coachId).single()
       : Promise.resolve({ data: null }),
-    adminClient.from('club_settings').select('name').limit(1).single(),
+    getClub(),
   ])
 
   const athleteName = milestone.athletes?.name ?? 'Athlete'
@@ -151,7 +152,7 @@ export default async function MilestoneSharePage({ params }: PageProps) {
   const label = milestone.label
   const themeColor = milestone.athletes?.theme_color ?? null
   const avatar = milestone.athletes?.avatar ?? null
-  const clubName = clubRow?.name ?? 'SOSG Running Club'
+  const clubName = club.name
   const date = new Date(milestone.achieved_at).toLocaleDateString('en-SG', {
     day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Singapore'
   })

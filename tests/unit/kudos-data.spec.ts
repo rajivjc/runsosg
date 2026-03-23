@@ -67,6 +67,16 @@ jest.mock('@/lib/feed/shared-queries', () => ({
   loadClubStats: jest.fn().mockResolvedValue({ totalKm: 0, totalSessions: 0, activeAthletes: 0, activeSince: null }),
 }))
 
+jest.mock('@/lib/club', () => ({
+  getClub: jest.fn().mockResolvedValue({
+    id: 'club-1', name: 'SOSG Running Club', slug: 'sosg', tagline: 'Growing Together',
+    strava_hashtag_prefix: '#SOSG', locale: 'en-SG', timezone: 'Asia/Singapore',
+    logo_url: null, home_location: null, session_day: null, session_time: null,
+    strava_club_id: null, updated_at: null,
+  }),
+  resetClubCache: jest.fn(),
+}))
+
 jest.mock('@/lib/media', () => ({
   getAthletePhotosPaginated: jest.fn().mockResolvedValue({ photos: [], nextCursor: null }),
   getAthletePhotos: jest.fn().mockResolvedValue([]),

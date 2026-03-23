@@ -5,8 +5,14 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import ClubSettingsForm from '@/components/admin/ClubSettingsForm'
+import { getClub } from '@/lib/club'
 
-export const metadata: Metadata = { title: 'Club Settings — SOSG Running Club' }
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const club = await getClub()
+  return { title: `Club Settings — ${club.name}` }
+}
 
 export default async function AdminSettingsPage() {
   const supabase = await createClient()
@@ -20,11 +26,7 @@ export default async function AdminSettingsPage() {
     .single()
   if (callerUser?.role !== 'admin') redirect('/athletes')
 
-  const { data: settings } = await adminClient
-    .from('club_settings')
-    .select('*')
-    .limit(1)
-    .maybeSingle()
+  const club = await getClub()
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-6 pb-28 space-y-8">
@@ -40,11 +42,14 @@ export default async function AdminSettingsPage() {
 
       <div className="bg-surface border border-border rounded-xl px-4 py-4">
         <ClubSettingsForm
-          name={settings?.name ?? 'SOSG Running Club'}
-          homeLocation={settings?.home_location ?? null}
-          sessionDay={settings?.session_day ?? null}
-          sessionTime={settings?.session_time ?? null}
-          stravaClubId={settings?.strava_club_id ?? null}
+          name={club.name}
+          homeLocation={club.home_location}
+          sessionDay={club.session_day}
+          sessionTime={club.session_time}
+          stravaClubId={club.strava_club_id}
+          tagline={club.tagline}
+          locale={club.locale}
+          stravaHashtagPrefix={club.strava_hashtag_prefix}
         />
       </div>
     </main>
