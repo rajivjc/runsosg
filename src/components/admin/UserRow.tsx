@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { toggleUserActive, changeUserRole, deleteUser } from '@/app/admin/actions'
+import { toggleCanManageSessions } from '@/app/admin/sessions/actions'
 import { useClubConfig } from '@/components/providers/ClubConfigProvider'
 
 type AthleteOption = { id: string; name: string }
@@ -15,9 +16,10 @@ type Props = {
   isSelf: boolean
   athletes: AthleteOption[]
   linkedAthleteName?: string | null
+  canManageSessions?: boolean
 }
 
-export default function UserRow({ userId, email, role, active, createdAt, isSelf, athletes, linkedAthleteName }: Props) {
+export default function UserRow({ userId, email, role, active, createdAt, isSelf, athletes, linkedAthleteName, canManageSessions }: Props) {
   const { locale } = useClubConfig()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,6 +28,8 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
   const [selectedAthleteId, setSelectedAthleteId] = useState<string>('')
   const [showAthleteSelector, setShowAthleteSelector] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [sessionMgmt, setSessionMgmt] = useState(canManageSessions ?? false)
+  const [sessionMgmtBusy, setSessionMgmtBusy] = useState(false)
 
   async function handleToggle() {
     if (!active) {
@@ -93,6 +97,13 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
     }
   }
 
+  async function handleToggleSessionMgmt() {
+    setSessionMgmtBusy(true)
+    const result = await toggleCanManageSessions(userId, !sessionMgmt)
+    if (!result.error) setSessionMgmt(!sessionMgmt)
+    setSessionMgmtBusy(false)
+  }
+
   return (
     <div className={`px-4 py-3 bg-surface ${!active ? 'opacity-50' : ''}`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -122,6 +133,18 @@ export default function UserRow({ userId, email, role, active, createdAt, isSelf
               <span className="text-xs bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-400/20 px-2 py-0.5 rounded-full">
                 Linked to {linkedAthleteName}
               </span>
+            )}
+            {currentRole === 'coach' && !isSelf && (
+              <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={sessionMgmt}
+                  onChange={handleToggleSessionMgmt}
+                  disabled={sessionMgmtBusy}
+                  className="rounded border-border text-teal-600 focus:ring-teal-500 disabled:opacity-50"
+                />
+                <span className="text-xs text-text-muted">Can manage sessions</span>
+              </label>
             )}
           </div>
           {error && <p className="text-xs text-red-600 dark:text-red-300 mt-1">{error}</p>}
