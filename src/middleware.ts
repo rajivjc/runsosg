@@ -7,6 +7,7 @@ const PROTECTED_PATHS = [
   '/athletes',
   '/admin',
   '/account',
+  '/sessions',
   '/notifications',
   '/welcome',
   '/digest',

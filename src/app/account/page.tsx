@@ -13,6 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
 import StravaStatus from '@/components/account/StravaStatus'
 import DisplayNameForm from '@/components/account/DisplayNameForm'
 import PushToggle from '@/components/account/PushToggle'
+import SessionNotificationsToggle from '@/components/account/SessionNotificationsToggle'
+import { Shield, CalendarDays, ChevronRight } from 'lucide-react'
 import { formatDate, formatDistance } from '@/lib/utils/dates'
 import { BADGE_DEFINITIONS } from '@/lib/badges'
 import { calculateGoalProgress } from '@/lib/goals'
@@ -40,11 +42,13 @@ export default async function AccountPage({
 
   const { data: userRow } = await adminClient
     .from('users')
-    .select('name, role')
+    .select('name, role, can_manage_sessions, session_notifications')
     .eq('id', user.id)
     .single()
 
   const isCaregiver = userRow?.role === 'caregiver'
+  const isAdmin = userRow?.role === 'admin'
+  const isCoachWithSessionPerms = userRow?.role === 'coach' && userRow?.can_manage_sessions === true
 
   const { data: connection } = await adminClient
     .from('strava_connections')
@@ -189,6 +193,38 @@ export default async function AccountPage({
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28 space-y-8">
       <h1 className="text-2xl font-bold text-text-primary">My Account</h1>
 
+      {/* Admin settings link */}
+      {isAdmin && (
+        <Link
+          href="/admin"
+          className="flex items-center justify-between w-full bg-accent-bg border border-teal-200 dark:border-teal-400/20 rounded-xl px-4 py-3.5 hover:border-teal-300 dark:hover:border-teal-400/30 transition-colors"
+        >
+          <div>
+            <div className="flex items-center gap-1.5 text-sm font-bold text-accent-text">
+              <Shield size={16} /> Admin Settings
+            </div>
+            <p className="text-xs text-text-muted mt-0.5">Club settings, user management, session management</p>
+          </div>
+          <ChevronRight size={18} className="text-accent-text flex-shrink-0" />
+        </Link>
+      )}
+
+      {/* Coach session management link */}
+      {isCoachWithSessionPerms && (
+        <Link
+          href="/admin/sessions"
+          className="flex items-center justify-between w-full bg-accent-bg border border-teal-200 dark:border-teal-400/20 rounded-xl px-4 py-3.5 hover:border-teal-300 dark:hover:border-teal-400/30 transition-colors"
+        >
+          <div>
+            <div className="flex items-center gap-1.5 text-sm font-bold text-accent-text">
+              <CalendarDays size={16} /> Manage Sessions
+            </div>
+            <p className="text-xs text-text-muted mt-0.5">Create sessions, assign pairings</p>
+          </div>
+          <ChevronRight size={18} className="text-accent-text flex-shrink-0" />
+        </Link>
+      )}
+
       {/* Email */}
       <section>
         <p className="text-xs text-text-hint uppercase tracking-wide font-medium mb-1">Signed in as</p>
@@ -213,10 +249,11 @@ export default async function AccountPage({
         <DisplayNameForm currentName={userRow?.name ?? null} />
       </section>
 
-      {/* Push notifications */}
+      {/* Notifications */}
       <section>
         <p className="text-xs text-text-hint uppercase tracking-wide font-medium mb-1">Notifications</p>
         <PushToggle vapidPublicKey={process.env.VAPID_PUBLIC_KEY ?? ''} />
+        <SessionNotificationsToggle initialEnabled={userRow?.session_notifications ?? true} />
       </section>
 
       {/* Appearance */}

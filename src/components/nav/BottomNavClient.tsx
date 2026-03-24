@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Users, Settings, User, Bell } from 'lucide-react'
+import { Home, Users, User, Bell, CalendarDays } from 'lucide-react'
 
 const POLL_INTERVAL_MS = 30_000
 
@@ -15,9 +15,9 @@ type Props = {
 
 const ICONS: Record<string, any> = {
   '/feed': Home,
+  '/sessions': CalendarDays,
   '/athletes': Users,
   '/notifications': Bell,
-  '/admin': Settings,
   '/account': User,
 }
 
@@ -62,9 +62,9 @@ export default function BottomNavClient({ isAdmin, isCaregiver = false, unreadCo
 
   const tabs = [
     { href: '/feed', label: 'Feed' },
+    { href: '/sessions', label: 'Sessions' },
     { href: '/athletes', label: 'Athletes' },
     ...(!isCaregiver ? [{ href: '/notifications', label: 'Alerts' }] : []),
-    ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
     { href: '/account', label: 'Account' },
   ]
 
