@@ -134,6 +134,7 @@ export async function checkAndAwardMilestones(
             await sendEmail({
               to: caregiverAuth.email,
               subject: `${athleteName} achieved a milestone: ${def.label}!`,
+              clubName: club.name,
               html: milestoneEmail({
                 athleteName,
                 milestoneLabel: def.label,

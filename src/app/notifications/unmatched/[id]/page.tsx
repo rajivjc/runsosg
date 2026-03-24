@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { formatDate, formatDuration } from '@/lib/utils/dates'
+import { getClub } from '@/lib/club'
 import { ResolveForm } from './ResolveForm'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,6 +43,7 @@ export default async function UnmatchedRunPage({
     redirect('/notifications')
   }
 
+  const club = await getClub()
   const activity = unmatched.activity_data as Record<string, any>
   const isResolved = unmatched.resolved_at != null
 
@@ -107,6 +109,7 @@ export default async function UnmatchedRunPage({
         <ResolveForm
           unmatchedId={id}
           athletes={athletes ?? []}
+          hashtagPrefix={club.strava_hashtag_prefix ?? '#club'}
         />
       )}
     </main>

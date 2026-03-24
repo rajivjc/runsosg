@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       if (dryRun) {
         dryRunResults.push({ to: digest.coachEmail, subject, html })
       } else {
-        const result = await sendEmail({ to: digest.coachEmail, subject, html })
+        const result = await sendEmail({ to: digest.coachEmail, subject, html, clubName: club.name })
 
         if (result.success) coachEmailsSent++
         else errors.push(`Coach ${digest.coachEmail}: ${result.error}`)
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       if (dryRun) {
         dryRunResults.push({ to: digest.caregiverEmail, subject, html })
       } else {
-        const result = await sendEmail({ to: digest.caregiverEmail, subject, html })
+        const result = await sendEmail({ to: digest.caregiverEmail, subject, html, clubName: club.name })
 
         if (result.success) caregiverEmailsSent++
         else errors.push(`Caregiver ${digest.caregiverEmail}: ${result.error}`)

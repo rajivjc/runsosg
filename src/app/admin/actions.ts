@@ -77,6 +77,7 @@ export async function inviteUser(
   const emailResult = await sendEmail({
     to: email,
     subject: `You're invited to ${club.name}`,
+    clubName: club.name,
     html: invitationEmail({
       role,
       inviterName: callerUser?.name ?? null,

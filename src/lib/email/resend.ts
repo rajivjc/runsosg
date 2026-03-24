@@ -14,26 +14,35 @@ export function getResend(): Resend | null {
   return resendClient
 }
 
-// TODO: Per-club sender for multi-tenancy
 const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL ?? 'Running Club <noreply@example.com>'
+
+function extractEmailAddress(from: string): string {
+  const match = from.match(/<([^>]+)>/)
+  return match ? match[1] : from
+}
 
 type SendEmailParams = {
   to: string | string[]
   subject: string
   html: string
   replyTo?: string
+  clubName?: string
 }
 
-export async function sendEmail({ to, subject, html, replyTo }: SendEmailParams): Promise<{ success: boolean; error?: string }> {
+export async function sendEmail({ to, subject, html, replyTo, clubName }: SendEmailParams): Promise<{ success: boolean; error?: string }> {
   const resend = getResend()
   if (!resend) {
     console.warn('[email] Resend not configured — skipping email:', subject)
     return { success: false, error: 'Email not configured' }
   }
 
+  const from = clubName
+    ? `${clubName} <${extractEmailAddress(DEFAULT_FROM)}>`
+    : DEFAULT_FROM
+
   try {
     const { error } = await resend.emails.send({
-      from: DEFAULT_FROM,
+      from,
       to: Array.isArray(to) ? to : [to],
       subject,
       html,

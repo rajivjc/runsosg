@@ -9,9 +9,11 @@ type Athlete = { id: string; name: string }
 export function ResolveForm({
   unmatchedId,
   athletes,
+  hashtagPrefix,
 }: {
   unmatchedId: string
   athletes: Athlete[]
+  hashtagPrefix: string
 }) {
   const router = useRouter()
   const [search, setSearch] = useState('')
@@ -83,7 +85,7 @@ export function ResolveForm({
           Already tagged in Strava?
         </p>
         <p className="text-xs text-orange-600 mb-3">
-          If you added hashtags (e.g. #sosg #athletename) to the title or description, re-sync to auto-match.
+          If you added hashtags (e.g. {hashtagPrefix} #athletename) to the title or description, re-sync to auto-match.
         </p>
         <button
           type="button"

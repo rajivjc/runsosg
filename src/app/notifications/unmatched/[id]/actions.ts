@@ -182,7 +182,9 @@ export async function resyncFromStrava(
     return { matched: true }
   }
 
-  return { matched: false, error: 'No athlete match found. Add hashtags like #sosg #athletename to the Strava activity title or description, then try again.' }
+  const { getClub } = await import('@/lib/club')
+  const club = await getClub()
+  return { matched: false, error: `No athlete match found. Add hashtags like ${club.strava_hashtag_prefix ?? '#club'} #athletename to the Strava activity title or description, then try again.` }
 }
 
 export async function dismissAsNotCoaching(

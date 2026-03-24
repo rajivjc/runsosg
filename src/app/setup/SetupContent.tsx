@@ -22,7 +22,7 @@ function isStandalone(): boolean {
   )
 }
 
-export default function SetupContent({ clubName }: { clubName: string }) {
+export default function SetupContent({ clubName, appDomain }: { clubName: string; appDomain: string }) {
   const [activeTab, setActiveTab] = useState<DeviceType>('iphone')
   const [installed, setInstalled] = useState(false)
 
@@ -105,7 +105,7 @@ export default function SetupContent({ clubName }: { clubName: string }) {
           </div>
 
           <div className="px-5 py-4 text-sm text-text-secondary">
-            {activeTab === 'iphone' && <IOSInstructions clubName={clubName} />}
+            {activeTab === 'iphone' && <IOSInstructions clubName={clubName} appDomain={appDomain} />}
             {activeTab === 'android' && <AndroidInstructions clubName={clubName} />}
             {activeTab === 'desktop' && <DesktopInstructions />}
           </div>
@@ -135,11 +135,11 @@ export default function SetupContent({ clubName }: { clubName: string }) {
   )
 }
 
-function IOSInstructions({ clubName }: { clubName: string }) {
+function IOSInstructions({ clubName, appDomain }: { clubName: string; appDomain: string }) {
   return (
     <div className="space-y-4">
       <div className="rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-400/20 px-3 py-2.5 text-xs text-amber-800 dark:text-amber-300">
-        <strong>Important:</strong> You must use <strong>Safari</strong> for this step (the blue compass icon on your home screen). If you&apos;re using Chrome or another browser, open <strong>Safari</strong>, go to <strong>sosg.run</strong>, and sign in there first.
+        <strong>Important:</strong> You must use <strong>Safari</strong> for this step (the blue compass icon on your home screen). If you&apos;re using Chrome or another browser, open <strong>Safari</strong>, go to <strong>{appDomain}</strong>, and sign in there first.
       </div>
       <ol className="space-y-3 pl-0" style={{ listStyle: 'none', paddingLeft: 0 }}>
         <li className="flex gap-3 items-start">
