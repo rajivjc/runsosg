@@ -33,7 +33,7 @@ export default async function AdminPage() {
   // Fetch users list
   const { data: users } = await adminClient
     .from('users')
-    .select('id, role, active, created_at')
+    .select('id, role, active, created_at, can_manage_sessions')
     .order('created_at', { ascending: false })
 
   // Fetch auth emails to display alongside user rows
@@ -90,7 +90,15 @@ export default async function AdminPage() {
 
       {/* Quick links */}
       <section>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Link
+            href="/admin/sessions"
+            className="bg-surface border border-border rounded-xl px-4 py-4 hover:border-teal-200 dark:hover:border-teal-400/20 hover:bg-teal-50 dark:hover:bg-teal-900/12 transition-colors"
+          >
+            <span className="text-2xl">📅</span>
+            <p className="text-sm font-semibold text-text-primary mt-2">Sessions</p>
+            <p className="text-xs text-text-muted mt-0.5">Create, schedule, and manage training sessions</p>
+          </Link>
           <Link
             href="/admin/milestones"
             className="bg-surface border border-border rounded-xl px-4 py-4 hover:border-teal-200 dark:hover:border-teal-400/20 hover:bg-teal-50 dark:hover:bg-teal-900/12 transition-colors"
@@ -174,6 +182,7 @@ export default async function AdminPage() {
                 isSelf={u.id === currentUserId}
                 athletes={athletes ?? []}
                 linkedAthleteName={caregiverAthleteMap[u.id] ?? null}
+                canManageSessions={u.can_manage_sessions}
               />
             ))}
           </div>
