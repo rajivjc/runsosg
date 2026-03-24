@@ -324,6 +324,12 @@ export type Database = {
           tagline: string | null
           strava_hashtag_prefix: string | null
           locale: string
+          recurring_session_day: number | null
+          recurring_session_time: string | null
+          recurring_session_end: string | null
+          recurring_session_location: string | null
+          recurring_auto_draft: boolean
+          max_athletes_per_coach: number
         }
         Insert: {
           id?: string
@@ -339,6 +345,12 @@ export type Database = {
           tagline?: string | null
           strava_hashtag_prefix?: string | null
           locale?: string
+          recurring_session_day?: number | null
+          recurring_session_time?: string | null
+          recurring_session_end?: string | null
+          recurring_session_location?: string | null
+          recurring_auto_draft?: boolean
+          max_athletes_per_coach?: number
         }
         Update: {
           id?: string
@@ -354,6 +366,12 @@ export type Database = {
           tagline?: string | null
           strava_hashtag_prefix?: string | null
           locale?: string
+          recurring_session_day?: number | null
+          recurring_session_time?: string | null
+          recurring_session_end?: string | null
+          recurring_session_location?: string | null
+          recurring_auto_draft?: boolean
+          max_athletes_per_coach?: number
         }
         Relationships: []
       }
@@ -973,6 +991,7 @@ export type Database = {
           avg_heart_rate: number | null
           max_heart_rate: number | null
           created_at: string | null
+          training_session_id: string | null
         }
         Insert: {
           id?: string
@@ -997,6 +1016,7 @@ export type Database = {
           avg_heart_rate?: number | null
           max_heart_rate?: number | null
           created_at?: string | null
+          training_session_id?: string | null
         }
         Update: {
           id?: string
@@ -1021,6 +1041,7 @@ export type Database = {
           avg_heart_rate?: number | null
           max_heart_rate?: number | null
           created_at?: string | null
+          training_session_id?: string | null
         }
         Relationships: [
           {
@@ -1244,6 +1265,228 @@ export type Database = {
           },
         ]
       }
+      training_sessions: {
+        Row: {
+          id: string
+          club_id: string
+          title: string | null
+          session_start: string
+          session_end: string | null
+          location: string
+          notes: string | null
+          status: string
+          coach_rsvp_deadline: string | null
+          athlete_rsvp_deadline: string | null
+          pairings_published_at: string | null
+          pairings_stale: boolean
+          completed_at: string | null
+          created_by: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          club_id: string
+          title?: string | null
+          session_start: string
+          session_end?: string | null
+          location: string
+          notes?: string | null
+          status?: string
+          coach_rsvp_deadline?: string | null
+          athlete_rsvp_deadline?: string | null
+          pairings_published_at?: string | null
+          pairings_stale?: boolean
+          completed_at?: string | null
+          created_by: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          club_id?: string
+          title?: string | null
+          session_start?: string
+          session_end?: string | null
+          location?: string
+          notes?: string | null
+          status?: string
+          coach_rsvp_deadline?: string | null
+          athlete_rsvp_deadline?: string | null
+          pairings_published_at?: string | null
+          pairings_stale?: boolean
+          completed_at?: string | null
+          created_by?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sessions_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_sessions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_coach_rsvps: {
+        Row: {
+          id: string
+          session_id: string
+          coach_id: string
+          status: string
+          responded_at: string | null
+          responded_by: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          coach_id: string
+          status?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          coach_id?: string
+          status?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_coach_rsvps_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_coach_rsvps_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_coach_rsvps_responded_by_fkey"
+            columns: ["responded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_athlete_rsvps: {
+        Row: {
+          id: string
+          session_id: string
+          athlete_id: string
+          status: string
+          responded_by: string | null
+          responded_at: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          athlete_id: string
+          status?: string
+          responded_by?: string | null
+          responded_at?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          athlete_id?: string
+          status?: string
+          responded_by?: string | null
+          responded_at?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_athlete_rsvps_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_athlete_rsvps_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_athlete_rsvps_responded_by_fkey"
+            columns: ["responded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_assignments: {
+        Row: {
+          id: string
+          session_id: string
+          coach_id: string
+          athlete_id: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          coach_id: string
+          athlete_id: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          coach_id?: string
+          athlete_id?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_assignments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_assignments_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_assignments_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           id: string
@@ -1254,6 +1497,8 @@ export type Database = {
           created_at: string | null
           pwa_token: string | null
           pwa_token_expires_at: string | null
+          can_manage_sessions: boolean
+          session_notifications: boolean
         }
         Insert: {
           id: string
@@ -1264,6 +1509,8 @@ export type Database = {
           created_at?: string | null
           pwa_token?: string | null
           pwa_token_expires_at?: string | null
+          can_manage_sessions?: boolean
+          session_notifications?: boolean
         }
         Update: {
           id?: string
@@ -1274,6 +1521,8 @@ export type Database = {
           created_at?: string | null
           pwa_token?: string | null
           pwa_token_expires_at?: string | null
+          can_manage_sessions?: boolean
+          session_notifications?: boolean
         }
         Relationships: []
       }

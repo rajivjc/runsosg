@@ -91,10 +91,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Check active flag for authenticated users on protected routes
+  // Check active flag and role for authenticated users on protected routes
   const { data: userRow } = await supabase
     .from('users')
-    .select('active')
+    .select('active, role, can_manage_sessions')
     .eq('id', user.id)
     .single()
 
@@ -111,6 +111,31 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     loginUrl.pathname = '/login'
     loginUrl.search = '?error=revoked'
     return NextResponse.redirect(loginUrl)
+  }
+
+  // Admin route access control
+  if (pathname.startsWith('/admin')) {
+    const isAdminSessionsRoute =
+      pathname === '/admin/sessions' || pathname.startsWith('/admin/sessions/')
+
+    if (isAdminSessionsRoute) {
+      // /admin/sessions/*: allow admin OR coaches with can_manage_sessions
+      const allowed =
+        userRow.role === 'admin' ||
+        (userRow.role === 'coach' && userRow.can_manage_sessions === true)
+      if (!allowed) {
+        const homeUrl = request.nextUrl.clone()
+        homeUrl.pathname = '/'
+        return NextResponse.redirect(homeUrl)
+      }
+    } else {
+      // All other /admin/* routes: admin only
+      if (userRow.role !== 'admin') {
+        const homeUrl = request.nextUrl.clone()
+        homeUrl.pathname = '/'
+        return NextResponse.redirect(homeUrl)
+      }
+    }
   }
 
   return response

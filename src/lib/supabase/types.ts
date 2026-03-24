@@ -100,3 +100,17 @@ export type FocusArea = Database['public']['Tables']['focus_areas']['Row'] & {
 export type ProgressLevel = FocusArea['progress_level']
 
 export type AuditLog = Database['public']['Tables']['audit_log']['Row']
+
+export type TrainingSession = Database['public']['Tables']['training_sessions']['Row'] & {
+  status: 'draft' | 'published' | 'completed' | 'cancelled'
+}
+
+export type SessionCoachRsvp = Database['public']['Tables']['session_coach_rsvps']['Row'] & {
+  status: 'pending' | 'available' | 'unavailable'
+}
+
+export type SessionAthleteRsvp = Database['public']['Tables']['session_athlete_rsvps']['Row'] & {
+  status: 'pending' | 'attending' | 'not_attending'
+}
+
+export type SessionAssignment = Database['public']['Tables']['session_assignments']['Row']

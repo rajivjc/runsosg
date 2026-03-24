@@ -23,8 +23,8 @@ npm run test:e2e     # Playwright E2E tests (requires dev server)
 
 - **Magic-link auth** via Supabase OTP — no passwords
 - **Three roles:** `admin` (full access), `coach` (manage sessions/cues/notes), `caregiver` (read-only, linked athlete only)
-- **Middleware** (`src/middleware.ts`) enforces auth and checks `users.active` flag
-- **Role checks** happen in Server Actions and page components, not middleware
+- **Middleware** (`src/middleware.ts`) enforces auth, checks `users.active` flag, and gates `/admin/*` routes by role
+- **Role checks** happen in Server Actions and page components; middleware additionally enforces admin route access
 - **Invitation flow:** Admin invites → Supabase `inviteUserByEmail` → `handle_new_user()` trigger assigns role
 - **Public routes:** `/milestone/*`, `/story/*`, `/login`, `/auth/callback`, `/setup` are excluded from auth
 
@@ -104,6 +104,15 @@ Role-specific feeds with separate data loaders:
 - **Triggers:** `handle_new_user()`, `update_cues_version()`
 - Migrations in `supabase/migrations/` ordered by timestamp
 - Types manually maintained in `src/lib/supabase/types.ts`
+
+### Training Sessions
+
+- Session times are stored as TIMESTAMPTZ in `training_sessions.session_start`
+- Always use helpers from `src/lib/sessions/datetime.ts` for display
+- Never interpret session_start without the club timezone from getClub().timezone
+- The suggestion algorithm uses logged runs (not just assignments) for frequency
+- `/admin/sessions/*` routes allow admin OR coaches with can_manage_sessions = true
+- All other `/admin/*` routes remain admin-only
 
 ## Conventions
 

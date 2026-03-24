@@ -224,3 +224,102 @@ describe('Middleware skip behavior', () => {
     // In the middleware, both conditions cause early return without getUser()
   })
 })
+
+describe('Admin route access control logic', () => {
+  // Tests the access control logic extracted from middleware:
+  // - /admin/sessions/*: admin OR (coach + can_manage_sessions)
+  // - /admin/*: admin only
+
+  type UserRow = { role: string; can_manage_sessions: boolean }
+
+  function canAccessRoute(pathname: string, user: UserRow): boolean {
+    if (!pathname.startsWith('/admin')) return true
+
+    const isAdminSessionsRoute =
+      pathname === '/admin/sessions' || pathname.startsWith('/admin/sessions/')
+
+    if (isAdminSessionsRoute) {
+      return (
+        user.role === 'admin' ||
+        (user.role === 'coach' && user.can_manage_sessions === true)
+      )
+    }
+
+    return user.role === 'admin'
+  }
+
+  const admin: UserRow = { role: 'admin', can_manage_sessions: false }
+  const coachWithManage: UserRow = { role: 'coach', can_manage_sessions: true }
+  const coachWithoutManage: UserRow = { role: 'coach', can_manage_sessions: false }
+  const caregiver: UserRow = { role: 'caregiver', can_manage_sessions: false }
+
+  // Admin can access everything
+  it('admin can access /admin/sessions', () => {
+    expect(canAccessRoute('/admin/sessions', admin)).toBe(true)
+  })
+
+  it('admin can access /admin/sessions/new', () => {
+    expect(canAccessRoute('/admin/sessions/new', admin)).toBe(true)
+  })
+
+  it('admin can access /admin/sessions/[id]/pairings', () => {
+    expect(canAccessRoute('/admin/sessions/abc-123/pairings', admin)).toBe(true)
+  })
+
+  it('admin can access /admin (other admin pages)', () => {
+    expect(canAccessRoute('/admin', admin)).toBe(true)
+    expect(canAccessRoute('/admin/settings', admin)).toBe(true)
+    expect(canAccessRoute('/admin/invitations', admin)).toBe(true)
+  })
+
+  // Coach with can_manage_sessions can access session routes
+  it('coach with can_manage_sessions can access /admin/sessions', () => {
+    expect(canAccessRoute('/admin/sessions', coachWithManage)).toBe(true)
+  })
+
+  it('coach with can_manage_sessions can access /admin/sessions/[id]/pairings', () => {
+    expect(canAccessRoute('/admin/sessions/abc-123/pairings', coachWithManage)).toBe(true)
+  })
+
+  // Coach with can_manage_sessions CANNOT access other admin pages
+  it('coach with can_manage_sessions CANNOT access /admin', () => {
+    expect(canAccessRoute('/admin', coachWithManage)).toBe(false)
+  })
+
+  it('coach with can_manage_sessions CANNOT access /admin/settings', () => {
+    expect(canAccessRoute('/admin/settings', coachWithManage)).toBe(false)
+  })
+
+  it('coach with can_manage_sessions CANNOT access /admin/invitations', () => {
+    expect(canAccessRoute('/admin/invitations', coachWithManage)).toBe(false)
+  })
+
+  // Coach without can_manage_sessions CANNOT access session routes
+  it('coach without can_manage_sessions CANNOT access /admin/sessions', () => {
+    expect(canAccessRoute('/admin/sessions', coachWithoutManage)).toBe(false)
+  })
+
+  it('coach without can_manage_sessions CANNOT access /admin/sessions/new', () => {
+    expect(canAccessRoute('/admin/sessions/new', coachWithoutManage)).toBe(false)
+  })
+
+  // Caregiver cannot access any admin routes
+  it('caregiver CANNOT access /admin/sessions', () => {
+    expect(canAccessRoute('/admin/sessions', caregiver)).toBe(false)
+  })
+
+  it('caregiver CANNOT access /admin', () => {
+    expect(canAccessRoute('/admin', caregiver)).toBe(false)
+  })
+
+  it('caregiver CANNOT access /admin/settings', () => {
+    expect(canAccessRoute('/admin/settings', caregiver)).toBe(false)
+  })
+
+  // Non-admin routes are unaffected
+  it('non-admin routes pass through for any role', () => {
+    expect(canAccessRoute('/feed', caregiver)).toBe(true)
+    expect(canAccessRoute('/athletes', coachWithoutManage)).toBe(true)
+    expect(canAccessRoute('/dashboard', coachWithManage)).toBe(true)
+  })
+})

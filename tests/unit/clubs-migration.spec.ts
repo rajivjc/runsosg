@@ -52,6 +52,12 @@ describe('clubs migration types', () => {
       tagline: null,
       strava_hashtag_prefix: null,
       locale: 'en-SG',
+      recurring_session_day: null,
+      recurring_session_time: null,
+      recurring_session_end: null,
+      recurring_session_location: null,
+      recurring_auto_draft: false,
+      max_athletes_per_coach: 3,
     }
 
     expect(club.id).toBe('test-id')
@@ -80,6 +86,12 @@ describe('clubs migration types', () => {
       tagline: 'Growing Together',
       strava_hashtag_prefix: '#SOSG',
       locale: 'en-SG',
+      recurring_session_day: null,
+      recurring_session_time: null,
+      recurring_session_end: null,
+      recurring_session_location: null,
+      recurring_auto_draft: false,
+      max_athletes_per_coach: 3,
     }
 
     expect(club.slug).toBe('sosg')
@@ -104,6 +116,12 @@ describe('clubs migration types', () => {
       tagline: null,
       strava_hashtag_prefix: null,
       locale: 'en-SG',
+      recurring_session_day: null,
+      recurring_session_time: null,
+      recurring_session_end: null,
+      recurring_session_location: null,
+      recurring_auto_draft: false,
+      max_athletes_per_coach: 3,
     }
 
     // ClubSettings should be the same type as Club
