@@ -12,6 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PrivacyPage() {
   const club = await getClub()
+  const contactEmail = process.env.CONTACT_EMAIL ?? 'privacy@example.com'
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center p-6 py-12">
       <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-2xl px-8 py-10 sm:px-12 sm:py-14">
@@ -70,7 +71,7 @@ export default async function PrivacyPage() {
             </p>
             <p className="mt-3">
               For questions about your data, contact us at{' '}
-              <span className="font-medium">privacy@sosg.run</span>.
+              <span className="font-medium">{contactEmail}</span>.
             </p>
           </section>
 
@@ -264,7 +265,7 @@ export default async function PrivacyPage() {
             </p>
             <p className="mt-3">
               To request full deletion of your data, contact{' '}
-              <span className="font-medium">privacy@sosg.run</span>. We will
+              <span className="font-medium">{contactEmail}</span>. We will
               respond within 30 days.
             </p>
           </section>
@@ -302,7 +303,7 @@ export default async function PrivacyPage() {
             </h2>
             <p>
               For questions about your data, email{' '}
-              <span className="font-medium">privacy@sosg.run</span>.
+              <span className="font-medium">{contactEmail}</span>.
             </p>
           </section>
         </div>
