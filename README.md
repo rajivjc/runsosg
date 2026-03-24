@@ -1,8 +1,8 @@
-# SOSG Running Club Hub
+# Running Club Hub
 
-A web application for managing a running club for athletes with special needs. Coaches log runs (manually or via Strava sync), track athlete progress through milestones, record coaching cues, write notes, and celebrate achievements. Caregivers get read-only access to their linked athlete with the ability to send cheers and view milestone celebrations. Athletes themselves can view their own running journey through a PIN-protected personal page.
+A web application for managing a running club for athletes with special needs. Club name, timezone, and locale are all configured dynamically from the database — the app is designed to work for any club, not just one. Coaches log runs (manually or via Strava sync), track athlete progress through milestones, record coaching cues, write notes, and celebrate achievements. Caregivers get read-only access to their linked athlete with the ability to send cheers and view milestone celebrations. Athletes themselves can view their own running journey through a PIN-protected personal page.
 
-> **[Why I Built This](https://sosg.run/about)** — *It started with a moment I almost missed. An athlete finished a 5km run and looked around to see if anyone was watching. We were. I could have built something defined by disability. I built something defined by the sport.*
+> **Why I Built This** — *It started with a moment I almost missed. An athlete finished a 5km run and looked around to see if anyone was watching. We were. I could have built something defined by disability. I built something defined by the sport.*
 
 ## Tech Stack
 
@@ -42,6 +42,7 @@ Copy `.env.local.example` to `.env.local` and fill in:
 | `NEXT_PUBLIC_APP_URL` | App base URL for redirects |
 | `RESEND_API_KEY` | Email sending via Resend |
 | `RESEND_FROM_EMAIL` | Sender address (optional, has default) |
+| `CONTACT_EMAIL` | Privacy page contact email (optional, defaults to `privacy@example.com`) |
 | `CRON_SECRET` | Auth token for cron endpoints |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Push notification VAPID key (optional) |
 | `VAPID_PRIVATE_KEY` | Push notification VAPID private key (optional) |
@@ -65,6 +66,18 @@ Magic-link authentication via Supabase OTP. Four access levels:
 - **Caregiver** — Read-only access to their linked athlete, send cheers
 - **Athlete** — PIN-authenticated access to their own running journey page (no Supabase auth needed)
 
+## Dynamic Club Configuration
+
+The app reads all club-specific values from the `clubs` table in the database:
+
+- **Club name** — displayed in the UI, email templates, email sender name, certificates, and metadata
+- **Timezone** — used for all date calculations, session boundaries, quiet hours, and display formatting
+- **Locale** — used for date/number formatting
+- **Strava hashtag prefix** — the club's Strava activity tag (e.g. `#SOSG`, `#SUNBEAM`)
+- **Tagline** — shown in email footers and public pages
+
+Server code reads these via `getClub()` (cached with `unstable_cache`). Client components access timezone and locale via the `useClubConfig()` hook from `ClubConfigProvider`. A CI guard test (`timezone-guard.spec.ts`) prevents hardcoded timezone/locale values from being re-introduced.
+
 ## Key Features
 
 ### Core
@@ -74,6 +87,10 @@ Magic-link authentication via Supabase OTP. Four access levels:
 - **Strava Integration** — OAuth connect, automatic run sync via webhooks, hashtag-based athlete matching, unmatched activity resolution
 - **Milestones** — Automatic milestone evaluation (session count, distance, longest run) with sensory-safe celebration overlays
 - **Notifications** — In-app notifications and optional push notifications for milestone awards, Strava events, and more
+- **Data Export** — CSV export of athlete session history and PDF progress reports for coaches and admins
+- **Printable Certificates** — Auto-generated PDF milestone certificates with athlete's avatar, theme color, and club name. Designed to be frameable and dignified
+- **Training Programs** — Plan tab on athlete profiles with structured multi-week training goals and progress tracking
+- **Narrative Coaching Digest** — In-app and email weekly digest with natural language narrative summarising each athlete's week, highlights, and heads-up alerts
 
 ### Athlete Voice
 
@@ -96,6 +113,7 @@ Magic-link authentication via Supabase OTP. Four access levels:
 - **Structured Goals** — Athletes set distance and session targets with visual progress tracking
 - **Cheer Toasts** — Real-time toast notifications when coaches receive new cheers
 - **First Run Celebrations** — Warm acknowledgment overlay when a coach logs an athlete's first session
+- **Coach Feed Priorities** — "Needs Attention" section surfacing declining-feel alerts, unmatched Strava activities, and unread messages above the main feed
 
 ### Sharing & Media
 
@@ -110,6 +128,7 @@ Magic-link authentication via Supabase OTP. Four access levels:
 - **Coaching Insights** — Feel trend analysis, declining feel alerts, personal bests, and best-week-ever detection
 - **Weekly Digest Emails** — Automated weekly summaries via Resend and cron
 - **Push Notifications** — Optional web push via VAPID/web-push with quiet hours support
+- **Dark Mode** — Full dark mode with system/light/dark toggle, warm palette (not cold blue-gray), all WCAG AAA contrast ratios maintained
 - **PWA Support** — Installable as a home screen app with service worker and install prompt
 
 ## Inclusive Design
@@ -129,7 +148,7 @@ Sources: WCAG 2.2, W3C COGA, Special Olympics design research, sensory-friendly 
 
 ## Testing
 
-**Unit tests** (Jest): `npm test` — 31 suites, 433 tests covering server actions, business logic, accessibility audits, and celebration safety
+**Unit tests** (Jest): `npm test` — 70+ suites covering server actions, business logic, accessibility audits, celebration safety, timezone guard rails, dark mode, plan tab, certificates, and narrative digest
 
 **E2E tests** (Playwright): `npm run test:e2e` (requires dev server)
 
@@ -139,4 +158,4 @@ Sources: WCAG 2.2, W3C COGA, Special Olympics design research, sensory-friendly 
 
 20+ tables with Row Level Security enabled on all. Migrations live in `supabase/migrations/` ordered by timestamp. Types are manually maintained in `src/lib/supabase/types.ts`.
 
-Key tables: `users`, `athletes`, `sessions`, `cues`, `coach_notes`, `milestones`, `milestone_definitions`, `strava_connections`, `strava_sync_log`, `strava_unmatched`, `notifications`, `invitations`, `media`, `kudos`, `cheers`, `coach_badges`, `goals`, `club_settings`, `athlete_messages`, `push_subscriptions`, `athlete_moods`, `athlete_favorites`
+Key tables: `users`, `athletes`, `sessions`, `cues`, `coach_notes`, `milestones`, `milestone_definitions`, `strava_connections`, `strava_sync_log`, `strava_unmatched`, `notifications`, `invitations`, `media`, `kudos`, `cheers`, `coach_badges`, `goals`, `clubs`, `athlete_messages`, `push_subscriptions`, `athlete_moods`, `athlete_favorites`, `training_plans`, `audit_log`
