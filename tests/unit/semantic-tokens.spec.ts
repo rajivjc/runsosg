@@ -34,6 +34,7 @@ describe('Semantic token migration', () => {
     const allowedFiles = [
       'AthleteQrCode.tsx',
       'PushToggle.tsx',
+      'SessionNotificationsToggle.tsx',
       'EditAthleteForm.tsx',
     ]
     // Filter out allowed patterns: gradients, opacity modifiers, toggle knobs, QR codes
