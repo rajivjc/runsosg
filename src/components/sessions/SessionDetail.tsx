@@ -33,6 +33,9 @@ export type SessionDetailData = {
   athleteCues: Record<string, string>
   pairingsPublished: boolean
   pairingsStale: boolean
+  sessionDate: string // YYYY-MM-DD in club timezone
+  loggedRuns: Record<string, { distance_km: number | null; note: string | null }>
+  allAthletes: { id: string; name: string; avatar: string | null }[]
 }
 
 export default function SessionDetail({ data }: { data: SessionDetailData }) {
@@ -51,6 +54,9 @@ export default function SessionDetail({ data }: { data: SessionDetailData }) {
     athleteCues,
     pairingsPublished,
     pairingsStale,
+    sessionDate,
+    loggedRuns,
+    allAthletes,
   } = data
 
   const isAdmin = currentUserRole === 'admin'
@@ -195,6 +201,10 @@ export default function SessionDetail({ data }: { data: SessionDetailData }) {
             currentUserId={currentUserId}
             currentCaregiverAthleteIds={currentCaregiverAthletes.map(a => a.athlete_id)}
             athleteCues={athleteCues}
+            trainingSessionId={session.id}
+            sessionDate={sessionDate}
+            loggedRuns={loggedRuns}
+            allAthletes={allAthletes}
           />
 
           {/* Admin actions — only for published */}

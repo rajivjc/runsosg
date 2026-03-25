@@ -167,6 +167,9 @@ export async function createManualSession(
   if (!isNaN(avgHr) && (avgHr < 30 || avgHr > 300)) return { error: 'Average heart rate must be between 30 and 300 bpm' }
   if (!isNaN(maxHr) && (maxHr < 30 || maxHr > 300)) return { error: 'Max heart rate must be between 30 and 300 bpm' }
 
+  // Optional link to a training session (group session context)
+  const trainingSessionId = (formData.get('training_session_id') as string ?? '').trim() || null
+
   const { error } = await supabase
     .from('sessions')
     .insert({
@@ -182,6 +185,7 @@ export async function createManualSession(
       max_heart_rate: isNaN(maxHr) ? null : maxHr,
       sync_source: 'manual',
       status: 'completed',
+      training_session_id: trainingSessionId,
     })
 
   if (error) return { error: 'Could not log the session. Please try again.' }

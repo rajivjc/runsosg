@@ -188,6 +188,8 @@ describe('AssignmentCard data', () => {
         { id: 'a1', name: 'Nicholas', cues: '1km walk-run', avatar: '🏃' },
         { id: 'a2', name: 'Sarah', cues: 'Steady pace', avatar: null },
       ],
+      loggedRuns: {},
+      allAthletes: [],
     }
     expect(card.athletes).toHaveLength(2)
     expect(card.athletes[0].cues).toBe('1km walk-run')
@@ -201,8 +203,66 @@ describe('AssignmentCard data', () => {
       athletes: [
         { id: 'a1', name: 'Nicholas', cues: null, avatar: null },
       ],
+      loggedRuns: {},
+      allAthletes: [],
     }
     expect(card.athletes[0].cues).toBeNull()
+  })
+
+  it('includes loggedRuns for athletes who have completed runs', () => {
+    const card: AssignmentCardData = {
+      type: 'session_assignment',
+      session: makeSession(),
+      athletes: [
+        { id: 'a1', name: 'Nicholas', cues: '1km walk-run', avatar: '🏃' },
+        { id: 'a2', name: 'Sarah', cues: 'Steady pace', avatar: null },
+      ],
+      loggedRuns: {
+        a1: { distance_km: 2.5, note: 'Great session' },
+      },
+      allAthletes: [
+        { id: 'a1', name: 'Nicholas', avatar: '🏃' },
+        { id: 'a2', name: 'Sarah', avatar: null },
+        { id: 'a3', name: 'Marcus', avatar: null },
+      ],
+    }
+    expect(card.loggedRuns['a1']).toBeDefined()
+    expect(card.loggedRuns['a1'].distance_km).toBe(2.5)
+    expect(card.loggedRuns['a2']).toBeUndefined()
+  })
+
+  it('has empty loggedRuns before any runs are logged', () => {
+    const card: AssignmentCardData = {
+      type: 'session_assignment',
+      session: makeSession(),
+      athletes: [
+        { id: 'a1', name: 'Nicholas', cues: null, avatar: null },
+      ],
+      loggedRuns: {},
+      allAthletes: [],
+    }
+    expect(Object.keys(card.loggedRuns)).toHaveLength(0)
+  })
+
+  it('allAthletes includes athletes not in assignment for add-athlete', () => {
+    const card: AssignmentCardData = {
+      type: 'session_assignment',
+      session: makeSession(),
+      athletes: [
+        { id: 'a1', name: 'Nicholas', cues: null, avatar: null },
+      ],
+      loggedRuns: {},
+      allAthletes: [
+        { id: 'a1', name: 'Nicholas', avatar: null },
+        { id: 'a2', name: 'Sarah', avatar: null },
+        { id: 'a3', name: 'Marcus', avatar: null },
+      ],
+    }
+    const availableToAdd = card.allAthletes.filter(
+      a => !card.athletes.some(assigned => assigned.id === a.id)
+    )
+    expect(availableToAdd).toHaveLength(2)
+    expect(availableToAdd.map(a => a.name)).toEqual(['Sarah', 'Marcus'])
   })
 })
 

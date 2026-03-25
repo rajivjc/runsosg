@@ -474,10 +474,11 @@ async function buildCaregiverSessionCards(
 
   const sessionIds = visible.map(s => s.id)
 
-  // Batch: athlete RSVPs + assignments for linked athletes
+  // Batch: athlete RSVPs + assignments + logged runs for linked athletes
   const [
     { data: athleteRsvps },
     { data: assignments },
+    { data: loggedRuns },
   ] = await Promise.all([
     adminClient
       .from('session_athlete_rsvps')
@@ -489,6 +490,12 @@ async function buildCaregiverSessionCards(
       .select('session_id, athlete_id, coach_id, users!session_assignments_coach_id_fkey(name)')
       .in('session_id', sessionIds)
       .in('athlete_id', athleteIds),
+    adminClient
+      .from('sessions')
+      .select('training_session_id, athlete_id, distance_km')
+      .in('training_session_id', sessionIds)
+      .in('athlete_id', athleteIds)
+      .eq('status', 'completed'),
   ])
 
   // Index RSVPs by session
@@ -504,6 +511,14 @@ async function buildCaregiverSessionCards(
     if (!assignmentsBySession[a.session_id]) assignmentsBySession[a.session_id] = []
     const coachName = (a as unknown as { users?: { name?: string } }).users?.name ?? 'Coach'
     assignmentsBySession[a.session_id].push({ athleteId: a.athlete_id, coachName })
+  }
+
+  // Index logged runs by session → athlete
+  const loggedRunsBySession: Record<string, Record<string, { distance_km: number | null }>> = {}
+  for (const r of loggedRuns ?? []) {
+    if (!r.training_session_id) continue
+    if (!loggedRunsBySession[r.training_session_id]) loggedRunsBySession[r.training_session_id] = {}
+    loggedRunsBySession[r.training_session_id][r.athlete_id] = { distance_km: r.distance_km }
   }
 
   const cards: (CaregiverSessionRsvpCardData | CaregiverSessionConfirmedCardData)[] = []
@@ -532,6 +547,7 @@ async function buildCaregiverSessionCards(
           type: 'caregiver_session_confirmed',
           session: sessionCard,
           athletes: confirmedAthletes,
+          loggedRuns: loggedRunsBySession[s.id] ?? {},
         })
         continue // Don't also show RSVP card for this session
       }

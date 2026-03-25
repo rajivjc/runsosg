@@ -1,13 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+
+const GroupLogRunSheet = dynamic(() => import('./GroupLogRunSheet'))
 
 type Assignment = {
   coach_id: string
   coach_name: string
   athlete_id: string
   athlete_name: string
+}
+
+type LoggedRun = {
+  distance_km: number | null
+  note: string | null
 }
 
 type Props = {
@@ -17,6 +26,10 @@ type Props = {
   currentUserId: string
   currentCaregiverAthleteIds: string[]
   athleteCues: Record<string, string>
+  trainingSessionId?: string
+  sessionDate?: string // YYYY-MM-DD
+  loggedRuns?: Record<string, LoggedRun>
+  allAthletes?: { id: string; name: string; avatar: string | null }[]
 }
 
 export default function AssignmentSection({
@@ -26,8 +39,14 @@ export default function AssignmentSection({
   currentUserId,
   currentCaregiverAthleteIds,
   athleteCues,
+  trainingSessionId,
+  sessionDate,
+  loggedRuns = {},
+  allAthletes,
 }: Props) {
   const [allExpanded, setAllExpanded] = useState(false)
+  const [logSheetOpen, setLogSheetOpen] = useState(false)
+  const router = useRouter()
 
   if (!pairingsPublished || assignments.length === 0) return null
 
@@ -47,14 +66,17 @@ export default function AssignmentSection({
   const caregiverCoaches = role === 'caregiver'
     ? assignments
         .filter(a => currentCaregiverAthleteIds.includes(a.athlete_id))
-        .reduce<Record<string, { coach_name: string; athlete_names: string[] }>>((acc, a) => {
-          if (!acc[a.coach_id]) acc[a.coach_id] = { coach_name: a.coach_name, athlete_names: [] }
+        .reduce<Record<string, { coach_name: string; athlete_names: string[]; athlete_ids: string[] }>>((acc, a) => {
+          if (!acc[a.coach_id]) acc[a.coach_id] = { coach_name: a.coach_name, athlete_names: [], athlete_ids: [] }
           acc[a.coach_id].athlete_names.push(a.athlete_name)
+          acc[a.coach_id].athlete_ids.push(a.athlete_id)
           return acc
         }, {})
     : {}
 
   const coachGroupList = Object.entries(coachGroups)
+
+  const someLogged = myAssignments?.athletes.some(a => loggedRuns[a.athlete_id]) ?? false
 
   return (
     <div className="mb-4">
@@ -64,41 +86,70 @@ export default function AssignmentSection({
           <p className="text-xs font-bold text-text-muted uppercase tracking-wide mb-2">
             Your Assignments
           </p>
-          {myAssignments.athletes.map(a => (
-            <div
-              key={a.athlete_id}
-              className="flex items-start gap-2.5 bg-accent-bg rounded-lg px-3 py-2.5 mb-1.5"
-            >
-              <span className="text-base">🏃</span>
-              <div>
-                <p className="text-sm font-bold text-text-primary">{a.athlete_name}</p>
-                {athleteCues[a.athlete_id] && (
-                  <p className="text-xs text-text-secondary">
-                    Cues: &ldquo;{athleteCues[a.athlete_id]}&rdquo;
-                  </p>
-                )}
+          {myAssignments.athletes.map(a => {
+            const logged = loggedRuns[a.athlete_id]
+            return (
+              <div
+                key={a.athlete_id}
+                className="flex items-start gap-2.5 bg-accent-bg rounded-lg px-3 py-2.5 mb-1.5"
+              >
+                <span className="text-base">🏃</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-text-primary">{a.athlete_name}</p>
+                  {logged ? (
+                    <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
+                      <span>✓</span>
+                      <span>
+                        Run logged
+                        {logged.distance_km != null ? ` (${logged.distance_km}km` : ''}
+                        {logged.note ? `, "${logged.note}"` : ''}
+                        {logged.distance_km != null ? ')' : ''}
+                      </span>
+                    </p>
+                  ) : (
+                    athleteCues[a.athlete_id] && (
+                      <p className="text-xs text-text-secondary">
+                        Cues: &ldquo;{athleteCues[a.athlete_id]}&rdquo;
+                      </p>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-          <button
-            disabled
-            className="w-full py-2.5 mt-1 text-sm font-bold rounded-lg bg-accent text-white border-none min-h-[44px] opacity-50 cursor-not-allowed"
-          >
-            Log Runs
-          </button>
+            )
+          })}
+          {trainingSessionId && sessionDate && (
+            <button
+              onClick={() => setLogSheetOpen(true)}
+              className="w-full py-2.5 mt-1 text-sm font-bold rounded-lg bg-accent text-white border-none min-h-[44px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-150"
+            >
+              {someLogged ? 'Log More' : 'Log Runs'}
+            </button>
+          )}
         </div>
       )}
 
       {/* Caregiver view */}
       {role === 'caregiver' && Object.entries(caregiverCoaches).map(([coachId, info]) => (
         <div key={coachId} className="bg-accent-bg rounded-[10px] p-3 mb-3">
-          {info.athlete_names.map(name => (
-            <div key={name}>
-              <p className="text-xs font-bold text-text-muted uppercase tracking-wide mb-1.5">
-                {name}&apos;s Coach
-              </p>
-            </div>
-          ))}
+          {info.athlete_names.map((name, i) => {
+            const athleteId = info.athlete_ids[i]
+            const logged = loggedRuns[athleteId]
+            return (
+              <div key={name}>
+                <p className="text-xs font-bold text-text-muted uppercase tracking-wide mb-1.5">
+                  {name}&apos;s Coach
+                </p>
+                {logged && (
+                  <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1 mb-1">
+                    <span>✓</span>
+                    <span>
+                      Run completed{logged.distance_km != null ? ` — ${logged.distance_km}km` : ''}
+                    </span>
+                  </p>
+                )}
+              </div>
+            )
+          })}
           <p className="text-[15px] font-bold text-text-primary">Coach {info.coach_name}</p>
         </div>
       ))}
@@ -129,6 +180,26 @@ export default function AssignmentSection({
           </div>
         )}
       </div>
+
+      {/* Group log sheet */}
+      {trainingSessionId && sessionDate && logSheetOpen && (
+        <GroupLogRunSheet
+          isOpen={logSheetOpen}
+          onClose={() => setLogSheetOpen(false)}
+          onSaved={() => {
+            setLogSheetOpen(false)
+            router.refresh()
+          }}
+          trainingSessionId={trainingSessionId}
+          sessionDate={sessionDate}
+          assignedAthletes={(myAssignments?.athletes ?? []).map(a => ({
+            id: a.athlete_id,
+            name: a.athlete_name,
+            avatar: null,
+          }))}
+          allAthletes={allAthletes}
+        />
+      )}
     </div>
   )
 }

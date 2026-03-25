@@ -344,13 +344,15 @@ async function buildCoachSessionCards(
 
   const sessionIds = visible.map(s => s.id)
 
-  // Batch fetch: coach RSVPs for this user, aggregate counts, assignments
+  // Batch fetch: coach RSVPs for this user, aggregate counts, assignments, logged runs
   const [
     { data: myRsvps },
     { data: coachRsvpCounts },
     { data: athleteRsvpCounts },
     { data: myAssignments },
     { data: userRow },
+    { data: loggedRuns },
+    { data: allActiveAthletes },
   ] = await Promise.all([
     adminClient
       .from('session_coach_rsvps')
@@ -377,6 +379,16 @@ async function buildCoachSessionCards(
       .select('role, can_manage_sessions')
       .eq('id', userId)
       .single(),
+    adminClient
+      .from('sessions')
+      .select('training_session_id, athlete_id, distance_km, note')
+      .in('training_session_id', sessionIds)
+      .eq('status', 'completed'),
+    adminClient
+      .from('athletes')
+      .select('id, name, avatar')
+      .eq('active', true)
+      .order('name'),
   ])
 
   const isAdmin = userRow?.role === 'admin'
@@ -406,6 +418,24 @@ async function buildCoachSessionCards(
       assignmentsBySession[a.session_id].push({ id: ath.id, name: ath.name, avatar: ath.avatar })
     }
   }
+
+  // Index logged runs by training_session_id → athlete_id
+  const loggedRunsBySession: Record<string, Record<string, { distance_km: number | null; note: string | null }>> = {}
+  for (const r of loggedRuns ?? []) {
+    if (!r.training_session_id) continue
+    if (!loggedRunsBySession[r.training_session_id]) loggedRunsBySession[r.training_session_id] = {}
+    loggedRunsBySession[r.training_session_id][r.athlete_id] = {
+      distance_km: r.distance_km,
+      note: r.note,
+    }
+  }
+
+  // All active athletes for "add athlete" feature
+  const allAthletesList = (allActiveAthletes ?? []).map(a => ({
+    id: a.id,
+    name: a.name,
+    avatar: a.avatar,
+  }))
 
   // Fetch cues for assigned athletes
   const allAssignedAthleteIds = [...new Set(
@@ -463,6 +493,8 @@ async function buildCoachSessionCards(
           cues: cuesByAthleteId[a.id] ?? null,
           avatar: a.avatar,
         })),
+        loggedRuns: loggedRunsBySession[s.id] ?? {},
+        allAthletes: allAthletesList,
       })
     }
 

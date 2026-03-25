@@ -104,6 +104,9 @@ export default async function SessionDetailPage({ params }: Props) {
       athleteCues: {},
       pairingsPublished: false,
       pairingsStale: false,
+      sessionDate: new Intl.DateTimeFormat('en-CA', { timeZone: club.timezone }).format(new Date(session.session_start)),
+      loggedRuns: {},
+      allAthletes: [],
     }
 
     return (
@@ -203,6 +206,34 @@ export default async function SessionDetailPage({ params }: Props) {
     }
   }
 
+  // Fetch logged runs and all athletes for assignment section
+  const [loggedRunsResult, allAthletesResult] = await Promise.all([
+    adminClient
+      .from('sessions')
+      .select('athlete_id, distance_km, note')
+      .eq('training_session_id', sessionId)
+      .eq('status', 'completed'),
+    adminClient
+      .from('athletes')
+      .select('id, name, avatar')
+      .eq('active', true)
+      .order('name'),
+  ])
+
+  const loggedRuns: Record<string, { distance_km: number | null; note: string | null }> = {}
+  for (const r of loggedRunsResult.data ?? []) {
+    loggedRuns[r.athlete_id] = { distance_km: r.distance_km, note: r.note }
+  }
+
+  const allAthletes = (allAthletesResult.data ?? []).map(a => ({
+    id: a.id,
+    name: a.name,
+    avatar: a.avatar,
+  }))
+
+  // Session date in YYYY-MM-DD format using club timezone
+  const sessionDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: club.timezone }).format(new Date(session.session_start))
+
   const data: SessionDetailData = {
     session: {
       id: session.id,
@@ -228,6 +259,9 @@ export default async function SessionDetailPage({ params }: Props) {
     athleteCues,
     pairingsPublished,
     pairingsStale: session.pairings_stale,
+    sessionDate: sessionDateStr,
+    loggedRuns,
+    allAthletes,
   }
 
   return (

@@ -42,10 +42,17 @@ export interface PairingsReviewCardData {
   staleDetails: string
 }
 
+export interface AssignmentAthleteLoggedRun {
+  distance_km: number | null
+  note: string | null
+}
+
 export interface AssignmentCardData {
   type: 'session_assignment'
   session: SessionCardData
   athletes: { id: string; name: string; cues: string | null; avatar: string | null }[]
+  loggedRuns: Record<string, AssignmentAthleteLoggedRun>
+  allAthletes: { id: string; name: string; avatar: string | null }[]
 }
 
 export interface CaregiverRsvpAthleteData {
@@ -64,6 +71,7 @@ export interface CaregiverSessionConfirmedCardData {
   type: 'caregiver_session_confirmed'
   session: SessionCardData
   athletes: { athleteId: string; athleteName: string; coachName: string }[]
+  loggedRuns: Record<string, { distance_km: number | null }>
 }
 
 export type SessionFeedCard =
