@@ -66,7 +66,8 @@ export default function AssignmentCard({ card }: Props) {
                     <div className="flex items-center gap-1 text-xs text-green-700 dark:text-green-400 mt-0.5">
                       <span>✓</span>
                       <span>
-                        {logged.distance_km != null ? `${logged.distance_km}km logged` : 'Run logged'}
+                        {logged.distance_km != null ? `${logged.distance_km}km` : 'Run'}{' '}
+                        {logged.sync_source === 'strava_webhook' ? 'via Strava' : 'logged'}
                       </span>
                     </div>
                   ) : (
@@ -100,11 +101,21 @@ export default function AssignmentCard({ card }: Props) {
           }}
           trainingSessionId={session.id}
           sessionDate={sessionDate}
-          assignedAthletes={athletes.map(a => ({
-            id: a.id,
-            name: a.name,
-            avatar: a.avatar,
-          }))}
+          assignedAthletes={athletes
+            .filter(a => !loggedRuns[a.id])
+            .map(a => ({
+              id: a.id,
+              name: a.name,
+              avatar: a.avatar,
+            }))}
+          stravaSyncedAthletes={athletes
+            .filter(a => loggedRuns[a.id]?.sync_source === 'strava_webhook')
+            .map(a => ({
+              id: a.id,
+              name: a.name,
+              avatar: a.avatar,
+              distanceKm: loggedRuns[a.id]?.distance_km ?? null,
+            }))}
           allAthletes={allAthletes}
         />
       )}

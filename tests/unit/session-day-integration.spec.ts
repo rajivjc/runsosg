@@ -193,7 +193,7 @@ describe('Assignment display after logging', () => {
         { id: 'a2', name: 'Sarah', cues: 'Steady pace', avatar: null },
       ],
       loggedRuns: {
-        a1: { distance_km: 2.5, note: 'Great session' },
+        a1: { distance_km: 2.5, note: 'Great session', sync_source: null },
       },
       allAthletes: [],
     }
@@ -214,7 +214,7 @@ describe('Assignment display after logging', () => {
         { id: 'a2', name: 'Sarah', cues: 'Steady pace', avatar: null },
       ],
       loggedRuns: {
-        a1: { distance_km: 2.5, note: null },
+        a1: { distance_km: 2.5, note: null, sync_source: null },
       },
       allAthletes: [],
     }
@@ -263,8 +263,8 @@ describe('Assignment display after logging', () => {
         { id: 'a2', name: 'Sarah', cues: null, avatar: null },
       ],
       loggedRuns: {
-        a1: { distance_km: 2.5, note: null },
-        a2: { distance_km: 1.8, note: null },
+        a1: { distance_km: 2.5, note: null, sync_source: null },
+        a2: { distance_km: 1.8, note: null, sync_source: null },
       },
       allAthletes: [],
     }

@@ -218,7 +218,7 @@ describe('AssignmentCard data', () => {
         { id: 'a2', name: 'Sarah', cues: 'Steady pace', avatar: null },
       ],
       loggedRuns: {
-        a1: { distance_km: 2.5, note: 'Great session' },
+        a1: { distance_km: 2.5, note: 'Great session', sync_source: null },
       },
       allAthletes: [
         { id: 'a1', name: 'Nicholas', avatar: '🏃' },

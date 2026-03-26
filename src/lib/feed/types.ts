@@ -45,6 +45,7 @@ export interface PairingsReviewCardData {
 export interface AssignmentAthleteLoggedRun {
   distance_km: number | null
   note: string | null
+  sync_source: string | null
 }
 
 export interface AssignmentCardData {

@@ -41,6 +41,13 @@ type AthleteEntry = {
   photoPreview: string | null
 }
 
+export type StravaSyncedAthlete = {
+  id: string
+  name: string
+  avatar: string | null
+  distanceKm: number | null
+}
+
 type AllAthlete = {
   id: string
   name: string
@@ -54,6 +61,7 @@ type Props = {
   trainingSessionId: string
   sessionDate: string // YYYY-MM-DD
   assignedAthletes: AssignedAthlete[]
+  stravaSyncedAthletes?: StravaSyncedAthlete[]
   allAthletes?: AllAthlete[]
 }
 
@@ -64,6 +72,7 @@ export default function GroupLogRunSheet({
   trainingSessionId,
   sessionDate,
   assignedAthletes,
+  stravaSyncedAthletes = [],
   allAthletes,
 }: Props) {
   const [visible, setVisible] = useState(false)
@@ -271,6 +280,29 @@ export default function GroupLogRunSheet({
           <p className="text-xs text-text-muted text-center mb-5">
             Session on {sessionDate}
           </p>
+
+          {/* Strava-synced athletes (already logged) */}
+          {stravaSyncedAthletes.length > 0 && (
+            <div className="mb-4 space-y-2">
+              {stravaSyncedAthletes.map(a => (
+                <div
+                  key={a.id}
+                  className="flex items-center gap-2.5 border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 rounded-xl px-3 py-2.5"
+                >
+                  <span className="text-base leading-none">{a.avatar ?? '🏃'}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-bold text-text-primary">{a.name}</span>
+                    <div className="flex items-center gap-1 text-xs text-green-700 dark:text-green-400 mt-0.5">
+                      <span>✓</span>
+                      <span>
+                        {a.distanceKm != null ? `${a.distanceKm}km` : 'Run'} via Strava
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Athlete entries */}
           <div className="space-y-4">

@@ -381,7 +381,7 @@ async function buildCoachSessionCards(
       .single(),
     adminClient
       .from('sessions')
-      .select('training_session_id, athlete_id, distance_km, note')
+      .select('training_session_id, athlete_id, distance_km, note, sync_source')
       .in('training_session_id', sessionIds)
       .eq('status', 'completed'),
     adminClient
@@ -420,13 +420,14 @@ async function buildCoachSessionCards(
   }
 
   // Index logged runs by training_session_id → athlete_id
-  const loggedRunsBySession: Record<string, Record<string, { distance_km: number | null; note: string | null }>> = {}
+  const loggedRunsBySession: Record<string, Record<string, { distance_km: number | null; note: string | null; sync_source: string | null }>> = {}
   for (const r of loggedRuns ?? []) {
     if (!r.training_session_id) continue
     if (!loggedRunsBySession[r.training_session_id]) loggedRunsBySession[r.training_session_id] = {}
     loggedRunsBySession[r.training_session_id][r.athlete_id] = {
       distance_km: r.distance_km,
       note: r.note,
+      sync_source: r.sync_source ?? null,
     }
   }
 

@@ -12,6 +12,59 @@ import { getClub } from '@/lib/club'
 const RUN_SPORT_TYPES = ['Run', 'TrailRun', 'VirtualRun'] as const
 
 /**
+ * Find a published training session that overlaps with a Strava activity.
+ * Uses a ±2 hour window around session_start to account for timing variance.
+ * Returns the training_session_id if found, null otherwise.
+ */
+async function findMatchingTrainingSession(
+  activityStartDate: string,
+  athleteId: string
+): Promise<string | null> {
+  const activityTime = new Date(activityStartDate)
+  const windowMs = 2 * 60 * 60 * 1000 // 2 hours
+  const rangeStart = new Date(activityTime.getTime() - windowMs).toISOString()
+  const rangeEnd = new Date(activityTime.getTime() + windowMs).toISOString()
+
+  const { data: sessions } = await adminClient
+    .from('training_sessions')
+    .select('id, session_start')
+    .eq('status', 'published')
+    .gte('session_start', rangeStart)
+    .lte('session_start', rangeEnd)
+    .order('session_start', { ascending: true })
+    .limit(5)
+
+  if (!sessions || sessions.length === 0) return null
+
+  // Pick the closest session by time
+  let bestId: string | null = null
+  let bestDiff = Infinity
+  for (const s of sessions) {
+    const diff = Math.abs(new Date(s.session_start).getTime() - activityTime.getTime())
+    if (diff < bestDiff) {
+      bestDiff = diff
+      bestId = s.id
+    }
+  }
+
+  // Verify the athlete doesn't already have a different run linked to this training session
+  if (bestId) {
+    const { data: existingRun } = await adminClient
+      .from('sessions')
+      .select('id')
+      .eq('training_session_id', bestId)
+      .eq('athlete_id', athleteId)
+      .is('strava_deleted_at', null)
+      .maybeSingle()
+
+    // If there's already a manually-logged run for this athlete + training session, don't overwrite
+    if (existingRun) return null
+  }
+
+  return bestId
+}
+
+/**
  * Create or update a session for a single matched athlete.
  * Returns the session ID.
  */
@@ -350,6 +403,18 @@ export async function processStravaActivity(
       if (!sessionId) continue
 
       if (!firstSessionId) firstSessionId = sessionId
+
+      // Link to a nearby published training session (time-window match)
+      const trainingSessionId = await findMatchingTrainingSession(
+        activity.start_date,
+        athleteMatch.athleteId
+      )
+      if (trainingSessionId) {
+        await adminClient
+          .from('sessions')
+          .update({ training_session_id: trainingSessionId })
+          .eq('id', sessionId)
+      }
 
       // Send feel prompt only if this is a new session with no existing feel
       // and no feel_prompt notification already exists for this session
