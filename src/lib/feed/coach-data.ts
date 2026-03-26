@@ -344,7 +344,7 @@ async function buildCoachSessionCards(
 
   const sessionIds = visible.map(s => s.id)
 
-  // Batch fetch: coach RSVPs for this user, aggregate counts, assignments, logged runs
+  // Batch fetch: coach RSVPs, aggregate counts, assignments, logged runs, cues — all in parallel
   const [
     { data: myRsvps },
     { data: coachRsvpCounts },
@@ -353,6 +353,7 @@ async function buildCoachSessionCards(
     { data: userRow },
     { data: loggedRuns },
     { data: allActiveAthletes },
+    { data: allCueRows },
   ] = await Promise.all([
     adminClient
       .from('session_coach_rsvps')
@@ -389,6 +390,9 @@ async function buildCoachSessionCards(
       .select('id, name, avatar')
       .eq('active', true)
       .order('name'),
+    adminClient
+      .from('cues')
+      .select('athlete_id, best_cues'),
   ])
 
   const isAdmin = userRow?.role === 'admin'
@@ -438,21 +442,15 @@ async function buildCoachSessionCards(
     avatar: a.avatar,
   }))
 
-  // Fetch cues for assigned athletes
+  // Build cue lookup from pre-fetched data (already fetched in parallel above)
   const allAssignedAthleteIds = [...new Set(
     (myAssignments ?? []).map(a => a.athlete_id)
   )]
   const cuesByAthleteId: Record<string, string | null> = {}
-  if (allAssignedAthleteIds.length > 0) {
-    const { data: cueRows } = await adminClient
-      .from('cues')
-      .select('athlete_id, best_cues')
-      .in('athlete_id', allAssignedAthleteIds)
-    for (const c of cueRows ?? []) {
-      // best_cues is a string array — join the first few for a summary
-      const cues = c.best_cues
-      cuesByAthleteId[c.athlete_id] = cues && cues.length > 0 ? cues.slice(0, 2).join(', ') : null
-    }
+  for (const c of allCueRows ?? []) {
+    if (!allAssignedAthleteIds.includes(c.athlete_id)) continue
+    const cues = c.best_cues
+    cuesByAthleteId[c.athlete_id] = cues && cues.length > 0 ? cues.slice(0, 2).join(', ') : null
   }
 
   const cards: (CoachRsvpCardData | PairingsReviewCardData | AssignmentCardData)[] = []

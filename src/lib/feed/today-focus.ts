@@ -44,15 +44,20 @@ export async function getCoachFocusData(coachUserId: string, timezone = 'Asia/Si
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
   const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().split('T')[0]
 
-  // Fetch all session dates for accurate streak calculation (lightweight: date column only)
+  // Fetch session dates for streak calculation (2 years is generous for streak tracking)
   // and recent sessions for focus items (90 days, with athlete_id)
+  const twoYearsAgo = new Date()
+  twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
+  const twoYearsAgoStr = twoYearsAgo.toISOString().split('T')[0]
+
   const [{ data: allStreakDates }, { data: coachSessions }] = await Promise.all([
     adminClient
       .from('sessions')
       .select('date')
       .eq('coach_user_id', coachUserId)
       .eq('status', 'completed')
-      .is('strava_deleted_at', null),
+      .is('strava_deleted_at', null)
+      .gte('date', twoYearsAgoStr),
     adminClient
       .from('sessions')
       .select('date, athlete_id')

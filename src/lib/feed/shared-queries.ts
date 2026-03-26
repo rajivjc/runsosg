@@ -40,7 +40,7 @@ const getCachedBestWeek = unstable_cache(
   { revalidate: 300, tags: ['club-best-week'] }
 )
 
-export async function loadClubStats(): Promise<ClubStats> {
+async function _loadClubStats(): Promise<ClubStats> {
   const now = new Date()
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0]
@@ -89,6 +89,13 @@ export async function loadClubStats(): Promise<ClubStats> {
     totalDurationSeconds,
   }
 }
+
+// Cached wrapper — club stats change infrequently (new sessions trigger revalidation)
+export const loadClubStats = unstable_cache(
+  _loadClubStats,
+  ['club-stats'],
+  { revalidate: 60, tags: ['club-stats'] }
+)
 
 // ─── Cached milestone definitions ───────────────────────────────
 

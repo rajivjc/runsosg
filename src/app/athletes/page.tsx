@@ -62,7 +62,8 @@ export default async function AthletesPage({
       .eq('status', 'completed')
       .is('strava_deleted_at', null)
       .not('feel', 'is', null)
-      .order('date', { ascending: false }),
+      .order('date', { ascending: false })
+      .limit(500),
   ])
 
   const feelsByAthlete: Record<string, number[]> = {}

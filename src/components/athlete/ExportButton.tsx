@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import { Download } from 'lucide-react'
 import { getExportData } from '@/lib/export'
 import { formatSessionsAsCSV } from '@/lib/csv'
-import { generateProgressReport } from '@/lib/pdf-report'
 import { shareCsv } from '@/lib/utils/ios-download-fix'
 
 export default function ExportButton({ athleteId, clubName }: { athleteId: string; clubName?: string }) {
@@ -38,6 +37,7 @@ export default function ExportButton({ athleteId, clubName }: { athleteId: strin
           .replace(/\s+/g, '-') + '-sessions.csv'
         await shareCsv(csv, filename)
       } else {
+        const { generateProgressReport } = await import('@/lib/pdf-report')
         await generateProgressReport(result.data, result.athleteName, clubName)
       }
     } catch (err) {

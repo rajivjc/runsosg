@@ -1,6 +1,6 @@
 'use client'
 
-import { generateCertificatePdf, type CertificateData } from '@/lib/certificate'
+import type { CertificateData } from '@/lib/certificate'
 
 interface CertificateButtonProps {
   data: CertificateData
@@ -30,6 +30,7 @@ export default function CertificateButton({ data, variant = 'primary' }: Certifi
   async function handleClick(e: React.MouseEvent) {
     e.stopPropagation()
     try {
+      const { generateCertificatePdf } = await import('@/lib/certificate')
       await generateCertificatePdf(data)
     } catch {
       // User cancelled the share sheet — this is fine, not an error

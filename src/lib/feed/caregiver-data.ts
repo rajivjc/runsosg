@@ -252,105 +252,106 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
   const lastMonthStart = new Date(lastMonthEnd.getFullYear(), lastMonthEnd.getMonth(), 1).toISOString().split('T')[0]
   const lastMonthEndStr = lastMonthEnd.toISOString().split('T')[0]
 
-  let lastMonthSessions: { distance_km: number | null; duration_seconds: number | null }[] = []
-  if (caregiverAthlete) {
-    const { data: lmSessions } = await adminClient
-      .from('sessions')
-      .select('distance_km, duration_seconds')
-      .eq('athlete_id', caregiverAthlete.id)
-      .eq('status', 'completed')
-      .is('strava_deleted_at', null)
-      .gte('date', lastMonthStart)
-      .lte('date', lastMonthEndStr)
-    lastMonthSessions = (lmSessions ?? []) as typeof lastMonthSessions
-  }
-
   const thisMonthSessions = (cgSessions ?? []) as { id: string; date: string; distance_km: number | null; feel: number | null }[]
-
-  // Compute summary stats
-  const thisMonthKm = thisMonthSessions.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
   const thisMonthCount = thisMonthSessions.length
-  const lastMonthKm = lastMonthSessions.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
-  const lastMonthCount = lastMonthSessions.length
 
-  // We need duration_seconds for pace calculation — fetch this month's sessions with duration
-  let thisMonthDurationTotal = 0
-  if (caregiverAthlete && thisMonthCount > 0) {
-    const { data: durSessions } = await adminClient
-      .from('sessions')
-      .select('duration_seconds')
-      .eq('athlete_id', caregiverAthlete.id)
-      .eq('status', 'completed')
-      .is('strava_deleted_at', null)
-      .gte('date', monthStart)
-    thisMonthDurationTotal = (durSessions ?? []).reduce((sum: number, s: any) => sum + (s.duration_seconds ?? 0), 0)
-  }
-
-  // ─── Working on coach name lookup ────────────────────────────
-  const workingOnUpdatedBy = (caregiverAthlete as any)?.working_on_updated_by as string | null
-  let workingOnCoachName: string | null = null
-  if (workingOnUpdatedBy) {
-    const { data: coachRow } = await adminClient
-      .from('users')
-      .select('name')
-      .eq('id', workingOnUpdatedBy)
-      .single()
-    workingOnCoachName = coachRow?.name ?? null
-  }
-
-  // ─── Digest teaser ───────────────────────────────────────────
-  let digestTeaser: { text: string; weekLabel: string } | null = null
-  try {
-    const digestData = await getCaregiverDigestData(userId)
-    if (digestData) {
-      const narrative = generateCaregiverNarrative(digestData)
-      digestTeaser = { text: generateTeaserText(narrative), weekLabel: digestData.weekLabel }
-    }
-  } catch {
-    // Non-critical — teaser just doesn't show
-  }
-
-  // ─── Plan data (focus areas + goal tracking) ────────────────
+  // ─── Plan data (focus areas + goal tracking) — compute early for parallel queries ─
   const allFocusAreas = (focusAreasRows ?? []) as { title: string; progress_note: string | null; progress_level: string | null; status: string; created_by: string | null; updated_at: string | null; achieved_at: string | null }[]
   const activeFocus = allFocusAreas.find(f => f.status === 'active') ?? null
   const recentAchievedFocus = allFocusAreas.find(f => f.status === 'achieved') ?? null
 
-  // Look up focus coach name
-  let focusCoachName: string | null = null
-  if (activeFocus?.created_by) {
-    const { data: focusCoachRow } = await adminClient
-      .from('users')
-      .select('name')
-      .eq('id', activeFocus.created_by)
-      .single()
-    focusCoachName = focusCoachRow?.name ?? null
-  }
-
-  // Compute goal progress if athlete has goal tracking fields
+  const workingOnUpdatedBy = (caregiverAthlete as any)?.working_on_updated_by as string | null
   const athleteGoalType = (caregiverAthlete as any)?.goal_type as string | null ?? null
   const athleteGoalTarget = (caregiverAthlete as any)?.goal_target as number | null ?? null
   const athleteRunningGoal = (caregiverAthlete as any)?.running_goal as string | null ?? null
 
+  // ─── Parallel batch: monthly summary, coach names, goal data, digest, session cards ─
+  const [
+    lastMonthSessionsResult,
+    thisMonthDurationResult,
+    workingOnCoachResult,
+    focusCoachResult,
+    goalSessionsResult,
+    digestTeaserResult,
+    sessionCards,
+  ] = await Promise.all([
+    // Last month sessions for comparison
+    caregiverAthlete
+      ? adminClient
+          .from('sessions')
+          .select('distance_km, duration_seconds')
+          .eq('athlete_id', caregiverAthlete.id)
+          .eq('status', 'completed')
+          .is('strava_deleted_at', null)
+          .gte('date', lastMonthStart)
+          .lte('date', lastMonthEndStr)
+      : Promise.resolve({ data: null }),
+    // This month duration for pace calculation
+    caregiverAthlete && thisMonthCount > 0
+      ? adminClient
+          .from('sessions')
+          .select('duration_seconds')
+          .eq('athlete_id', caregiverAthlete.id)
+          .eq('status', 'completed')
+          .is('strava_deleted_at', null)
+          .gte('date', monthStart)
+      : Promise.resolve({ data: null }),
+    // Working on coach name
+    workingOnUpdatedBy
+      ? adminClient.from('users').select('name').eq('id', workingOnUpdatedBy).single()
+      : Promise.resolve({ data: null }),
+    // Focus coach name
+    activeFocus?.created_by
+      ? adminClient.from('users').select('name').eq('id', activeFocus.created_by).single()
+      : Promise.resolve({ data: null }),
+    // Goal progress sessions
+    athleteGoalType && athleteGoalTarget && caregiverAthlete
+      ? adminClient
+          .from('sessions')
+          .select('distance_km')
+          .eq('athlete_id', caregiverAthlete.id)
+          .eq('status', 'completed')
+          .is('strava_deleted_at', null)
+      : Promise.resolve({ data: null }),
+    // Digest teaser (non-critical)
+    (async (): Promise<{ text: string; weekLabel: string } | null> => {
+      try {
+        const digestData = await getCaregiverDigestData(userId)
+        if (digestData) {
+          const narrative = generateCaregiverNarrative(digestData)
+          return { text: generateTeaserText(narrative), weekLabel: digestData.weekLabel }
+        }
+        return null
+      } catch {
+        return null
+      }
+    })(),
+    // Session cards
+    caregiverAthlete
+      ? buildCaregiverSessionCards(userId, caregiverAthlete.id, club)
+      : Promise.resolve([]),
+  ])
+
+  const lastMonthSessions = (lastMonthSessionsResult.data ?? []) as { distance_km: number | null; duration_seconds: number | null }[]
+  const thisMonthDurationTotal = (thisMonthDurationResult.data ?? []).reduce((sum: number, s: any) => sum + (s.duration_seconds ?? 0), 0)
+  const workingOnCoachName = workingOnCoachResult.data?.name ?? null
+  const focusCoachName = focusCoachResult.data?.name ?? null
+  const digestTeaser = digestTeaserResult
+
+  // Compute summary stats
+  const thisMonthKm = thisMonthSessions.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
+  const lastMonthKm = lastMonthSessions.reduce((sum, s) => sum + (s.distance_km ?? 0), 0)
+  const lastMonthCount = lastMonthSessions.length
+
+  // Compute goal progress
   let goalProgress: import('@/lib/goals').GoalProgress | null = null
   if (athleteGoalType && athleteGoalTarget && caregiverAthlete) {
-    // Use all completed sessions for goal progress (not just this month)
-    const { data: allSessions } = await adminClient
-      .from('sessions')
-      .select('distance_km')
-      .eq('athlete_id', caregiverAthlete.id)
-      .eq('status', 'completed')
-      .is('strava_deleted_at', null)
     goalProgress = calculateGoalProgress(
       athleteGoalType as GoalType,
       Number(athleteGoalTarget),
-      (allSessions ?? []) as { distance_km: number | null }[]
+      (goalSessionsResult.data ?? []) as { distance_km: number | null }[]
     )
   }
-
-  // ─── Session cards (training sessions) ────────────────────────
-  const sessionCards = caregiverAthlete
-    ? await buildCaregiverSessionCards(userId, caregiverAthlete.id, club)
-    : []
 
   // ─── Caregiver onboarding ────────────────────────────────────
   const caregiverOnboarding = computeCaregiverOnboardingState({
