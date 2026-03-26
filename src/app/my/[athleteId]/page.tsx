@@ -115,15 +115,16 @@ export default async function MyJourneyPage({ params }: PageProps) {
     .sort(([, a], [, b]) => b - a)[0]?.[0] ?? null
   const primaryCoachCount = primaryCoachId ? coachSessionCounts[primaryCoachId] : 0
 
-  let primaryCoachName: string | null = null
-  if (primaryCoachId && primaryCoachCount >= 3) {
-    const { data: coachUser } = await adminClient
-      .from('users')
-      .select('name, email')
-      .eq('id', primaryCoachId)
-      .single()
-    primaryCoachName = coachUser?.name ?? coachUser?.email?.split('@')[0] ?? null
-  }
+  // Fetch coach name and club config in parallel
+  const [coachUserResult, club] = await Promise.all([
+    primaryCoachId && primaryCoachCount >= 3
+      ? adminClient.from('users').select('name, email').eq('id', primaryCoachId).single()
+      : Promise.resolve({ data: null }),
+    getClub(),
+  ])
+  const primaryCoachName = coachUserResult.data
+    ? (coachUserResult.data.name ?? coachUserResult.data.email?.split('@')[0] ?? null)
+    : null
 
   // Compute total distance
   const totalKm = allSessions.reduce(
@@ -140,9 +141,6 @@ export default async function MyJourneyPage({ params }: PageProps) {
       allSessions
     )
   }
-
-  // Compute streak using the shared streaks module
-  const club = await getClub()
   const streak = calculateWeeklyStreak(allSessions.map(s => s.date), club.timezone)
 
   // Compute personal best (longest run)

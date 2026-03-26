@@ -30,22 +30,20 @@ export default async function AthletesPage({
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: stravaConnection } = user
-    ? await adminClient
-        .from('strava_connections')
-        .select('user_id')
-        .eq('user_id', user.id)
-        .maybeSingle()
-    : { data: null }
-
-  const { data: userRow } = user
-    ? await adminClient.from('users').select('role').eq('id', user.id).single()
-    : { data: null }
-  const isAdmin = userRow?.role === 'admin'
-  const isCaregiver = userRow?.role === 'caregiver'
-  const showStravaBanner = !!user && !stravaConnection && !isCaregiver
-
-  const [{ data: athletes }, { data: sessions }, { data: recentFeels }] = await Promise.all([
+  // Fetch user metadata and athlete data in a single parallel batch
+  const [
+    { data: stravaConnection },
+    { data: userRow },
+    { data: athletes },
+    { data: sessions },
+    { data: recentFeels },
+  ] = await Promise.all([
+    user
+      ? adminClient.from('strava_connections').select('user_id').eq('user_id', user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? adminClient.from('users').select('role').eq('id', user.id).single()
+      : Promise.resolve({ data: null }),
     adminClient
       .from('athletes')
       .select('id, name, photo_url, active, avatar')
@@ -66,6 +64,10 @@ export default async function AthletesPage({
       .limit(500),
   ])
 
+  const isAdmin = userRow?.role === 'admin'
+  const isCaregiver = userRow?.role === 'caregiver'
+  const showStravaBanner = !!user && !stravaConnection && !isCaregiver
+
   const feelsByAthlete: Record<string, number[]> = {}
   for (const s of recentFeels ?? []) {
     if (!feelsByAthlete[s.athlete_id]) feelsByAthlete[s.athlete_id] = []
@@ -74,21 +76,26 @@ export default async function AthletesPage({
     }
   }
 
-  const athleteList: AthleteListItem[] = (athletes ?? []).map((athlete) => {
-    const athleteSessions = (sessions ?? []).filter(
-      (s) => s.athlete_id === athlete.id
-    )
-    const lastSession = athleteSessions[0] ?? null
-    return {
-      id: athlete.id,
-      name: athlete.name,
-      photoUrl: athlete.photo_url,
-      avatar: athlete.avatar ?? null,
-      totalSessions: athleteSessions.length,
-      lastSessionDate: lastSession ? (lastSession.date as string) : null,
-      recentFeels: feelsByAthlete[athlete.id] ?? [],
+  // Index sessions by athlete_id for O(n) lookup instead of O(n*m) filtering
+  const sessionCountByAthlete: Record<string, number> = {}
+  const lastSessionByAthlete: Record<string, string> = {}
+  for (const s of sessions ?? []) {
+    sessionCountByAthlete[s.athlete_id] = (sessionCountByAthlete[s.athlete_id] ?? 0) + 1
+    // Sessions are ordered by date desc, so first occurrence is the latest
+    if (!lastSessionByAthlete[s.athlete_id]) {
+      lastSessionByAthlete[s.athlete_id] = s.date as string
     }
-  })
+  }
+
+  const athleteList: AthleteListItem[] = (athletes ?? []).map((athlete) => ({
+    id: athlete.id,
+    name: athlete.name,
+    photoUrl: athlete.photo_url,
+    avatar: athlete.avatar ?? null,
+    totalSessions: sessionCountByAthlete[athlete.id] ?? 0,
+    lastSessionDate: lastSessionByAthlete[athlete.id] ?? null,
+    recentFeels: feelsByAthlete[athlete.id] ?? [],
+  }))
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 pb-28">

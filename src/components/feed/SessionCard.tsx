@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import Link from 'next/link'
 import { formatDate, formatDistance, formatDuration, formatPace } from '@/lib/utils/dates'
 import KudosButton from '@/components/feed/KudosButton'
@@ -27,7 +28,7 @@ interface Props {
   userId: string | null
 }
 
-export default function SessionCard({ session: s, badges, kudosCount, kudosGivers, myKudos, isReadOnly, userId }: Props) {
+export default memo(function SessionCard({ session: s, badges, kudosCount, kudosGivers, myKudos, isReadOnly, userId }: Props) {
   const hasMilestone = badges.length > 0
   const feelColor = s.feel ? (FEEL_BORDER[s.feel] ?? 'border-l-gray-200') : 'border-l-gray-200'
   const cardBg = hasMilestone ? 'bg-amber-50/40 dark:bg-amber-900/10' : 'bg-surface'
@@ -109,4 +110,4 @@ export default function SessionCard({ session: s, badges, kudosCount, kudosGiver
   return (
     <Link href={`/athletes/${s.athlete_id}`}>{card}</Link>
   )
-}
+})

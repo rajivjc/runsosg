@@ -19,19 +19,20 @@ export default async function FeedPage() {
 
   if (!user) return null
 
+  // Fetch role — the feed data loaders already fetch user role internally,
+  // so this is just to decide which loader to call
   const { data: userRow } = await adminClient
     .from('users')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  const isCaregiver = userRow?.role === 'caregiver'
-
-  if (isCaregiver) {
+  if (userRow?.role === 'caregiver') {
     const data = await loadCaregiverFeedData(user.id)
     return <CaregiverFeed data={data} userId={user.id} />
   }
 
+  // Coach/admin: load feed data and priorities in parallel
   const [data, priorities] = await Promise.all([
     loadCoachFeedData(user.id),
     getCoachPriorities(user.id),

@@ -41,7 +41,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
   // Kick off focus data early (runs concurrently with everything else)
   const coachFocusPromise = getCoachFocusData(userId).catch(() => null)
 
-  // ─── Batch 1: User data + sessions (with joins) + milestones + coach-specific ──
+  // ─── Batch 1: User data + sessions (with joins) + milestones + coach-specific + club ──
   const [
     { data: userRow },
     { data: rawSessions },
@@ -54,6 +54,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     clubStats,
     { data: weeklyStatsResult },
     { data: rawAthleteMessages },
+    club,
   ] = await Promise.all([
     adminClient.from('users').select('role, name').eq('id', userId).single(),
     // Issue 3: Supabase joins fetch athlete + coach names in one query
@@ -91,6 +92,8 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
       .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false })
       .limit(10),
+    // Club config (cached, 60s) — moved here to enable parallel session cards
+    getClub(),
   ])
 
   // ─── Batch 2: Only kudos lookups (athlete/coach names come from joins) ──
@@ -158,14 +161,11 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
   oneDayAgo.setDate(oneDayAgo.getDate() - 1)
   const recentCelebrationRaw = (rawMilestones ?? []).filter(m => m.achieved_at && new Date(m.achieved_at) >= oneDayAgo)
 
-  // Fetch club name and coach names for celebration milestones
+  // Fetch coach names for celebration milestones (club already fetched in Batch 1)
   const celebrationCoachIds = [...new Set(recentCelebrationRaw.map(m => (m as { awarded_by?: string }).awarded_by).filter(Boolean))] as string[]
-  const [club, { data: celebCoachRows }] = await Promise.all([
-    getClub(),
-    celebrationCoachIds.length > 0
-      ? adminClient.from('users').select('id, name').in('id', celebrationCoachIds)
-      : Promise.resolve({ data: [] as { id: string; name: string | null }[] }),
-  ])
+  const { data: celebCoachRows } = celebrationCoachIds.length > 0
+    ? await adminClient.from('users').select('id, name').in('id', celebrationCoachIds)
+    : { data: [] as { id: string; name: string | null }[] }
   const clubName = club.name
   const celebCoachNameMap = Object.fromEntries((celebCoachRows ?? []).map(u => [u.id, u.name]))
 
@@ -244,23 +244,23 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     created_at: m.created_at,
   }))
 
-  // ─── Session cards (training sessions) ────────────────────────
-  const sessionCards = await buildCoachSessionCards(userId, club)
-
-  // ─── Await focus data ──────────────────────────────────────────
-  const coachFocus = await coachFocusPromise
-
-  // ─── Digest teaser ───────────────────────────────────────────
-  let digestTeaser: { text: string; weekLabel: string } | null = null
-  try {
-    const digestData = await getCoachDigestData(userId)
-    if (digestData) {
-      const narrative = generateCoachNarrative(digestData)
-      digestTeaser = { text: generateTeaserText(narrative), weekLabel: digestData.weekLabel }
-    }
-  } catch {
-    // Non-critical — teaser just doesn't show
-  }
+  // ─── Session cards + digest teaser + focus (all in parallel) ──
+  const [sessionCards, coachFocus, digestTeaser] = await Promise.all([
+    buildCoachSessionCards(userId, club),
+    coachFocusPromise,
+    (async (): Promise<{ text: string; weekLabel: string } | null> => {
+      try {
+        const digestData = await getCoachDigestData(userId)
+        if (digestData) {
+          const narrative = generateCoachNarrative(digestData)
+          return { text: generateTeaserText(narrative), weekLabel: digestData.weekLabel }
+        }
+        return null
+      } catch {
+        return null
+      }
+    })(),
+  ])
 
   return {
     user: { role: userRow?.role ?? 'coach', name: userRow?.name ?? null },

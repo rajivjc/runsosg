@@ -38,7 +38,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
   weekAgo.setDate(weekAgo.getDate() - 7)
   const weekAgoStr = weekAgo.toISOString().split('T')[0]
 
-  // ─── Batch 1: User + feed (with joins) + milestones + caregiver's athlete ──
+  // ─── Batch 1: User + feed (with joins) + milestones + caregiver's athlete + club ──
   const [
     { data: userRow },
     { data: rawSessions },
@@ -46,6 +46,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     { data: caregiverAthlete },
     clubStats,
     { data: weeklyStatsResult },
+    club,
   ] = await Promise.all([
     adminClient.from('users').select('role, name').eq('id', userId).single(),
     // Issue 3: Supabase joins fetch athlete + coach names in one query
@@ -66,6 +67,8 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     loadClubStats(),
     // Issue 8: DB-level weekly stats instead of JS filtering
     adminClient.rpc('get_weekly_stats', { since: weekAgoStr }),
+    // Club config (cached, 60s) — moved here for earlier availability
+    getClub(),
   ])
 
   // Start caregiver focus concurrently if athlete exists
@@ -165,14 +168,11 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
   oneDayAgo.setDate(oneDayAgo.getDate() - 1)
   const recentCelebrationRaw = (rawMilestones ?? []).filter(m => m.achieved_at && new Date(m.achieved_at) >= oneDayAgo)
 
-  // Fetch club name and coach names for celebration milestones
+  // Fetch coach names for celebration milestones (club already fetched in Batch 1)
   const celebrationCoachIds = [...new Set(recentCelebrationRaw.map(m => (m as { awarded_by?: string }).awarded_by).filter(Boolean))] as string[]
-  const [club, { data: celebCoachRows }] = await Promise.all([
-    getClub(),
-    celebrationCoachIds.length > 0
-      ? adminClient.from('users').select('id, name').in('id', celebrationCoachIds)
-      : Promise.resolve({ data: [] as { id: string; name: string | null }[] }),
-  ])
+  const { data: celebCoachRows } = celebrationCoachIds.length > 0
+    ? await adminClient.from('users').select('id, name').in('id', celebrationCoachIds)
+    : { data: [] as { id: string; name: string | null }[] }
   const clubName = club.name
   const celebCoachNameMap = Object.fromEntries((celebCoachRows ?? []).map(u => [u.id, u.name]))
 

@@ -6,6 +6,7 @@
  * and background tint match the variant colour.
  */
 
+import { memo } from 'react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -35,7 +36,7 @@ const VARIANT_STYLES: Record<Variant, { bg: string; border: string }> = {
   },
 }
 
-export default function AthleteStatusCard({
+export default memo(function AthleteStatusCard({
   athleteId,
   athleteName,
   avatar,
@@ -67,4 +68,4 @@ export default function AthleteStatusCard({
       </div>
     </Link>
   )
-}
+})

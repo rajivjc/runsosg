@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import SessionCard from '@/components/feed/SessionCard'
 import type { FeedSession, MilestoneBadge } from '@/lib/feed/types'
 
@@ -12,7 +13,7 @@ interface Props {
   userId: string | null
 }
 
-export default function SessionGroup({
+export default memo(function SessionGroup({
   label,
   sessions,
   milestonesBySession,
@@ -44,4 +45,4 @@ export default function SessionGroup({
       </div>
     </div>
   )
-}
+})

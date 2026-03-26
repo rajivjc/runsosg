@@ -189,8 +189,7 @@ export default async function AthleteHubPage({ params }: PageProps) {
 
   const clubName = club.name
 
-  // Build kudos data maps
-  // Fetch giver names separately (kudos.user_id → auth.users, not public.users, so join fails)
+  // Fetch kudos giver names in parallel (kudos.user_id → auth.users, not public.users, so join fails)
   const kudosGiverIds = [...new Set((kudosRows ?? []).map((k: any) => k.user_id as string))]
   const { data: kudosGiverUsers } = kudosGiverIds.length > 0
     ? await adminClient.from('users').select('id, name').in('id', kudosGiverIds)
