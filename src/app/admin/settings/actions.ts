@@ -32,7 +32,24 @@ export async function updateClubSettings(
   const timezone = (formData.get('timezone') as string ?? '').trim() || 'Asia/Singapore'
   const stravaHashtagPrefix = (formData.get('strava_hashtag_prefix') as string ?? '').trim() || null
 
+  // Recurring session template fields
+  const recurringDayStr = (formData.get('recurring_session_day') as string ?? '').trim()
+  const recurringSessionDay = recurringDayStr !== '' ? parseInt(recurringDayStr, 10) : null
+  const recurringSessionTime = (formData.get('recurring_session_time') as string ?? '').trim() || null
+  const recurringSessionEnd = (formData.get('recurring_session_end') as string ?? '').trim() || null
+  const recurringSessionLocation = (formData.get('recurring_session_location') as string ?? '').trim() || null
+  const maxAthletesStr = (formData.get('max_athletes_per_coach') as string ?? '').trim()
+  const maxAthletesPerCoach = maxAthletesStr ? parseInt(maxAthletesStr, 10) : 3
+  const recurringAutoDraft = formData.get('recurring_auto_draft') === 'true'
+
   if (!name) return { error: 'Club name is required.' }
+
+  if (recurringSessionDay != null && (recurringSessionDay < 0 || recurringSessionDay > 6 || isNaN(recurringSessionDay))) {
+    return { error: 'Invalid day of week for recurring session.' }
+  }
+  if (maxAthletesPerCoach < 1 || maxAthletesPerCoach > 10 || isNaN(maxAthletesPerCoach)) {
+    return { error: 'Max athletes per coach must be between 1 and 10.' }
+  }
 
   function isValidTimezone(tz: string): boolean {
     try {
@@ -66,6 +83,12 @@ export async function updateClubSettings(
         locale,
         timezone,
         strava_hashtag_prefix: stravaHashtagPrefix,
+        recurring_session_day: recurringSessionDay,
+        recurring_session_time: recurringSessionTime,
+        recurring_session_end: recurringSessionEnd,
+        recurring_session_location: recurringSessionLocation,
+        recurring_auto_draft: recurringAutoDraft,
+        max_athletes_per_coach: maxAthletesPerCoach,
         updated_at: new Date().toISOString(),
       })
       .eq('id', existing.id)
@@ -85,6 +108,12 @@ export async function updateClubSettings(
         locale,
         strava_hashtag_prefix: stravaHashtagPrefix,
         timezone,
+        recurring_session_day: recurringSessionDay,
+        recurring_session_time: recurringSessionTime,
+        recurring_session_end: recurringSessionEnd,
+        recurring_session_location: recurringSessionLocation,
+        recurring_auto_draft: recurringAutoDraft,
+        max_athletes_per_coach: maxAthletesPerCoach,
         updated_at: new Date().toISOString(),
       })
 

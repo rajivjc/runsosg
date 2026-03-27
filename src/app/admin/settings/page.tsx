@@ -51,6 +51,12 @@ export default async function AdminSettingsPage() {
           timezone={club.timezone ?? 'Asia/Singapore'}
           locale={club.locale}
           stravaHashtagPrefix={club.strava_hashtag_prefix}
+          recurringSessionDay={club.recurring_session_day}
+          recurringSessionTime={club.recurring_session_time}
+          recurringSessionEnd={club.recurring_session_end}
+          recurringSessionLocation={club.recurring_session_location}
+          recurringAutoDraft={club.recurring_auto_draft}
+          maxAthletesPerCoach={club.max_athletes_per_coach}
         />
       </div>
     </main>
