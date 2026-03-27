@@ -13,6 +13,12 @@ type ClubSettingsFormProps = {
   timezone: string
   locale: string
   stravaHashtagPrefix: string | null
+  recurringSessionDay: number | null
+  recurringSessionTime: string | null
+  recurringSessionEnd: string | null
+  recurringSessionLocation: string | null
+  recurringAutoDraft: boolean
+  maxAthletesPerCoach: number
 }
 
 function SubmitButton() {
@@ -29,6 +35,30 @@ function SubmitButton() {
 }
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+const DAYS_OF_WEEK = [
+  { value: '0', label: 'Sunday' },
+  { value: '1', label: 'Monday' },
+  { value: '2', label: 'Tuesday' },
+  { value: '3', label: 'Wednesday' },
+  { value: '4', label: 'Thursday' },
+  { value: '5', label: 'Friday' },
+  { value: '6', label: 'Saturday' },
+]
+
+const TIME_OPTIONS = [
+  '06:00', '06:30', '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+  '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+  '18:00', '18:30', '19:00', '19:30', '20:00',
+]
+
+function formatTime24to12(time: string): string {
+  const [h, m] = time.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return `${hour12}:${String(m).padStart(2, '0')} ${ampm}`
+}
 
 const TIMEZONES = [
   { value: 'Pacific/Auckland', label: 'Auckland (UTC+12)' },
@@ -62,6 +92,12 @@ export default function ClubSettingsForm({
   timezone,
   locale,
   stravaHashtagPrefix,
+  recurringSessionDay,
+  recurringSessionTime,
+  recurringSessionEnd,
+  recurringSessionLocation,
+  recurringAutoDraft,
+  maxAthletesPerCoach,
 }: ClubSettingsFormProps) {
   const [state, formAction] = useFormState(updateClubSettings, {})
 
@@ -179,6 +215,102 @@ export default function ClubSettingsForm({
         >
           {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
         </select>
+      </div>
+
+      {/* ── Recurring Training Session Template ── */}
+      <div className="border-t border-border pt-4 mt-4">
+        <h3 className="text-sm font-semibold text-text-primary mb-3">Recurring Training Session</h3>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="recurring_session_day" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+              Day of week
+            </label>
+            <select
+              id="recurring_session_day"
+              name="recurring_session_day"
+              defaultValue={recurringSessionDay != null ? String(recurringSessionDay) : ''}
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+            >
+              <option value="">Not set</option>
+              {DAYS_OF_WEEK.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="recurring_session_time" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+              Start time
+            </label>
+            <select
+              id="recurring_session_time"
+              name="recurring_session_time"
+              defaultValue={recurringSessionTime ?? ''}
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+            >
+              <option value="">Not set</option>
+              {TIME_OPTIONS.map(t => <option key={t} value={t}>{formatTime24to12(t)}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          <div>
+            <label htmlFor="recurring_session_end" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+              End time
+            </label>
+            <select
+              id="recurring_session_end"
+              name="recurring_session_end"
+              defaultValue={recurringSessionEnd ?? ''}
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+            >
+              <option value="">Not set</option>
+              {TIME_OPTIONS.map(t => <option key={t} value={t}>{formatTime24to12(t)}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="max_athletes_per_coach" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+              Max athletes per coach
+            </label>
+            <select
+              id="max_athletes_per_coach"
+              name="max_athletes_per_coach"
+              defaultValue={String(maxAthletesPerCoach)}
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+            >
+              {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+                <option key={n} value={String(n)}>{n}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <label htmlFor="recurring_session_location" className="text-[10px] font-medium text-text-muted uppercase tracking-wide">
+            Location
+          </label>
+          <input
+            id="recurring_session_location"
+            name="recurring_session_location"
+            type="text"
+            defaultValue={recurringSessionLocation ?? ''}
+            placeholder="e.g. Fort Canning Park"
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
+          />
+        </div>
+
+        <div className="mt-3 flex items-center gap-2">
+          <input
+            id="recurring_auto_draft"
+            name="recurring_auto_draft"
+            type="checkbox"
+            defaultChecked={recurringAutoDraft}
+            value="true"
+            className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500"
+          />
+          <label htmlFor="recurring_auto_draft" className="text-sm text-text-secondary">
+            Auto-create draft session each week
+          </label>
+        </div>
       </div>
 
       <div>
