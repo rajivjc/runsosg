@@ -22,3 +22,6 @@ Thumbs.db
 .env.test
 supabase/.temp
 tsconfig.tsbuildinfo
+
+# Landing page source screenshots (unprocessed)
+scripts/landing-source/
