@@ -22,77 +22,17 @@ interface ImageConfig {
   blurRegions: BlurRegion[];
 }
 
+// No blur regions — data is dummy, so names don't need redacting.
+// The blur region definitions are kept commented out for future reference
+// when real user data is used.
 const images: ImageConfig[] = [
-  {
-    // 731x1568, cropped: 731x1480
-    sourceFile: 'coach-feed.jpeg',
-    outputFile: 'landing-coach-feed.png',
-    blurRegions: [
-      { x: 40, y: 0, w: 420, h: 65 },      // "Good morning, Rajiv"
-      { x: 100, y: 990, w: 260, h: 70 },    // "Wei Jie Tan" under NEEDS ATTENTION
-      { x: 100, y: 1160, w: 260, h: 70 },   // "Sarah Chen" under GOING QUIET
-    ],
-  },
-  {
-    // 724x1568, cropped: 724x1480
-    sourceFile: 'athlete-journey.png',
-    outputFile: 'landing-athlete-journey.png',
-    blurRegions: [
-      { x: 100, y: 175, w: 530, h: 80 },   // "Hi Wei Jie Tan!"
-      { x: 170, y: 700, w: 380, h: 160 },   // "Your coach" + "Rajiv C" + "18 sessions"
-    ],
-  },
-  {
-    // 774x1501, cropped: 774x1413
-    sourceFile: 'milestone.jpeg',
-    outputFile: 'landing-milestone.png',
-    blurRegions: [
-      { x: 100, y: 440, w: 580, h: 110 },  // "Wei Jie Tan" large name
-      { x: 170, y: 680, w: 440, h: 55 },    // "Coached by Rajiv C"
-    ],
-  },
-  {
-    // 775x1568, cropped: 775x1480
-    sourceFile: 'caregiver.jpeg',
-    outputFile: 'landing-caregiver.png',
-    blurRegions: [
-      { x: 50, y: 100, w: 620, h: 120 },   // "Wei chose this avatar" + "Here's how Wei Jie Tan"
-      { x: 150, y: 500, w: 470, h: 55 },    // "View Wei's journey story"
-      { x: 25, y: 770, w: 350, h: 80 },     // "Wei Jie Tan Attending"
-      { x: 30, y: 1040, w: 580, h: 70 },    // "WHAT COACHES ARE SAYING ABOUT WEI"
-      { x: 60, y: 1100, w: 620, h: 200 },   // Quote body with "Wei Jie" mentions
-      { x: 80, y: 1320, w: 250, h: 60 },    // "Rajiv C" at quote attribution
-    ],
-  },
-  {
-    // 724x1568, cropped: 724x1480
-    sourceFile: 'session.png',
-    outputFile: 'landing-session.png',
-    blurRegions: [
-      { x: 20, y: 270, w: 710, h: 260 },   // COACHES section (all names)
-      { x: 20, y: 530, w: 710, h: 270 },    // ATHLETES section (all names)
-      { x: 20, y: 800, w: 710, h: 420 },    // ALL PAIRINGS section (all names, extends to bottom)
-    ],
-  },
-  {
-    // 724x1568, cropped: 724x1480
-    sourceFile: 'cues.png',
-    outputFile: 'landing-cues.png',
-    blurRegions: [
-      { x: 30, y: 0, w: 260, h: 55 },      // "Wei Jie Tan" header
-    ],
-  },
-  {
-    // 724x1568, cropped: 724x1480
-    sourceFile: 'club-stats.png',
-    outputFile: 'landing-club-stats.png',
-    blurRegions: [
-      { x: 40, y: 0, w: 550, h: 150 },     // PB notifications (all names)
-      { x: 40, y: 540, w: 680, h: 100 },    // Filter pills with first names
-      { x: 25, y: 700, w: 440, h: 260 },    // First session card ("Rajiv C ran with" + "Arun Kumar")
-      { x: 25, y: 1000, w: 440, h: 260 },   // Second session card ("Rajiv C ran with" + "Danish Rizal")
-    ],
-  },
+  { sourceFile: 'coach-feed.jpeg', outputFile: 'landing-coach-feed.png', blurRegions: [] },
+  { sourceFile: 'athlete-journey.png', outputFile: 'landing-athlete-journey.png', blurRegions: [] },
+  { sourceFile: 'milestone.jpeg', outputFile: 'landing-milestone.png', blurRegions: [] },
+  { sourceFile: 'caregiver.jpeg', outputFile: 'landing-caregiver.png', blurRegions: [] },
+  { sourceFile: 'session.png', outputFile: 'landing-session.png', blurRegions: [] },
+  { sourceFile: 'cues.png', outputFile: 'landing-cues.png', blurRegions: [] },
+  { sourceFile: 'club-stats.png', outputFile: 'landing-club-stats.png', blurRegions: [] },
 ];
 
 async function processImage(config: ImageConfig): Promise<void> {
