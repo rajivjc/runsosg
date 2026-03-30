@@ -15,7 +15,7 @@ Running Club Hub handles personal data for athletes with special needs, includin
 If you discover a security vulnerability, please report it responsibly:
 
 1. **Do NOT** open a public GitHub issue for security vulnerabilities.
-2. Email **security@sosg.run** (or the address in the `CONTACT_EMAIL` environment variable for your deployment) with:
+2. Email the address configured in the `CONTACT_EMAIL` environment variable for your deployment with:
    - A description of the vulnerability
    - Steps to reproduce the issue
    - Potential impact assessment

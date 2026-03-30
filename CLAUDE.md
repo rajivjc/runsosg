@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A Next.js 14 web application for managing a running club for athletes with special needs. The club name, timezone, and locale are all configured dynamically from the `clubs` table in the database. Coaches log runs (manually or via Strava sync), track athlete progress through milestones, record coaching cues, write notes, and celebrate achievements. Caregivers get read-only access to their linked athlete with the ability to send cheers and view milestone celebrations. Athletes themselves can access their own PIN-protected personal page to view their running journey, check in with their mood, pick goals, choose an avatar, favourite their best runs, and message their coach.
+Kita is a Next.js 14 web application for managing a running club for athletes with special needs. The club name, timezone, and locale are all configured dynamically from the `clubs` table in the database. Coaches log runs (manually or via Strava sync), track athlete progress through milestones, record coaching cues, write notes, and celebrate achievements. Caregivers get read-only access to their linked athlete with the ability to send cheers and view milestone celebrations. Athletes themselves can access their own PIN-protected personal page to view their running journey, check in with their mood, pick goals, choose an avatar, favourite their best runs, and message their coach.
 
 **Tech stack:** Next.js 14 (App Router) · React 18 · TypeScript · Supabase (auth + Postgres + RLS) · Tailwind CSS v4 · Recharts · Resend · Lucide React · Sharp
 
@@ -125,6 +125,28 @@ Role-specific feeds with separate data loaders:
 - The suggestion algorithm uses logged runs (not just assignments) for frequency
 - `/admin/sessions/*` routes allow admin OR coaches with can_manage_sessions = true
 - All other `/admin/*` routes remain admin-only
+
+### Platform Rebrand (Kita)
+
+The platform was rebranded from "SOSG Running Club Hub" to "Kita" in Session 12 (March 2026). "Kita" means "we/us" in Malay and Indonesian — specifically the inclusive form that includes the listener. Domain: `kitarun.com`.
+
+**What changed:**
+- All `sosg-*` cache names in `public/sw.js` → `kita-*` (cache version bumped to `kita-v14`)
+- All `sosg_*` and `sosg-*` localStorage keys → `kita_*` / `kita-*` across 9 components + `src/lib/hint-keys.ts`
+- A one-time migration helper (`src/lib/storage-migration.ts`) runs on app load via `ServiceWorkerRegistrar` to copy old keys to new keys and delete old keys
+- PWA manifest: "Kita Run" / "Kita" with three-paths-converging icon (separate `"any"` and `"maskable"` icon entries)
+- "Powered by Kita" badge on public pages
+- Package name: `kita-run`
+
+**What did NOT change:**
+- The club name in the `clubs` table — that's still whatever the club admin configured (dynamic from Phase A/B)
+- The `clubs.slug`, `strava_hashtag_prefix`, or any club-specific data
+- Test mock data — mocks still use "SOSG Running Club" as test fixtures for the dynamic club system
+
+**Conventions for new code:**
+- localStorage keys: `kita_` prefix (underscore). Convention: `kita_hint_{page}_{feature}` or `kita_context_{page}`. Define in `src/lib/hint-keys.ts` first.
+- Cache API keys: `kita-` prefix (hyphen). Keep in sync between `public/sw.js`, `ServiceWorkerRegistrar.tsx`, and `LoginForm.tsx`.
+- When bumping the service worker cache, increment the number in `kita-vNN` in `public/sw.js`.
 
 ## Conventions
 
