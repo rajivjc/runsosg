@@ -11,7 +11,7 @@ type CaregiverOnboardingCardProps = {
   totalCount: number
 }
 
-const STORAGE_KEY = 'sosg_caregiver_onboarding_collapsed'
+const STORAGE_KEY = 'kita_caregiver_onboarding_collapsed'
 
 /**
  * Welcome checklist card for new caregivers.

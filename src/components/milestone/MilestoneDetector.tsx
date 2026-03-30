@@ -23,7 +23,7 @@ type MilestoneDetectorProps = {
   recentMilestones: MilestoneForDetection[]
 }
 
-const STORAGE_KEY = 'sosg_seen_milestones'
+const STORAGE_KEY = 'kita_seen_milestones'
 
 function getSeenMilestones(): Set<string> {
   if (typeof window === 'undefined') return new Set()

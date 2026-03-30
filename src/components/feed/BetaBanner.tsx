@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 
-const STORAGE_KEY = 'sosg-beta-banner-dismissed'
+const STORAGE_KEY = 'kita-beta-banner-dismissed'
 
 export default function BetaBanner({ clubName }: { clubName?: string }) {
   const [visible, setVisible] = useState(false)

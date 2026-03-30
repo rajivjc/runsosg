@@ -25,7 +25,7 @@ interface Props {
   weeklyRecap?: WeeklyRecap
 }
 
-const STORAGE_KEY = 'sosg_club_stats_expanded'
+const STORAGE_KEY = 'kita_club_stats_expanded'
 
 function TrendArrow({ current, previous, label }: { current: number; previous: number; label: string }) {
   const diff = current - previous

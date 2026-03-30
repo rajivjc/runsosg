@@ -2,7 +2,7 @@
  * Unit tests for hint card system.
  *
  * Tests that:
- * 1. All hint card storage keys follow the naming convention (sosg_hint_* or sosg_context_*)
+ * 1. All hint card storage keys follow the naming convention (kita_hint_* or kita_context_*)
  * 2. No two hint cards share the same storage key
  * 3. Storage keys are valid localStorage keys
  */
@@ -11,9 +11,9 @@ import { HINT_KEYS } from '@/lib/hint-keys'
 const allKeys = Object.values(HINT_KEYS)
 
 describe('hint card storage keys', () => {
-  it('all keys follow the sosg_ prefix convention', () => {
+  it('all keys follow the kita_ prefix convention', () => {
     for (const key of allKeys) {
-      expect(key).toMatch(/^sosg_(hint_|context_)/)
+      expect(key).toMatch(/^kita_(hint_|context_)/)
     }
   })
 

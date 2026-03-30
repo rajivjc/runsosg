@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { migrateStorageKeys } from '@/lib/storage-migration'
 
 // Module-level flag to prevent the postMessage handler and the Cache API
 // fallback from both firing navigation in rapid succession.
@@ -165,6 +166,9 @@ export default function ServiceWorkerRegistrar() {
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
+
+    // Migrate localStorage keys from sosg_ prefix to kita_ prefix (one-time)
+    migrateStorageKeys()
 
     // Reset on mount — if the component re-mounts after a soft navigation
     // that didn't trigger location.href, the flag should be cleared.

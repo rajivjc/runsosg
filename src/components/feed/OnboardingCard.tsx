@@ -16,8 +16,8 @@ type OnboardingCardProps = {
   totalCount: number
 }
 
-const STORAGE_KEY = 'sosg_onboarding_collapsed'
-const OLD_STORAGE_KEY = 'sosg_onboarding_dismissed'
+const STORAGE_KEY = 'kita_onboarding_collapsed'
+const OLD_STORAGE_KEY = 'kita_onboarding_dismissed'
 
 function isStandalone(): boolean {
   if (typeof window === 'undefined') return false

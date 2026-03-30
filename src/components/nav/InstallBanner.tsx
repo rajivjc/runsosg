@@ -8,9 +8,9 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-const DISMISS_KEY = 'sosg-install-banner-dismissed'
-const OLD_DISMISS_KEY = 'sosg-install-dismissed'
-const PWA_INSTALLED_KEY = 'sosg-pwa-was-installed'
+const DISMISS_KEY = 'kita-install-banner-dismissed'
+const OLD_DISMISS_KEY = 'kita-install-dismissed'
+const PWA_INSTALLED_KEY = 'kita-pwa-was-installed'
 const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 
 type Platform =
