@@ -1,0 +1,664 @@
+/*
+ * Landing page styles
+ * Colors: teal=#0F766E, teal-light=#0D9488, warm-bg=#FBF9F7, warm-100=#F5F2EE,
+ *         dark=#1E1C1A, dark-teal=#042f2e, text=#111827, text-secondary=#4B5563,
+ *         text-muted=#6B7280, amber=#D97706, coral=#EA580C
+ */
+
+/* ============================================
+   PAGE WRAPPER — override layout's pb-16
+   ============================================ */
+.page {
+  background: #FBF9F7;
+  padding-bottom: 0 !important;
+  margin-bottom: -64px;
+}
+
+/* ============================================
+   NAV
+   ============================================ */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(251, 249, 247, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.navInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navLogo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.navWordmark {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.navWordmarkKita {
+  font-weight: 800;
+  color: #0F766E;
+}
+
+.navWordmarkRun {
+  font-weight: 300;
+  color: #6B7280;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4B5563;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.navLink:hover {
+  color: #0F766E;
+}
+
+.navSignIn {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0F766E;
+  background: rgba(15, 118, 110, 0.08);
+  padding: 8px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.navSignIn:hover {
+  background: rgba(15, 118, 110, 0.14);
+}
+
+@media (max-width: 768px) {
+  .navLinks {
+    gap: 16px;
+  }
+  .navLink {
+    display: none;
+  }
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.hero {
+  padding: 140px 24px 80px;
+  text-align: center;
+  background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(15, 118, 110, 0.06) 0%, transparent 70%);
+}
+
+.heroInner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.heroTitle {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #111827;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+}
+
+.heroTitleAccent {
+  color: #0F766E;
+}
+
+.heroSubtitle {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #4B5563;
+  margin: 0 0 16px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heroAudience {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #6B7280;
+  margin: 0 0 40px;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heroCtas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 32px;
+  background: #0F766E;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.ctaPrimary:hover {
+  background: #0D9488;
+  transform: translateY(-1px);
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 28px;
+  background: transparent;
+  color: #4B5563;
+  font-size: 16px;
+  font-weight: 600;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.ctaSecondary:hover {
+  border-color: #0F766E;
+  color: #0F766E;
+}
+
+@media (max-width: 640px) {
+  .heroTitle {
+    font-size: 34px;
+  }
+  .heroSubtitle {
+    font-size: 16px;
+  }
+  .hero {
+    padding: 120px 20px 60px;
+  }
+}
+
+/* ============================================
+   SECTION SHARED
+   ============================================ */
+.section {
+  padding: 80px 24px;
+}
+
+.sectionInner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sectionLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F766E;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 12px;
+}
+
+.sectionTitle {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+  line-height: 1.2;
+}
+
+.sectionSubtitle {
+  font-size: 17px;
+  line-height: 1.6;
+  color: #4B5563;
+  margin: 0 0 48px;
+  max-width: 640px;
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 60px 20px;
+  }
+  .sectionTitle {
+    font-size: 28px;
+  }
+}
+
+/* ============================================
+   STORY
+   ============================================ */
+.storySection {
+  background: white;
+}
+
+.storyContent {
+  max-width: 640px;
+}
+
+.blockquote {
+  border-left: 3px solid #0F766E;
+  padding-left: 20px;
+  margin: 0 0 24px;
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.7;
+  color: #4B5563;
+}
+
+.storyParagraph {
+  font-size: 16px;
+  line-height: 1.75;
+  color: #4B5563;
+  margin: 0 0 20px;
+}
+
+.storyEtymology {
+  margin-top: 32px;
+  padding: 20px 24px;
+  background: rgba(15, 118, 110, 0.04);
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #4B5563;
+}
+
+.storyEtymologyKita {
+  font-weight: 700;
+  color: #0F766E;
+}
+
+/* ============================================
+   SCREENSHOT GALLERY
+   ============================================ */
+.gallerySection {
+  background: #F5F2EE;
+}
+
+.galleryScroll {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 24px;
+  scrollbar-width: none;
+}
+
+.galleryScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.phoneFrame {
+  flex: 0 0 auto;
+  width: 240px;
+  scroll-snap-align: start;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.phoneFrame:hover {
+  transform: translateY(-4px);
+}
+
+.phoneImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.phoneLabel {
+  padding: 14px 16px 16px;
+}
+
+.phoneLabelTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 2px;
+}
+
+.phoneLabelDesc {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 0;
+}
+
+.swipeHint {
+  text-align: center;
+  font-size: 14px;
+  color: #6B7280;
+  margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  .phoneFrame {
+    width: 200px;
+  }
+}
+
+/* ============================================
+   PERSONAS
+   ============================================ */
+.personaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.personaCard {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 28px;
+  border-top: 4px solid transparent;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.personaCardCoach {
+  border-top-color: #0F766E;
+}
+
+.personaCardCaregiver {
+  border-top-color: #D97706;
+}
+
+.personaCardAthlete {
+  border-top-color: #EA580C;
+}
+
+.personaName {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 20px;
+}
+
+.personaList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.personaItem {
+  font-size: 15px;
+  line-height: 1.5;
+  color: #4B5563;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.personaCheck {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.personaCheckCoach {
+  color: #0F766E;
+}
+
+.personaCheckCaregiver {
+  color: #D97706;
+}
+
+.personaCheckAthlete {
+  color: #EA580C;
+}
+
+@media (max-width: 900px) {
+  .personaGrid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+}
+
+/* ============================================
+   INCLUSIVE DESIGN
+   ============================================ */
+.inclusiveSection {
+  background: #042f2e;
+  color: white;
+}
+
+.inclusiveLabel {
+  color: rgba(45, 212, 191, 0.8);
+}
+
+.inclusiveTitle {
+  color: white;
+}
+
+.inclusiveSubtitle {
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 700px;
+}
+
+.inclusiveGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.inclusiveCard {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 28px 24px;
+}
+
+.inclusiveCardLabel {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #2DD4BF;
+  margin: 0 0 8px;
+}
+
+.inclusiveCardText {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .inclusiveGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   HOW IT WORKS
+   ============================================ */
+.howSection {
+  background: white;
+}
+
+.howGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  text-align: center;
+}
+
+.howStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.howNumber {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(15, 118, 110, 0.08);
+  color: #0F766E;
+  font-size: 20px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.howStepTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px;
+}
+
+.howStepDesc {
+  font-size: 15px;
+  color: #6B7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .howGrid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+/* ============================================
+   CTA
+   ============================================ */
+.ctaSection {
+  padding: 80px 24px;
+}
+
+.ctaCard {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 56px 40px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.06) 0%, rgba(13, 148, 136, 0.03) 100%);
+  border: 1px solid rgba(15, 118, 110, 0.1);
+}
+
+.ctaTitle {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 12px;
+}
+
+.ctaDesc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #4B5563;
+  margin: 0 0 32px;
+}
+
+@media (max-width: 640px) {
+  .ctaCard {
+    padding: 40px 24px;
+  }
+  .ctaTitle {
+    font-size: 26px;
+  }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer {
+  background: #1E1C1A;
+  padding: 48px 24px;
+}
+
+.footerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.footerLogo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 24px;
+}
+
+.footerLink {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footerLink:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.footerTagline {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .phoneFrame:hover {
+    transform: none;
+  }
+  .ctaPrimary:hover {
+    transform: none;
+  }
+}
