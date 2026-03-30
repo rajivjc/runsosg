@@ -322,7 +322,7 @@ export default function ClubSettingsForm({
           name="strava_hashtag_prefix"
           type="text"
           defaultValue={stravaHashtagPrefix ?? ''}
-          placeholder="e.g. #SOSG"
+          placeholder="e.g. #yourclub"
           className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-none"
         />
       </div>
