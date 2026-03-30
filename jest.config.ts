@@ -5,6 +5,7 @@ const config: Config = {
   testEnvironment: 'node',
   testMatch: ['**/tests/unit/**/*.spec.ts', '**/tests/unit/**/*.spec.tsx'],
   moduleNameMapper: {
+    '\\.(css)$': '<rootDir>/tests/__mocks__/styleMock.js',
     '^@/(.*)$': '<rootDir>/src/$1'
   },
   transform: {
