@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="80" ry="80" fill="#0F766E"/>
+  <!-- Three converging paths -->
+  <!-- Top path (lighter) -->
+  <path d="M100 140 C160 140, 200 160, 260 210 C300 240, 340 250, 400 240" 
+        stroke="white" stroke-width="18" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <!-- Middle path (strongest) -->
+  <path d="M100 256 C160 256, 220 256, 280 250 C320 246, 360 242, 400 240" 
+        stroke="white" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <!-- Bottom path (lighter) -->
+  <path d="M100 372 C160 372, 200 352, 260 290 C300 258, 340 248, 400 240" 
+        stroke="white" stroke-width="18" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <!-- Convergence dot -->
+  <circle cx="405" cy="240" r="14" fill="white"/>
+</svg>

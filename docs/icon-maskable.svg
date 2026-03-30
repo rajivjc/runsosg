@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- No rounded corners - OS applies its own mask -->
+  <rect width="512" height="512" fill="#0F766E"/>
+  <!-- Content scaled to fit within 80% safe zone (51-461 range, centered) -->
+  <!-- Three converging paths - pulled inward with more padding -->
+  <!-- Top path (lighter) -->
+  <path d="M120 160 C172 160, 208 177, 262 220 C298 246, 334 255, 388 246" 
+        stroke="white" stroke-width="17" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <!-- Middle path (strongest) -->
+  <path d="M120 256 C172 256, 224 256, 276 251 C314 247, 352 244, 388 242" 
+        stroke="white" stroke-width="21" stroke-linecap="round" fill="none"/>
+  <!-- Bottom path (lighter) -->
+  <path d="M120 352 C172 352, 208 335, 262 282 C298 256, 334 248, 388 242" 
+        stroke="white" stroke-width="17" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <!-- Convergence dot -->
+  <circle cx="393" cy="244" r="13" fill="white"/>
+</svg>
