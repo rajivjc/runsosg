@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ScrollReveal from '@/components/landing/ScrollReveal'
-import StoryToggle from '@/components/landing/StoryToggle'
 import ScreenshotGallery from '@/components/landing/ScreenshotGallery'
 import styles from './landing.module.css'
 
@@ -106,46 +105,37 @@ export default async function Home() {
             <div className={styles.storyContent}>
               <p className={styles.sectionLabel}>WHY I BUILT THIS</p>
               <blockquote className={styles.blockquote}>
-                It started with a moment I almost missed.
+                An athlete finished a 5km run and looked around to see if anyone was watching.
               </blockquote>
-              <p className={styles.storyParagraph}>
-                An athlete finished a 5km run and looked around to see if anyone was watching. We were. But the place where I logged it wouldn&apos;t remember by next week. The group chat had already moved on. And I realized something was getting lost between the running and the record of it.
-              </p>
 
               <p className={styles.storyParagraph}>
-                Every week I watched our athletes show up, train hard, and push through things that would stop most people. And every week the evidence of that disappeared into chat threads and a coach&apos;s memory. These weren&apos;t casual jogs. These were hard-won kilometres by people who had been told, in a hundred small ways, that sport wasn&apos;t really for them.
+                We were. But by next week, the only proof lived in a coach&apos;s memory and a group chat that had already moved on. These weren&apos;t casual jogs. These were hard-won kilometres by people who&apos;d been told, in a hundred small ways, that sport wasn&apos;t really for them.
               </p>
 
               <p className={styles.storyHighlight}>
-                Then a caregiver asked me a question that changed everything. Not how&apos;s her therapy going. Not how&apos;s her behaviour. Just &ldquo;how&apos;s she doing at running?&rdquo; The way any parent asks about their kid&apos;s sport. And I didn&apos;t have a good answer. Not because I didn&apos;t know. Because nothing I had could show her.
+                Then a caregiver asked: &ldquo;How&apos;s she doing at running?&rdquo; Not therapy. Not behaviour. Just running — the way any parent asks about their kid&apos;s sport.
               </p>
 
-              <StoryToggle>
-                <p className={styles.storyParagraph}>
-                  That question deserved better. So I started building. But the tool wasn&apos;t the hard part. The hard part was a question that became my north star: would I design this the same way for any other adult runner? If the answer was no, I changed it.
-                </p>
+              <p className={styles.storyParagraph}>
+                I didn&apos;t have a good answer. Not because I didn&apos;t know. Because nothing I had could show her.
+              </p>
 
-                <p className={styles.storyExamples}>
-                  I wrote &ldquo;so proud of you&rdquo; on a milestone card and stared at it. Would I say that to a 28-year-old finishing a park run? No. I&apos;d say &ldquo;great run today.&rdquo; So that&apos;s what it says. I built a confetti animation for achievements, then learned that for someone with sensory sensitivities, that celebration could feel like an assault. So I replaced it with a warm glow and a badge that stays on screen. Your moment shouldn&apos;t disappear before you&apos;ve had time to feel it.
-                </p>
+              <p className={styles.storyClosing}>
+                So I built it.
+              </p>
 
-                <p className={styles.storyClosing}>
-                  I could have built something defined by disability. I built something defined by the sport. Because running 5km is hard. And it matters more when someone is there to see it.
-                </p>
+              <div className={styles.storyEtymology}>
+                <span className={styles.storyEtymologyKita}>Kita</span> means &ldquo;we&rdquo; in Malay and Indonesian — specifically the inclusive form that includes the listener. Not &ldquo;us and them.&rdquo; Just &ldquo;us.&rdquo;
+              </div>
 
-                <div className={styles.storyEtymology}>
-                  <span className={styles.storyEtymologyKita}>Kita</span> means &ldquo;we&rdquo; in Malay and Indonesian — specifically the inclusive form that includes the listener. Not &ldquo;us and them.&rdquo; Just &ldquo;us.&rdquo;
-                </div>
-
-                <a
-                  href="https://medium.com/@rajiv.cheriyan/i-built-a-running-app-for-athletes-with-intellectual-disabilities-heres-what-i-had-to-unlearn-c9fcb6d36a18"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.storyMediumLink}
-                >
-                  Read the full essay &rarr;
-                </a>
-              </StoryToggle>
+              <a
+                href="https://medium.com/@rajiv.cheriyan/i-built-a-running-app-for-athletes-with-intellectual-disabilities-heres-what-i-had-to-unlearn-c9fcb6d36a18"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.storyMediumLink}
+              >
+                Read the full essay &rarr;
+              </a>
             </div>
           </ScrollReveal>
         </div>
