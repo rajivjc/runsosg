@@ -270,6 +270,7 @@
 
 .storyContent {
   max-width: 640px;
+  margin: 0 auto;
 }
 
 /* Opening pull-quote — big, confident, sets the tone */
