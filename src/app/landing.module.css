@@ -272,21 +272,70 @@
   max-width: 640px;
 }
 
+/* Opening pull-quote — big, confident, sets the tone */
 .blockquote {
-  border-left: 3px solid #0F766E;
-  padding-left: 20px;
-  margin: 0 0 24px;
+  border-left: none;
+  padding-left: 0;
+  margin: 0 0 40px;
   font-style: italic;
-  font-size: 18px;
-  line-height: 1.7;
-  color: #4B5563;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #111827;
+  position: relative;
+}
+
+.blockquote::before {
+  content: '\201C';
+  display: block;
+  font-size: 64px;
+  line-height: 1;
+  color: #0F766E;
+  opacity: 0.3;
+  margin-bottom: -8px;
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
 .storyParagraph {
-  font-size: 16px;
-  line-height: 1.75;
+  font-size: 17px;
+  line-height: 1.8;
   color: #4B5563;
-  margin: 0 0 20px;
+  margin: 0 0 24px;
+}
+
+/* The emotional pivot — caregiver question paragraph */
+.storyHighlight {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #374151;
+  margin: 32px 0;
+  padding: 24px 28px;
+  background: rgba(15, 118, 110, 0.03);
+  border-left: 3px solid #0F766E;
+  border-radius: 0 10px 10px 0;
+}
+
+/* Design examples — subtle left accent */
+.storyExamples {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #4B5563;
+  margin: 0 0 24px;
+  padding-left: 20px;
+  border-left: 2px solid rgba(15, 118, 110, 0.15);
+}
+
+/* Closing pull-quote — mirrors the opening, bookends the story */
+.storyClosing {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #111827;
+  margin: 36px 0 0;
+  padding-top: 32px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .storyEtymology {
@@ -302,6 +351,38 @@
 .storyEtymologyKita {
   font-weight: 700;
   color: #0F766E;
+}
+
+.storyMediumLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0F766E;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.storyMediumLink:hover {
+  opacity: 0.75;
+}
+
+@media (max-width: 640px) {
+  .blockquote {
+    font-size: 20px;
+  }
+  .blockquote::before {
+    font-size: 48px;
+  }
+  .storyHighlight {
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .storyClosing {
+    font-size: 18px;
+  }
 }
 
 /* ============================================
