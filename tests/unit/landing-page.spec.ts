@@ -190,9 +190,9 @@ describe('StoryToggle', () => {
     const element = createElement(StoryToggle, null, createElement('p', null, 'Hidden content'))
     const html = renderToString(element)
     expect(html).toContain('Read the full story')
-    // Content is rendered but hidden via max-height: 0
+    // Content is rendered but hidden via CSS class (max-height: 0 applied by storyToggleContent)
     expect(html).toContain('Hidden content')
-    expect(html).toContain('max-height:0')
+    expect(html).toContain('storyToggleContent')
   })
 })
 
