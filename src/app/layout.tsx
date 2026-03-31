@@ -21,6 +21,10 @@ export async function generateMetadata(): Promise<Metadata> {
       statusBarStyle: 'default',
       title: club.name,
     },
+    icons: {
+      icon: '/favicon-32.png',
+      apple: '/apple-touch-icon.png',
+    },
   }
 }
 
@@ -36,7 +40,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <head>
-        <link rel="apple-touch-icon" href="/icon-192.png" />
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
             try {
