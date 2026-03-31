@@ -103,8 +103,8 @@ export default async function Home() {
       <section id="story" className={`${styles.section} ${styles.storySection}`}>
         <div className={styles.sectionInner}>
           <ScrollReveal>
-            <p className={styles.sectionLabel}>WHY I BUILT THIS</p>
             <div className={styles.storyContent}>
+              <p className={styles.sectionLabel}>WHY I BUILT THIS</p>
               <blockquote className={styles.blockquote}>
                 It started with a moment I almost missed.
               </blockquote>
