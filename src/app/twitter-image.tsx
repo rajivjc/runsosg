@@ -67,12 +67,26 @@ export default function TwitterImage() {
           The running app where every athlete belongs
         </p>
 
-        {/* Domain */}
+        {/* Subtitle */}
         <p
           style={{
             fontSize: '22px',
+            fontWeight: 400,
+            color: 'rgba(255, 255, 255, 0.8)',
+            textAlign: 'center',
+            margin: '0 0 32px',
+            letterSpacing: '0.5px',
+          }}
+        >
+          For coaches · caregivers · athletes
+        </p>
+
+        {/* Domain */}
+        <p
+          style={{
+            fontSize: '20px',
             fontWeight: 300,
-            color: 'rgba(255, 255, 255, 0.7)',
+            color: 'rgba(255, 255, 255, 0.5)',
             margin: 0,
             letterSpacing: '1px',
           }}

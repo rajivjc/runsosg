@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: 'Built for coaches, caregivers, and athletes with intellectual disabilities. Not a disability tool. A running app — designed so everyone is a first-class citizen.',
   openGraph: {
     title: 'Kita — The running app where every athlete belongs',
-    description: 'Built for coaches, caregivers, and athletes with intellectual disabilities.',
+    description: 'Built for coaches, caregivers, and athletes with intellectual disabilities. Track runs, celebrate milestones, and keep caregivers connected — all in one app.',
     url: 'https://kitarun.com',
     siteName: 'Kita',
     type: 'website',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Kita — The running app where every athlete belongs',
-    description: 'Built for coaches, caregivers, and athletes with intellectual disabilities.',
+    description: 'Built for coaches, caregivers, and athletes with intellectual disabilities. Track runs, celebrate milestones, and keep caregivers connected — all in one app.',
   },
 }
 
