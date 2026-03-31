@@ -353,6 +353,51 @@
   color: #0F766E;
 }
 
+/* ---- Story Toggle (progressive disclosure) ---- */
+/* Mobile: collapsed by default, expand on tap */
+.storyToggleContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out;
+}
+
+.storyToggleExpanded {
+  max-height: 4000px;
+}
+
+.storyToggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 8px 0;
+  color: #0F766E;
+  font-weight: 600;
+  font-size: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.storyToggleChevron {
+  transition: transform 0.3s ease;
+}
+
+.storyToggleChevronUp {
+  transform: rotate(180deg);
+}
+
+/* Desktop: always show content, hide toggle button */
+@media (min-width: 769px) {
+  .storyToggleContent {
+    max-height: none;
+    overflow: visible;
+  }
+  .storyToggleButton {
+    display: none;
+  }
+}
+
 .storyMediumLink {
   display: inline-flex;
   align-items: center;

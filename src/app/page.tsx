@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ScrollReveal from '@/components/landing/ScrollReveal'
+import StoryToggle from '@/components/landing/StoryToggle'
 import ScreenshotGallery from '@/components/landing/ScreenshotGallery'
 import styles from './landing.module.css'
 
@@ -119,30 +120,32 @@ export default async function Home() {
                 Then a caregiver asked me a question that changed everything. Not how&apos;s her therapy going. Not how&apos;s her behaviour. Just &ldquo;how&apos;s she doing at running?&rdquo; The way any parent asks about their kid&apos;s sport. And I didn&apos;t have a good answer. Not because I didn&apos;t know. Because nothing I had could show her.
               </p>
 
-              <p className={styles.storyParagraph}>
-                That question deserved better. So I started building. But the tool wasn&apos;t the hard part. The hard part was a question that became my north star: would I design this the same way for any other adult runner? If the answer was no, I changed it.
-              </p>
+              <StoryToggle>
+                <p className={styles.storyParagraph}>
+                  That question deserved better. So I started building. But the tool wasn&apos;t the hard part. The hard part was a question that became my north star: would I design this the same way for any other adult runner? If the answer was no, I changed it.
+                </p>
 
-              <p className={styles.storyExamples}>
-                I wrote &ldquo;so proud of you&rdquo; on a milestone card and stared at it. Would I say that to a 28-year-old finishing a park run? No. I&apos;d say &ldquo;great run today.&rdquo; So that&apos;s what it says. I built a confetti animation for achievements, then learned that for someone with sensory sensitivities, that celebration could feel like an assault. So I replaced it with a warm glow and a badge that stays on screen. Your moment shouldn&apos;t disappear before you&apos;ve had time to feel it.
-              </p>
+                <p className={styles.storyExamples}>
+                  I wrote &ldquo;so proud of you&rdquo; on a milestone card and stared at it. Would I say that to a 28-year-old finishing a park run? No. I&apos;d say &ldquo;great run today.&rdquo; So that&apos;s what it says. I built a confetti animation for achievements, then learned that for someone with sensory sensitivities, that celebration could feel like an assault. So I replaced it with a warm glow and a badge that stays on screen. Your moment shouldn&apos;t disappear before you&apos;ve had time to feel it.
+                </p>
 
-              <p className={styles.storyClosing}>
-                I could have built something defined by disability. I built something defined by the sport. Because running 5km is hard. And it matters more when someone is there to see it.
-              </p>
+                <p className={styles.storyClosing}>
+                  I could have built something defined by disability. I built something defined by the sport. Because running 5km is hard. And it matters more when someone is there to see it.
+                </p>
 
-              <div className={styles.storyEtymology}>
-                <span className={styles.storyEtymologyKita}>Kita</span> means &ldquo;we&rdquo; in Malay and Indonesian — specifically the inclusive form that includes the listener. Not &ldquo;us and them.&rdquo; Just &ldquo;us.&rdquo;
-              </div>
+                <div className={styles.storyEtymology}>
+                  <span className={styles.storyEtymologyKita}>Kita</span> means &ldquo;we&rdquo; in Malay and Indonesian — specifically the inclusive form that includes the listener. Not &ldquo;us and them.&rdquo; Just &ldquo;us.&rdquo;
+                </div>
 
-              <a
-                href="https://medium.com/@rajiv.cheriyan/i-built-a-running-app-for-athletes-with-intellectual-disabilities-heres-what-i-had-to-unlearn-c9fcb6d36a18"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.storyMediumLink}
-              >
-                Read the full essay &rarr;
-              </a>
+                <a
+                  href="https://medium.com/@rajiv.cheriyan/i-built-a-running-app-for-athletes-with-intellectual-disabilities-heres-what-i-had-to-unlearn-c9fcb6d36a18"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.storyMediumLink}
+                >
+                  Read the full essay &rarr;
+                </a>
+              </StoryToggle>
             </div>
           </ScrollReveal>
         </div>
