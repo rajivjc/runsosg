@@ -19,10 +19,10 @@ export default async function PrivacyPage() {
         {/* Back link */}
         <div className="mb-6">
           <Link
-            href="/login"
+            href="/"
             className="text-sm text-teal-600 dark:text-teal-300 hover:text-teal-700 dark:hover:text-teal-300 font-medium"
           >
-            &larr; Back to login
+            &larr; Back
           </Link>
         </div>
 
