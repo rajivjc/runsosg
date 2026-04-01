@@ -43,6 +43,15 @@ jest.mock('next/link', () => {
   }
 })
 
+// Mock ClubInquiryForm as a simple div (client component with server action deps)
+jest.mock('@/components/landing/ClubInquiryForm', () => {
+  return {
+    __esModule: true,
+    default: () =>
+      createElement('div', { 'data-testid': 'club-inquiry-form' }, 'Ready to start your club?'),
+  }
+})
+
 // Mock next/image as a simple img
 jest.mock('next/image', () => {
   return {
@@ -158,8 +167,8 @@ describe('Landing page', () => {
       expect(html).toContain('Sign in')
     })
 
-    it('contains "Start your club" mailto link', () => {
-      expect(html).toContain('mailto:hello@kitarun.com')
+    it('contains "Start your club" link pointing to contact form', () => {
+      expect(html).toContain('href="#contact"')
       expect(html).toContain('Start your club')
     })
 

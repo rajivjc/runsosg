@@ -765,6 +765,94 @@
   }
 }
 
+/* ---- Inquiry form ---- */
+
+.inquiryForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+  margin-top: 24px;
+}
+
+.inquiryRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.inquiryField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inquiryLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.inquiryOptional {
+  font-weight: 400;
+  color: #9CA3AF;
+}
+
+.inquiryInput {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #D1D5DB;
+  font-size: 15px;
+  font-family: inherit;
+  color: #111827;
+  background: white;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.inquiryInput:focus {
+  outline: none;
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+.inquiryInput::placeholder {
+  color: #9CA3AF;
+}
+
+.inquiryTextarea {
+  composes: inquiryInput;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.inquiryError {
+  font-size: 14px;
+  color: #DC2626;
+  margin: 0;
+}
+
+.ctaFallback {
+  font-size: 13px;
+  color: #6B7280;
+  margin-top: 20px;
+}
+
+.ctaFallbackLink {
+  color: #0F766E;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ctaFallbackLink:hover {
+  color: #0D9488;
+}
+
+@media (max-width: 640px) {
+  .inquiryRow {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ============================================
    FOOTER
    ============================================ */
