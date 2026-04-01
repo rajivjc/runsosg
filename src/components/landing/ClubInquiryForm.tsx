@@ -35,7 +35,7 @@ export default function ClubInquiryForm() {
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
         <h2 className={styles.ctaTitle}>We&apos;ll be in touch</h2>
         <p className={styles.ctaDesc}>
-          Thanks for your interest in Kita. We&apos;ll reach out within a few days to help you get set up.
+          Thanks for reaching out. You&apos;ll hear from us within 48 hours to get your club set up.
         </p>
         <p className={styles.ctaFallback}>
           Questions in the meantime?{' '}
@@ -49,9 +49,9 @@ export default function ClubInquiryForm() {
 
   return (
     <div className={styles.ctaCard}>
-      <h2 className={styles.ctaTitle}>Ready to start your club?</h2>
+      <h2 className={styles.ctaTitle}>Start running sessions with your club</h2>
       <p className={styles.ctaDesc}>
-        Kita is free and built for clubs like yours. Tell us about your programme and we&apos;ll help you get set up.
+        We&apos;ll set up your club and walk you through your first session. Takes less than a week.
       </p>
 
       <form onSubmit={handleSubmit} className={styles.inquiryForm} noValidate>

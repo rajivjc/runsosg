@@ -59,6 +59,7 @@ export default async function Home() {
             <a href="#story" className={styles.navLink}>Our story</a>
             <a href="#features" className={styles.navLink}>Features</a>
             <a href="#inclusive" className={styles.navLink}>Accessibility</a>
+            <Link href="/demo" className={styles.navDemo}>See the app</Link>
             <Link href="/login" className={styles.navSignIn}>Sign in</Link>
           </div>
         </div>
@@ -77,12 +78,12 @@ export default async function Home() {
             For Special Olympics clubs, inclusive running groups, and any programme where coaches, athletes, and caregivers need to stay connected.
           </p>
           <div className={styles.heroCtas}>
-            <a href="#contact" className={styles.ctaPrimary}>
+            <Link href="/demo" className={styles.ctaPrimary}>
+              See the app &rarr;
+            </Link>
+            <a href="#contact" className={styles.ctaSecondary}>
               Start your club &rarr;
             </a>
-            <Link href="/login" className={styles.ctaSecondary}>
-              Sign in
-            </Link>
           </div>
         </div>
       </section>
