@@ -120,9 +120,9 @@ describe('MyJourneyDashboard accessibility', () => {
   })
 
   it('pairs icons with text labels on interactive elements', () => {
-    // Stat cards have both emoji icons and text labels
-    expect(content).toContain('"runs"')
-    expect(content).toContain('"km"')
+    // Header stats have text labels alongside values
+    expect(content).toContain('Runs')
+    expect(content).toContain('Total km')
     // Share button has icon + text
     expect(content).toContain('Share my running story')
   })
@@ -142,8 +142,8 @@ describe('MyJourneyDashboard accessibility', () => {
     expect(content).not.toContain('crushing it')
     expect(content).not.toContain('so proud')
     expect(content).not.toContain('brave')
-    // Greeting is literal
-    expect(content).toContain('Great to see you!')
+    // Greeting uses athlete's name directly (literal, warm)
+    expect(content).toContain('athlete.name')
   })
 
   it('does not expose sensitive data (notes, medical, cues)', () => {

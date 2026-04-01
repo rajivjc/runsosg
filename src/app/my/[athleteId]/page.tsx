@@ -205,6 +205,7 @@ export default async function MyJourneyPage({ params }: PageProps) {
       bestRuns={bestRuns}
       storyUrl={storyUrl}
       primaryCoach={primaryCoachName && primaryCoachCount >= 3 ? { name: primaryCoachName, sessionCount: primaryCoachCount } : null}
+      clubName={club.name}
     />
   )
 }

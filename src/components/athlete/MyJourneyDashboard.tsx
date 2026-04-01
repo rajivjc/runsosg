@@ -84,6 +84,7 @@ interface Props {
   currentMood: number | null
   favoriteSessionIds: string[]
   primaryCoach: PrimaryCoachData | null
+  clubName: string
 }
 
 // ─── Feel emoji mapping ─────────────────────────────────────────
@@ -112,13 +113,14 @@ const PRESET_MESSAGES = [
 const THEME_COLORS: Record<string, {
   from: string; ring: string; bg: string
   border: string; borderLight: string; text: string; bgLight: string; bgDark: string
+  headerGradient: string; headerGradientDark: string
 }> = {
-  teal:   { from: 'from-teal-50 dark:from-teal-950/20',   ring: 'ring-teal-400',   bg: 'bg-teal-400',   border: 'border-teal-400',   borderLight: 'border-teal-200 dark:border-teal-400/20', text: 'text-teal-700 dark:text-teal-300',   bgLight: 'bg-teal-50 dark:bg-teal-900/10',   bgDark: 'bg-teal-600' },
-  blue:   { from: 'from-blue-50 dark:from-blue-950/20',   ring: 'ring-blue-400',   bg: 'bg-blue-400',   border: 'border-blue-400',   borderLight: 'border-blue-200 dark:border-blue-400/20', text: 'text-blue-700 dark:text-blue-300',   bgLight: 'bg-blue-50 dark:bg-blue-900/10',   bgDark: 'bg-blue-600' },
-  purple: { from: 'from-purple-50 dark:from-purple-950/20', ring: 'ring-purple-400', bg: 'bg-purple-400', border: 'border-purple-400', borderLight: 'border-purple-200 dark:border-purple-400/20', text: 'text-purple-700 dark:text-purple-300', bgLight: 'bg-purple-50 dark:bg-purple-900/10', bgDark: 'bg-purple-600' },
-  green:  { from: 'from-green-50 dark:from-green-950/20',  ring: 'ring-green-400',  bg: 'bg-green-400',  border: 'border-green-400',  borderLight: 'border-green-200 dark:border-green-400/20', text: 'text-green-700 dark:text-green-300',  bgLight: 'bg-green-50 dark:bg-green-900/10',  bgDark: 'bg-green-600' },
-  amber:  { from: 'from-amber-50 dark:from-amber-950/20',  ring: 'ring-amber-400',  bg: 'bg-amber-400',  border: 'border-amber-400',  borderLight: 'border-amber-200 dark:border-amber-400/20', text: 'text-amber-700 dark:text-amber-300',  bgLight: 'bg-amber-50 dark:bg-amber-900/10',  bgDark: 'bg-amber-600' },
-  coral:  { from: 'from-orange-50 dark:from-orange-950/20', ring: 'ring-orange-400', bg: 'bg-orange-400', border: 'border-orange-400', borderLight: 'border-orange-200 dark:border-orange-400/20', text: 'text-orange-700 dark:text-orange-300', bgLight: 'bg-orange-50 dark:bg-orange-900/10', bgDark: 'bg-orange-600' },
+  teal:   { from: 'from-teal-50 dark:from-teal-950/20',   ring: 'ring-teal-400',   bg: 'bg-teal-400',   border: 'border-teal-400',   borderLight: 'border-teal-200 dark:border-teal-400/20', text: 'text-teal-700 dark:text-teal-300',   bgLight: 'bg-teal-50 dark:bg-teal-900/10',   bgDark: 'bg-teal-600', headerGradient: 'from-teal-600 via-teal-500 to-teal-400', headerGradientDark: 'dark:from-teal-900 dark:via-teal-800 dark:to-teal-700' },
+  blue:   { from: 'from-blue-50 dark:from-blue-950/20',   ring: 'ring-blue-400',   bg: 'bg-blue-400',   border: 'border-blue-400',   borderLight: 'border-blue-200 dark:border-blue-400/20', text: 'text-blue-700 dark:text-blue-300',   bgLight: 'bg-blue-50 dark:bg-blue-900/10',   bgDark: 'bg-blue-600', headerGradient: 'from-blue-600 via-blue-500 to-blue-400', headerGradientDark: 'dark:from-blue-900 dark:via-blue-800 dark:to-blue-700' },
+  purple: { from: 'from-purple-50 dark:from-purple-950/20', ring: 'ring-purple-400', bg: 'bg-purple-400', border: 'border-purple-400', borderLight: 'border-purple-200 dark:border-purple-400/20', text: 'text-purple-700 dark:text-purple-300', bgLight: 'bg-purple-50 dark:bg-purple-900/10', bgDark: 'bg-purple-600', headerGradient: 'from-purple-600 via-purple-500 to-purple-400', headerGradientDark: 'dark:from-purple-900 dark:via-purple-800 dark:to-purple-700' },
+  green:  { from: 'from-green-50 dark:from-green-950/20',  ring: 'ring-green-400',  bg: 'bg-green-400',  border: 'border-green-400',  borderLight: 'border-green-200 dark:border-green-400/20', text: 'text-green-700 dark:text-green-300',  bgLight: 'bg-green-50 dark:bg-green-900/10',  bgDark: 'bg-green-600', headerGradient: 'from-green-600 via-green-500 to-green-400', headerGradientDark: 'dark:from-green-900 dark:via-green-800 dark:to-green-700' },
+  amber:  { from: 'from-amber-50 dark:from-amber-950/20',  ring: 'ring-amber-400',  bg: 'bg-amber-400',  border: 'border-amber-400',  borderLight: 'border-amber-200 dark:border-amber-400/20', text: 'text-amber-700 dark:text-amber-300',  bgLight: 'bg-amber-50 dark:bg-amber-900/10',  bgDark: 'bg-amber-600', headerGradient: 'from-amber-600 via-amber-500 to-amber-400', headerGradientDark: 'dark:from-amber-900 dark:via-amber-800 dark:to-amber-700' },
+  coral:  { from: 'from-orange-50 dark:from-orange-950/20', ring: 'ring-orange-400', bg: 'bg-orange-400', border: 'border-orange-400', borderLight: 'border-orange-200 dark:border-orange-400/20', text: 'text-orange-700 dark:text-orange-300', bgLight: 'bg-orange-50 dark:bg-orange-900/10', bgDark: 'bg-orange-600', headerGradient: 'from-orange-600 via-orange-500 to-orange-400', headerGradientDark: 'dark:from-orange-900 dark:via-orange-800 dark:to-orange-700' },
 }
 
 // ─── Goal choice labels ─────────────────────────────────────────
@@ -144,6 +146,7 @@ export default function MyJourneyDashboard({
   currentMood,
   favoriteSessionIds,
   primaryCoach,
+  clubName,
 }: Props) {
   const [messageSent, setMessageSent] = useState<string | null>(null)
   const [messageError, setMessageError] = useState<string | null>(null)
@@ -214,10 +217,10 @@ export default function MyJourneyDashboard({
     <main className={`min-h-screen bg-gradient-to-b ${theme.from} to-white dark:to-[#141424] pb-12`}>
       <div className="max-w-lg mx-auto px-5 py-8">
 
-        {/* ── Hero Section ─────────────────────────────────── */}
-        <section className="text-center mb-8">
+        {/* ── Gradient Hero Header ─────────────────────────── */}
+        <section className={`bg-gradient-to-br ${theme.headerGradient} ${theme.headerGradientDark} rounded-b-3xl px-6 pt-6 pb-8 mb-6 text-center -mx-5 -mt-8`}>
           {athlete.photo_url ? (
-            <div className={`w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 ${theme.borderLight}`}>
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-white/30">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={athlete.photo_url}
@@ -229,19 +232,36 @@ export default function MyJourneyDashboard({
             <AvatarPicker
               athleteId={athlete.id}
               currentAvatar={athlete.avatar}
-              themeRing={theme.ring}
-              themeText={theme.text}
-              themeBgLight={theme.bgLight}
-              themeBorderLight={theme.borderLight}
+              themeRing="ring-white/30"
+              themeText="text-white"
+              themeBgLight="bg-white/15"
+              themeBorderLight="border-white/20"
             />
           )}
 
-          <h1 className="text-2xl font-bold text-text-primary mb-1">
-            Hi {athlete.name}!
+          <h1 className="text-2xl font-bold text-white">
+            {athlete.name}
           </h1>
-          <p className={`text-lg ${theme.text}`}>
-            Great to see you!
-          </p>
+          {clubName && (
+            <p className="text-sm text-white/75">
+              {clubName}
+            </p>
+          )}
+
+          <div className="flex justify-center gap-8 mt-4">
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-bold text-white">{stats.totalRuns}</span>
+              <span className="text-xs text-white/70">Runs</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-bold text-white">{stats.totalKm}</span>
+              <span className="text-xs text-white/70">Total km</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-bold text-white">{stats.currentStreak}</span>
+              <span className="text-xs text-white/70">Streak</span>
+            </div>
+          </div>
         </section>
 
         {/* ── Mood Picker ─────────────────────────────────── */}
@@ -285,26 +305,6 @@ export default function MyJourneyDashboard({
           </section>
         )}
 
-        {/* ── Stats Strip ──────────────────────────────────── */}
-        <section aria-label="Your running stats" className="grid grid-cols-3 gap-3 mb-8">
-          <StatCard
-            icon="🏃"
-            value={stats.totalRuns}
-            label="runs"
-            maxValue={Math.max(stats.totalRuns, 20)}
-            barColor={theme.bg}
-            borderColor={theme.borderLight}
-          />
-          <StatCard
-            icon="📏"
-            value={Number(stats.totalKm.toFixed(1))}
-            label="km"
-            maxValue={Math.max(stats.totalKm, 10)}
-            barColor={theme.bg}
-            borderColor={theme.borderLight}
-          />
-          <StreakVisual weeks={stats.currentStreak} themeBarColor={theme.bg} themeBorderLight={theme.borderLight} />
-        </section>
 
         {/* ── Personal Best ─────────────────────────────────── */}
         {personalBest && (
@@ -385,20 +385,21 @@ export default function MyJourneyDashboard({
           </section>
         )}
 
-        {/* ── Milestones Wall ──────────────────────────────── */}
+        {/* ── Milestones Strip ─────────────────────────────── */}
         {milestones.length > 0 && (
           <section aria-label="Your milestones" className="mb-8">
             <h2 className="text-lg font-bold text-text-primary mb-3 flex items-center gap-2">
               <span>🏆</span> Your milestones
             </h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide" role="list">
               {milestones.map(m => (
                 <div
                   key={m.id}
-                  className="bg-surface border-2 border-amber-100 dark:border-amber-400/20 rounded-xl px-4 py-4 text-center shadow-sm"
+                  role="listitem"
+                  className={`flex-shrink-0 w-20 text-center rounded-xl px-2 py-3 ${theme.bgLight} border ${theme.borderLight}`}
                 >
-                  <span className="text-4xl block mb-2">{m.icon || '🏆'}</span>
-                  <p className="text-sm font-semibold text-text-primary">{m.label}</p>
+                  <span className="text-2xl block mb-1">{m.icon || '🏆'}</span>
+                  <p className="text-xs font-semibold text-text-primary truncate">{m.label}</p>
                 </div>
               ))}
             </div>
@@ -545,10 +546,11 @@ export default function MyJourneyDashboard({
               {cheers.map(c => (
                 <div
                   key={c.id}
-                  className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-400/20 rounded-xl px-4 py-3 shadow-sm"
+                  className={`${theme.bgLight} border ${theme.borderLight} rounded-xl px-4 py-3 shadow-sm`}
                 >
-                  <p className="text-base text-amber-900">
-                    &ldquo;{c.message}&rdquo;
+                  <p className="text-base font-medium text-text-primary">{c.message}</p>
+                  <p className="text-xs text-text-muted mt-1">
+                    From home{c.created_at ? ` · ${formatRunDate(c.created_at)}` : ''}
                   </p>
                 </div>
               ))}
@@ -620,78 +622,3 @@ export default function MyJourneyDashboard({
   )
 }
 
-// ─── Stat Card Sub-Component ────────────────────────────────────
-
-function StatCard({
-  icon,
-  value,
-  label,
-  maxValue,
-  barColor,
-  borderColor,
-}: {
-  icon: string
-  value: number
-  label: string
-  maxValue: number
-  barColor: string
-  borderColor: string
-}) {
-  const pct = maxValue > 0 ? Math.min((value / maxValue) * 100, 100) : 0
-  return (
-    <div className={`bg-surface border ${borderColor} rounded-xl px-3 py-4 text-center shadow-sm`}>
-      <span className="text-2xl block mb-1">{icon}</span>
-      <p className="text-2xl font-bold text-text-primary">{value}</p>
-      <p className="text-sm text-text-secondary mb-2">{label}</p>
-      {/* Visual bar */}
-      <div className="w-full h-2 bg-surface-alt rounded-full overflow-hidden">
-        <div
-          className={`h-full ${barColor} rounded-full`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
-// ─── Streak Visual Sub-Component ────────────────────────────────
-
-function StreakVisual({ weeks, themeBarColor, themeBorderLight }: { weeks: number; themeBarColor: string; themeBorderLight: string }) {
-  // Build stacked shoe icons (max 5 visible)
-  const shoeCount = Math.min(weeks, 5)
-  const isGold = weeks >= 3
-  const borderColor = isGold ? 'border-amber-200 dark:border-amber-400/20' : themeBorderLight
-  const glowClass = weeks >= 5 ? 'ring-2 ring-amber-200' : ''
-
-  return (
-    <div className={`bg-surface border ${borderColor} ${glowClass} rounded-xl px-3 py-4 text-center shadow-sm`}>
-      <div className="flex justify-center items-end gap-0.5 mb-1 h-8">
-        {weeks === 0 ? (
-          <span className="text-2xl opacity-30">👟</span>
-        ) : (
-          Array.from({ length: shoeCount }).map((_, i) => (
-            <span
-              key={i}
-              className={`text-lg leading-none ${isGold ? 'drop-shadow-sm' : ''}`}
-              style={{ marginBottom: `${i * 2}px` }}
-            >
-              👟
-            </span>
-          ))
-        )}
-      </div>
-      <p className="text-2xl font-bold text-text-primary">{weeks}</p>
-      <p className="text-sm text-text-secondary mb-2">
-        {weeks === 0 ? 'No streak yet' : weeks === 1 ? 'week' : 'weeks'}
-      </p>
-      {weeks > 0 && (
-        <div className="w-full h-2 bg-surface-alt rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full ${isGold ? 'bg-amber-400' : themeBarColor}`}
-            style={{ width: `${Math.min((weeks / 8) * 100, 100)}%` }}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
