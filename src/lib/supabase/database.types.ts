@@ -375,6 +375,36 @@ export type Database = {
         }
         Relationships: []
       }
+      club_inquiries: {
+        Row: {
+          id: string
+          club_name: string
+          contact_name: string
+          email: string
+          programme_info: string | null
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          club_name: string
+          contact_name: string
+          email: string
+          programme_info?: string | null
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          club_name?: string
+          contact_name?: string
+          email?: string
+          programme_info?: string | null
+          status?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       club_settings: {
         Row: {
           id: string

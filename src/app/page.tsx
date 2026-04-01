@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import ScrollReveal from '@/components/landing/ScrollReveal'
 import ScreenshotGallery from '@/components/landing/ScreenshotGallery'
+import ClubInquiryForm from '@/components/landing/ClubInquiryForm'
 import styles from './landing.module.css'
 
 export const metadata: Metadata = {
@@ -23,8 +24,6 @@ export const metadata: Metadata = {
     description: 'Built for coaches, caregivers, and athletes with intellectual disabilities. Track runs, celebrate milestones, and keep caregivers connected — all in one app.',
   },
 }
-
-const MAILTO = "mailto:hello@kitarun.com?subject=I'd like to start a club on Kita"
 
 function KitaLogo({ size = 32 }: { size?: number }) {
   return (
@@ -88,7 +87,7 @@ export default async function Home() {
             For Special Olympics clubs, inclusive running groups, and any programme where coaches, athletes, and caregivers need to stay connected.
           </p>
           <div className={styles.heroCtas}>
-            <a href={MAILTO} className={styles.ctaPrimary}>
+            <a href="#contact" className={styles.ctaPrimary}>
               Start your club &rarr;
             </a>
             <Link href="/login" className={styles.ctaSecondary}>
@@ -363,15 +362,7 @@ export default async function Home() {
       {/* ========== CTA ========== */}
       <section id="contact" className={styles.ctaSection}>
         <ScrollReveal>
-          <div className={styles.ctaCard}>
-            <h2 className={styles.ctaTitle}>Ready to start your club?</h2>
-            <p className={styles.ctaDesc}>
-              Kita is free and built for clubs like yours. Get in touch and we&apos;ll help you get set up.
-            </p>
-            <a href={MAILTO} className={styles.ctaPrimary}>
-              Start your club &rarr;
-            </a>
-          </div>
+          <ClubInquiryForm />
         </ScrollReveal>
       </section>
 
