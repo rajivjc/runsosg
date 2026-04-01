@@ -102,7 +102,7 @@ describe('Middleware route classification', () => {
 
   const PUBLIC_PATHS = [
     '/login', '/auth/callback', '/auth/accept-invite', '/auth/pwa-launch',
-    '/api/strava/webhook', '/api/health', '/api/pwa-token', '/',
+    '/api/strava/webhook', '/api/health', '/api/pwa-token', '/demo', '/',
   ]
 
   function isProtected(pathname: string): boolean {
