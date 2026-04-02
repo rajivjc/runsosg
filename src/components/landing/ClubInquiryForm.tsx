@@ -49,7 +49,7 @@ export default function ClubInquiryForm() {
 
   return (
     <div className={styles.ctaCard}>
-      <h2 className={styles.ctaTitle}>Start running sessions with your club</h2>
+      <h2 className={styles.ctaTitle}>Let&apos;s get your club running</h2>
       <p className={styles.ctaDesc}>
         We&apos;ll set up your club and walk you through your first session. Takes less than a week.
       </p>

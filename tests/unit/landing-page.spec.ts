@@ -167,9 +167,9 @@ describe('Landing page', () => {
       expect(html).toContain('Sign in')
     })
 
-    it('contains "Start your club" link pointing to contact form', () => {
+    it('contains "Ask me anything" link pointing to contact form', () => {
       expect(html).toContain('href="#contact"')
-      expect(html).toContain('Start your club')
+      expect(html).toContain('Ask me anything')
     })
 
     it('contains footer links to privacy, terms, and contact', () => {

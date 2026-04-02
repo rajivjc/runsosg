@@ -11,10 +11,10 @@ import styles from './landing.module.css'
 export const metadata: Metadata = {
   metadataBase: new URL('https://kitarun.com'),
   title: 'Kita — The running app where every athlete belongs',
-  description: 'Built for coaches, caregivers, and athletes with intellectual disabilities. Not a disability tool. A running app — designed so everyone is a first-class citizen.',
+  description: 'Coaches log sessions. Caregivers see progress. Athletes celebrate milestones. One app that keeps your whole club connected.',
   openGraph: {
     title: 'Kita — The running app where every athlete belongs',
-    description: 'Built for coaches, caregivers, and athletes with intellectual disabilities. Track runs, celebrate milestones, and keep caregivers connected — all in one app.',
+    description: 'Coaches log sessions. Caregivers see progress. Athletes celebrate milestones. One app that keeps your whole club connected.',
     url: 'https://kitarun.com',
     siteName: 'Kita',
     type: 'website',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Kita — The running app where every athlete belongs',
-    description: 'Built for coaches, caregivers, and athletes with intellectual disabilities. Track runs, celebrate milestones, and keep caregivers connected — all in one app.',
+    description: 'Coaches log sessions. Caregivers see progress. Athletes celebrate milestones. One app that keeps your whole club connected.',
   },
 }
 
@@ -72,17 +72,17 @@ export default async function Home() {
             The running app where <span className={styles.heroTitleAccent}>every athlete</span> belongs
           </h1>
           <p className={styles.heroSubtitle}>
-            Built for coaches, caregivers, and athletes with intellectual disabilities. Not a disability tool. A running app — designed so everyone is a first-class citizen.
+            Coaches log sessions. Caregivers see progress. Athletes celebrate milestones. One app that keeps your whole club connected.
           </p>
           <p className={styles.heroAudience}>
-            For Special Olympics clubs, inclusive running groups, and any programme where coaches, athletes, and caregivers need to stay connected.
+            For Special Olympics clubs, inclusive running groups, and adaptive sports programmes.
           </p>
           <div className={styles.heroCtas}>
             <Link href="/demo" className={styles.ctaPrimary}>
               See the app &rarr;
             </Link>
             <a href="#contact" className={styles.ctaSecondary}>
-              Start your club &rarr;
+              Ask me anything &rarr;
             </a>
           </div>
         </div>
