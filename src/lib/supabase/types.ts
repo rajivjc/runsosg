@@ -101,6 +101,8 @@ export type ProgressLevel = FocusArea['progress_level']
 
 export type AuditLog = Database['public']['Tables']['audit_log']['Row']
 
+export type StravaDeletionAudit = Database['public']['Tables']['strava_deletion_audit']['Row']
+
 export type TrainingSession = Database['public']['Tables']['training_sessions']['Row'] & {
   status: 'draft' | 'published' | 'completed' | 'cancelled'
 }

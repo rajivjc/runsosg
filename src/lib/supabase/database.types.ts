@@ -1136,6 +1136,44 @@ export type Database = {
           },
         ]
       }
+      strava_deletion_audit: {
+        Row: {
+          id: string
+          coach_id: string | null
+          deleted_at: string
+          sessions_affected: number
+          photos_deleted: number
+          photos_failed: number
+          triggered_by: string
+        }
+        Insert: {
+          id?: string
+          coach_id?: string | null
+          deleted_at?: string
+          sessions_affected?: number
+          photos_deleted?: number
+          photos_failed?: number
+          triggered_by: string
+        }
+        Update: {
+          id?: string
+          coach_id?: string | null
+          deleted_at?: string
+          sessions_affected?: number
+          photos_deleted?: number
+          photos_failed?: number
+          triggered_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strava_deletion_audit_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       strava_connections: {
         Row: {
           user_id: string
