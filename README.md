@@ -4,14 +4,14 @@ Free, open-source running club management app for Special Olympics and inclusive
 
 [kitarun.com](https://kitarun.com)
 
-> **Why I Built This** — *An athlete finished a 5km run and looked around to see if anyone was watching.
+> **Why I Built This** — An athlete finished a 5km run and looked around to see if anyone was watching.
 We were. But by next week, the only proof lived in a coach's memory and a group chat that had already moved on. These weren't casual jogs. These were hard-won kilometres by people who'd been told, in a hundred small ways, that sport wasn't really for them.
 
 Then a caregiver asked: “How's she doing at running?” Not therapy. Not behaviour. Just running — the way any parent asks about their kid's sport.
 
 I didn't have a good answer. Not because I didn't know. Because nothing I had could show her.
 
-So I built it.*
+So I built it.
 
 ## What is Kita?
 
