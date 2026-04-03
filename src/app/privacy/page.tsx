@@ -211,7 +211,7 @@ export default async function PrivacyPage() {
             </h2>
             <p>
               When a coach connects Strava, we receive activity data (distance,
-              duration, title, GPS polyline, heart rate) via Strava&apos;s API.
+              duration, title, heart rate) via Strava&apos;s API.
               We store OAuth tokens securely.
             </p>
             <p className="mt-3">
