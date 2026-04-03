@@ -8,7 +8,7 @@ export default function StravaConnectBanner() {
         </p>
       </div>
       <a
-        href="/api/strava/connect"
+        href="/strava/consent"
         className="shrink-0 rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange-600 transition-colors"
       >
         Connect

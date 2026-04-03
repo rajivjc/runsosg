@@ -1174,6 +1174,35 @@ export type Database = {
           },
         ]
       }
+      strava_consent_log: {
+        Row: {
+          id: string
+          coach_id: string
+          consented_at: string
+          consent_version: string
+        }
+        Insert: {
+          id?: string
+          coach_id: string
+          consented_at?: string
+          consent_version?: string
+        }
+        Update: {
+          id?: string
+          coach_id?: string
+          consented_at?: string
+          consent_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strava_consent_log_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       strava_connections: {
         Row: {
           user_id: string

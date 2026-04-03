@@ -11,6 +11,7 @@ const PROTECTED_PATHS = [
   '/notifications',
   '/welcome',
   '/digest',
+  '/strava/consent',
   '/api/strava/connect',
   '/api/strava/callback',
 ]

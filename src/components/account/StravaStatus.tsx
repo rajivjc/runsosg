@@ -26,7 +26,7 @@ export default function StravaStatus({ connection }: { connection: Connection })
           Connect Strava so your runs automatically sync to athlete profiles.
         </p>
         <a
-          href="/api/strava/connect"
+          href="/strava/consent"
           className="inline-block bg-orange-500 hover:bg-orange-600 active:scale-[0.97] text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-all duration-150"
         >
           Connect Strava
@@ -85,7 +85,7 @@ export default function StravaStatus({ connection }: { connection: Connection })
       ) : (
         <div className="flex gap-2 mt-3">
           <a
-            href="/api/strava/connect"
+            href="/strava/consent"
             className="text-xs font-medium text-text-secondary hover:text-teal-600 dark:hover:text-teal-300 active:scale-[0.97] border border-border rounded-lg px-3 py-1.5 transition-all duration-150"
           >
             Reconnect
