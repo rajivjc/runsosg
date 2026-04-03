@@ -4,6 +4,7 @@ import { memo } from 'react'
 import Link from 'next/link'
 import { formatDate, formatDistance, formatDuration, formatPace } from '@/lib/utils/dates'
 import KudosButton from '@/components/feed/KudosButton'
+import PoweredByStrava from '@/components/strava/PoweredByStrava'
 import type { FeedSession, MilestoneBadge } from '@/lib/feed/types'
 
 const FEEL_EMOJI: Record<number, string> = {
@@ -93,6 +94,9 @@ export default memo(function SessionCard({ session: s, badges, kudosCount, kudos
             </span>
           ))}
         </div>
+      )}
+      {s.sync_source === 'strava_webhook' && (
+        <PoweredByStrava className="flex justify-end px-1 mt-1" />
       )}
       {userId && (
         <div className="mt-2 pt-1.5 border-t border-border-subtle" onClick={e => e.preventDefault()}>

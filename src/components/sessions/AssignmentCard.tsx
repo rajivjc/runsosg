@@ -7,6 +7,8 @@ import { useClubConfig } from '@/components/providers/ClubConfigProvider'
 import { formatSessionTimeRange, isSessionToday } from '@/lib/sessions/datetime'
 import type { AssignmentCardData } from '@/lib/feed/types'
 
+import PoweredByStrava from '@/components/strava/PoweredByStrava'
+
 const GroupLogRunSheet = dynamic(() => import('./GroupLogRunSheet'))
 
 interface Props {
@@ -82,6 +84,10 @@ export default function AssignmentCard({ card }: Props) {
             )
           })}
         </div>
+
+        {Object.values(loggedRuns).some(r => r.sync_source === 'strava_webhook') && (
+          <PoweredByStrava className="flex justify-end mb-2" />
+        )}
 
         <button
           onClick={() => setLogSheetOpen(true)}

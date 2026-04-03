@@ -30,13 +30,20 @@ export default async function StravaConsentPage() {
             athletes you match and their caregivers within your Kita club.
           </p>
 
-          <form action={logStravaConsent}>
+          <form action={logStravaConsent} className="flex justify-center">
             <button
               type="submit"
-              className="w-full rounded-lg bg-[#FC4C02] hover:bg-[#e04400] active:scale-[0.98] text-white text-sm font-semibold py-3 px-4 transition-all duration-150"
-              style={{ minHeight: '44px' }}
+              className="active:scale-[0.98] transition-transform duration-150 bg-transparent border-none p-0 cursor-pointer"
             >
-              Connect with Strava
+              {/* eslint-disable-next-line @next/next/no-img-element -- Strava brand asset must not be altered */}
+              <img
+                src="/assets/strava/btn_strava_connect_with_orange.png"
+                srcSet="/assets/strava/btn_strava_connect_with_orange.png 1x, /assets/strava/btn_strava_connect_with_orange_x2.png 2x"
+                alt="Connect with Strava"
+                width={193}
+                height={48}
+                style={{ display: 'block' }}
+              />
             </button>
           </form>
 

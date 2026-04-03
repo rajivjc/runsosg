@@ -94,6 +94,7 @@ export interface FeedSession {
   athlete_id: string
   coach_user_id: string | null
   strava_title: string | null
+  sync_source: string | null
   athlete_name: string
   coach_name: string | null
 }

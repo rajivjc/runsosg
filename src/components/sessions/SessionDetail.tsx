@@ -34,7 +34,7 @@ export type SessionDetailData = {
   pairingsPublished: boolean
   pairingsStale: boolean
   sessionDate: string // YYYY-MM-DD in club timezone
-  loggedRuns: Record<string, { distance_km: number | null; note: string | null }>
+  loggedRuns: Record<string, { distance_km: number | null; note: string | null; sync_source?: string | null; strava_activity_id?: number | null }>
   allAthletes: { id: string; name: string; avatar: string | null }[]
 }
 

@@ -9,6 +9,7 @@ import type { SessionData, MilestoneData, PhotoData } from './AthleteTabs'
 import type { WeeklyVolume, FeelPoint, DistancePoint, MilestonePin } from '@/lib/analytics/session-trends'
 import { updateManualSession, updateSessionFeel, deleteSession } from '@/app/athletes/[id]/actions'
 import StravaActivityLink from '@/components/feed/StravaActivityLink'
+import PoweredByStrava from '@/components/strava/PoweredByStrava'
 import CertificateButton from '@/components/milestone/CertificateButton'
 import PhotoLightbox from './PhotoLightbox'
 
@@ -286,6 +287,9 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
               />
             )}
           </div>
+          {s.sync_source === 'strava_webhook' && (
+            <PoweredByStrava className="flex justify-end mt-1.5" />
+          )}
         </div>
       </button>
 
