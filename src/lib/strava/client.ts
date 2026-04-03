@@ -92,7 +92,7 @@ export function getStravaAuthUrl(userId: string): string {
     client_id: clientId ?? '',
     redirect_uri: redirectUri,
     response_type: 'code',
-    scope: 'activity:read_all',
+    scope: 'activity:read',
     state: createStravaState(userId),
   })
 

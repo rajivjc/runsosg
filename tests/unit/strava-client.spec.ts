@@ -32,7 +32,7 @@ describe('getStravaAuthUrl', () => {
     expect(url).toContain('client_id=test-client-id')
     expect(url).toContain('redirect_uri=')
     expect(url).toContain('response_type=code')
-    expect(url).toContain('scope=activity%3Aread_all')
+    expect(url).toContain('scope=activity%3Aread')
     expect(url).toContain('state=')
   })
 

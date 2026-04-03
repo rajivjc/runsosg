@@ -28,6 +28,8 @@ export default async function StravaConsentPage() {
             By connecting your Strava account, your run data (distance,
             duration, heart rate, and activity title) will be visible to the
             athletes you match and their caregivers within your Kita club.
+            Runs must be set to Everyone or Followers visibility on Strava to
+            sync with Kita. Runs set to Only Me will not be matched.
           </p>
 
           <form action={logStravaConsent} className="flex justify-center">

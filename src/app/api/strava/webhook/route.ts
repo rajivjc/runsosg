@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { adminClient } from '@/lib/supabase/admin'
+import type { Json } from '@/lib/supabase/types'
 import { processStravaActivity } from '@/lib/strava/sync'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
@@ -202,11 +203,36 @@ export async function POST(request: NextRequest): Promise<Response> {
     return NextResponse.json({ ok: true })
   }
 
+  // ── Handle activity delete: retain the Kita session ─────────────────────────
+  // With activity:read scope, Strava sends a delete event when a coach changes
+  // visibility to Only Me. The session is already matched and confirmed as a
+  // Kita-native record, so we retain it and only log the event.
+  if (aspect_type === 'delete') {
+    try {
+      await adminClient.from('strava_sync_log').insert({
+        strava_activity_id: object_id,
+        coach_user_id: connection.user_id,
+        event_type: 'delete',
+        status: 'retained_on_strava_delete',
+        raw_payload: body as unknown as Json,
+        processed_at: new Date().toISOString(),
+      })
+    } catch (err: unknown) {
+      console.error(
+        'Strava webhook: failed to log retained delete event for activity=%d coach=%s:',
+        Number(object_id),
+        connection.user_id,
+        err instanceof Error ? err.message : err
+      )
+    }
+    return NextResponse.json({ ok: true })
+  }
+
   try {
     await processStravaActivity(
       object_id,
       connection.user_id,
-      aspect_type as 'create' | 'update' | 'delete',
+      aspect_type as 'create' | 'update',
       body as object
     )
 
