@@ -40,7 +40,6 @@ jest.mock('@/lib/strava/client', () => ({
     average_heartrate: null,
     max_heartrate: null,
   }),
-  getActivityPhotos: jest.fn().mockResolvedValue([]),
 }))
 
 jest.mock('@/lib/milestones', () => ({

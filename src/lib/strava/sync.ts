@@ -1,6 +1,6 @@
 import { adminClient } from '@/lib/supabase/admin'
 import type { Json } from '@/lib/supabase/types'
-import { getActivity, getActivityPhotos } from './client'
+import { getActivity } from './client'
 import type { StravaActivity } from './client'
 import { getValidAccessToken } from './tokens'
 import { matchActivityToAthlete } from './matching'
@@ -130,86 +130,6 @@ async function upsertSessionForAthlete(
   }
 
   return inserted.id
-}
-
-const MAX_PHOTOS_PER_SESSION = 2
-
-/**
- * Fetch photos from Strava and store them in Supabase storage + media table.
- * Designed to be non-blocking — failures here never break session sync.
- */
-async function syncActivityPhotos(
-  activity: StravaActivity,
-  stravaActivityId: number,
-  sessionId: string,
-  athleteId: string,
-  coachUserId: string,
-  accessToken: string
-): Promise<void> {
-  if (!activity.total_photo_count || activity.total_photo_count === 0) return
-
-  // Check if we already have photos for this session (idempotent on re-process)
-  const { count } = await adminClient
-    .from('media')
-    .select('*', { count: 'exact', head: true })
-    .eq('session_id', sessionId)
-    .eq('source', 'strava')
-  if (count && count > 0) return
-
-  const photos = await getActivityPhotos(stravaActivityId, accessToken)
-  if (!photos || photos.length === 0) return
-
-  const dateStr = activity.start_date.split('T')[0]
-
-  for (let i = 0; i < Math.min(photos.length, MAX_PHOTOS_PER_SESSION); i++) {
-    const photo = photos[i]
-    // Pick the largest available URL (prefer '1200', then '600', then first key)
-    const photoUrl = photo.urls?.['1200'] ?? photo.urls?.['600'] ?? Object.values(photo.urls ?? {})[0]
-    if (!photoUrl) continue
-
-    try {
-      // Download the photo from Strava CDN
-      const imgRes = await fetch(photoUrl)
-      if (!imgRes.ok) continue
-
-      const buffer = Buffer.from(await imgRes.arrayBuffer())
-
-      // Determine content type from response or default to jpeg
-      const contentType = imgRes.headers.get('content-type') ?? 'image/jpeg'
-      const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg'
-
-      const storagePath = `${athleteId}/${dateStr}_${photo.unique_id}.${ext}`
-
-      // Upload to Supabase Storage
-      const { error: uploadError } = await adminClient.storage
-        .from('athlete-media')
-        .upload(storagePath, buffer, {
-          contentType,
-          upsert: false,
-        })
-
-      if (uploadError) {
-        // If file already exists, skip gracefully
-        if (uploadError.message?.includes('already exists')) continue
-        console.error('Photo upload error:', uploadError.message)
-        continue
-      }
-
-      // Insert media row
-      await adminClient.from('media').insert({
-        athlete_id: athleteId,
-        session_id: sessionId,
-        milestone_id: null,
-        url: photoUrl,
-        caption: photo.caption ?? null,
-        uploaded_by: coachUserId,
-        source: 'strava',
-        storage_path: storagePath,
-      })
-    } catch (err) {
-      console.error('syncActivityPhotos error for photo:', err instanceof Error ? err.message : err)
-    }
-  }
 }
 
 export async function processStravaActivity(
@@ -451,12 +371,6 @@ export async function processStravaActivity(
 
         await checkAndAwardMilestones(athleteMatch.athleteId, sessionId, coachUserId)
 
-        // Sync photos from Strava (non-blocking — failures don't affect session)
-        try {
-          await syncActivityPhotos(activity, stravaActivityId, sessionId, athleteMatch.athleteId, coachUserId, accessToken)
-        } catch (photoErr) {
-          console.error('Photo sync failed (non-fatal):', photoErr instanceof Error ? photoErr.message : photoErr)
-        }
       }
     }
 

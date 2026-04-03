@@ -35,13 +35,6 @@ export interface StravaActivity {
   }
 }
 
-export interface StravaPhoto {
-  unique_id: string
-  urls: Record<string, string>
-  caption: string | null
-  source: number // 1 = Strava, 2 = Instagram
-}
-
 // ─── OAuth state (signed user ID so callback works without browser cookies) ───
 
 const STATE_SECRET = process.env.STRAVA_STATE_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
@@ -209,31 +202,3 @@ export async function getAthleteActivities(
   return res.json() as Promise<StravaActivity[]>
 }
 
-// ─── Get activity photos ──────────────────────────────────────────────────────
-
-export async function getActivityPhotos(
-  activityId: number,
-  accessToken: string
-): Promise<StravaPhoto[]> {
-  const safeId = parseInt(String(activityId), 10)
-  if (!Number.isFinite(safeId) || safeId <= 0) {
-    return []
-  }
-
-  const url = new URL(
-    `/api/v3/activities/${safeId}/photos`,
-    'https://www.strava.com'
-  )
-  url.searchParams.set('size', '1200')
-
-  const res = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  })
-
-  if (!res.ok) {
-    console.error(`Strava getActivityPhotos failed: ${res.status}`)
-    return []
-  }
-
-  return res.json() as Promise<StravaPhoto[]>
-}
