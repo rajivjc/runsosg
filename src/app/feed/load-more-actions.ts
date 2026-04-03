@@ -15,6 +15,7 @@ interface SessionRow {
   coach_user_id: string | null
   strava_title: string | null
   sync_source: string | null
+  garmin_sourced: boolean | null
   athletes: { name: string } | null
   users: { name: string } | null
 }
@@ -40,7 +41,7 @@ export async function loadMoreSessions(
 
   let query = adminClient
     .from('sessions')
-    .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, sync_source, athletes(name), users!sessions_coach_user_id_fkey(name)')
+    .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, sync_source, garmin_sourced, athletes(name), users!sessions_coach_user_id_fkey(name)')
     .eq('status', 'completed')
     .is('strava_deleted_at', null)
     .lt('date', cursor)
@@ -79,6 +80,7 @@ export async function loadMoreSessions(
     coach_user_id: s.coach_user_id,
     strava_title: s.strava_title,
     sync_source: s.sync_source,
+    garmin_sourced: s.garmin_sourced ?? null,
     athlete_name: s.athletes?.name ?? 'Unknown athlete',
     coach_name: s.users?.name ?? null,
   }))

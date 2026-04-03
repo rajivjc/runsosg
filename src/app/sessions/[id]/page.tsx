@@ -210,7 +210,7 @@ export default async function SessionDetailPage({ params }: Props) {
   const [loggedRunsResult, allAthletesResult] = await Promise.all([
     adminClient
       .from('sessions')
-      .select('athlete_id, distance_km, note, sync_source, strava_activity_id')
+      .select('athlete_id, distance_km, note, sync_source, strava_activity_id, garmin_sourced')
       .eq('training_session_id', sessionId)
       .eq('status', 'completed'),
     adminClient
@@ -220,9 +220,9 @@ export default async function SessionDetailPage({ params }: Props) {
       .order('name'),
   ])
 
-  const loggedRuns: Record<string, { distance_km: number | null; note: string | null; sync_source: string | null; strava_activity_id: number | null }> = {}
+  const loggedRuns: Record<string, { distance_km: number | null; note: string | null; sync_source: string | null; strava_activity_id: number | null; garmin_sourced: boolean | null }> = {}
   for (const r of loggedRunsResult.data ?? []) {
-    loggedRuns[r.athlete_id] = { distance_km: r.distance_km, note: r.note, sync_source: r.sync_source, strava_activity_id: r.strava_activity_id }
+    loggedRuns[r.athlete_id] = { distance_km: r.distance_km, note: r.note, sync_source: r.sync_source, strava_activity_id: r.strava_activity_id, garmin_sourced: r.garmin_sourced ?? null }
   }
 
   const allAthletes = (allAthletesResult.data ?? []).map(a => ({

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import PoweredByStrava from '@/components/strava/PoweredByStrava'
+import GarminAttribution from '@/components/garmin/GarminAttribution'
 import StravaActivityLink from '@/components/feed/StravaActivityLink'
 
 const GroupLogRunSheet = dynamic(() => import('./GroupLogRunSheet'))
@@ -21,6 +22,7 @@ type LoggedRun = {
   note: string | null
   sync_source?: string | null
   strava_activity_id?: number | null
+  garmin_sourced?: boolean | null
 }
 
 type Props = {
@@ -192,7 +194,12 @@ export default function AssignmentSection({
 
       {/* Powered by Strava — shown if any logged run is from Strava */}
       {Object.values(loggedRuns).some(r => r.sync_source === 'strava_webhook') && (
-        <PoweredByStrava className="flex justify-end mb-2" />
+        <div className="flex flex-col items-end gap-3 mb-2">
+          <PoweredByStrava className="" />
+          {Object.values(loggedRuns).some(r => r.garmin_sourced === true) && (
+            <GarminAttribution className="" />
+          )}
+        </div>
       )}
 
       {/* Group log sheet */}

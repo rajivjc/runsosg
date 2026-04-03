@@ -36,6 +36,7 @@ export type SessionData = {
   strava_title: string | null
   avg_heart_rate: number | null
   max_heart_rate: number | null
+  garmin_sourced: boolean | null
   coach_name: string | null
 }
 

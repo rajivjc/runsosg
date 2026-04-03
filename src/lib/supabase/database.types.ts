@@ -1022,6 +1022,7 @@ export type Database = {
           max_heart_rate: number | null
           created_at: string | null
           training_session_id: string | null
+          garmin_sourced: boolean | null
         }
         Insert: {
           id?: string
@@ -1047,6 +1048,7 @@ export type Database = {
           max_heart_rate?: number | null
           created_at?: string | null
           training_session_id?: string | null
+          garmin_sourced?: boolean | null
         }
         Update: {
           id?: string
@@ -1072,6 +1074,7 @@ export type Database = {
           max_heart_rate?: number | null
           created_at?: string | null
           training_session_id?: string | null
+          garmin_sourced?: boolean | null
         }
         Relationships: [
           {

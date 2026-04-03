@@ -26,6 +26,7 @@ export interface StravaActivity {
   }
   average_heartrate?: number
   max_heartrate?: number
+  device_name?: string
   total_photo_count?: number
   photos?: {
     count: number

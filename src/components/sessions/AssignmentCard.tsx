@@ -8,6 +8,7 @@ import { formatSessionTimeRange, isSessionToday } from '@/lib/sessions/datetime'
 import type { AssignmentCardData } from '@/lib/feed/types'
 
 import PoweredByStrava from '@/components/strava/PoweredByStrava'
+import GarminAttribution from '@/components/garmin/GarminAttribution'
 
 const GroupLogRunSheet = dynamic(() => import('./GroupLogRunSheet'))
 
@@ -86,7 +87,12 @@ export default function AssignmentCard({ card }: Props) {
         </div>
 
         {Object.values(loggedRuns).some(r => r.sync_source === 'strava_webhook') && (
-          <PoweredByStrava className="flex justify-end mb-2" />
+          <div className="flex flex-col items-end gap-3 mb-2">
+            <PoweredByStrava className="" />
+            {Object.values(loggedRuns).some(r => r.garmin_sourced === true) && (
+              <GarminAttribution className="" />
+            )}
+          </div>
         )}
 
         <button

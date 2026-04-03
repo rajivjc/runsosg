@@ -105,6 +105,9 @@ async function upsertSessionForAthlete(
     sync_source: 'strava_webhook' as const,
     match_method: athleteMatch.method,
     match_confidence: athleteMatch.confidence,
+    garmin_sourced: activity.device_name
+      ? /garmin/i.test(activity.device_name)
+      : false,
   }
 
   if (existing) {
