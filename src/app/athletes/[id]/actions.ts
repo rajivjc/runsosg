@@ -604,14 +604,14 @@ export async function deleteSession(
 
   // Delete related milestones for this session (best-effort)
   const { error: milestoneErr } = await adminClient.from('milestones').delete().eq('session_id', sessionId)
-  if (milestoneErr) console.error('Failed to delete milestones for session', sessionId, milestoneErr.message)
+  if (milestoneErr) console.error('Failed to delete milestones for session', sessionId.replace(/[\r\n]/g, ''), milestoneErr.message)
 
   // Delete related notifications referencing this session (best-effort)
   const { error: notifErr } = await adminClient
     .from('notifications')
     .delete()
     .contains('payload', { session_id: sessionId })
-  if (notifErr) console.error('Failed to delete notifications for session', sessionId, notifErr.message)
+  if (notifErr) console.error('Failed to delete notifications for session', sessionId.replace(/[\r\n]/g, ''), notifErr.message)
 
   // Strava-synced sessions: soft-delete to prevent re-sync
   // Manual sessions: hard-delete

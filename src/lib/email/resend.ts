@@ -32,7 +32,7 @@ type SendEmailParams = {
 export async function sendEmail({ to, subject, html, replyTo, clubName }: SendEmailParams): Promise<{ success: boolean; error?: string }> {
   const resend = getResend()
   if (!resend) {
-    console.warn('[email] Resend not configured — skipping email:', subject)
+    console.warn('[email] Resend not configured — skipping email:', subject.replace(/[\r\n]/g, ' '))
     return { success: false, error: 'Email not configured' }
   }
 
