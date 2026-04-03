@@ -95,7 +95,6 @@ async function upsertSessionForAthlete(
     date: activity.start_date,
     distance_km: activity.distance / 1000,
     duration_seconds: activity.moving_time,
-    map_polyline: activity.map.summary_polyline,
     strava_title: activity.name || null,
     avg_heart_rate: activity.average_heartrate
       ? Math.round(activity.average_heartrate)

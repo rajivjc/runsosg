@@ -50,7 +50,6 @@ export async function resolveUnmatchedRun(
       date: activity.start_date,
       distance_km: activity.distance ? activity.distance / 1000 : null,
       duration_seconds: activity.moving_time ?? null,
-      map_polyline: activity.map?.summary_polyline ?? null,
       strava_title: activity.name || null,
       avg_heart_rate: activity.average_heartrate
         ? Math.round(activity.average_heartrate)

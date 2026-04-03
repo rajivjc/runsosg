@@ -122,7 +122,6 @@ export async function POST(request: NextRequest): Promise<Response> {
               await adminClient
                 .from('sessions')
                 .update({
-                  map_polyline: null,
                   strava_title: null,
                   avg_heart_rate: null,
                   max_heart_rate: null,
