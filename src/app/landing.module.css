@@ -110,6 +110,17 @@
   color: #0D9488;
 }
 
+.navGithub {
+  display: flex;
+  align-items: center;
+  color: #4B5563;
+  transition: color 0.2s;
+}
+
+.navGithub:hover {
+  color: #0F766E;
+}
+
 @media (max-width: 768px) {
   .navLinks {
     gap: 16px;
