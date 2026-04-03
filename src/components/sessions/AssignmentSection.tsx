@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import PoweredByStrava from '@/components/strava/PoweredByStrava'
+import StravaActivityLink from '@/components/feed/StravaActivityLink'
 
 const GroupLogRunSheet = dynamic(() => import('./GroupLogRunSheet'))
 
@@ -17,6 +19,8 @@ type Assignment = {
 type LoggedRun = {
   distance_km: number | null
   note: string | null
+  sync_source?: string | null
+  strava_activity_id?: number | null
 }
 
 type Props = {
@@ -97,15 +101,20 @@ export default function AssignmentSection({
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-text-primary">{a.athlete_name}</p>
                   {logged ? (
-                    <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
-                      <span>✓</span>
-                      <span>
-                        Run logged
-                        {logged.distance_km != null ? ` (${logged.distance_km}km` : ''}
-                        {logged.note ? `, "${logged.note}"` : ''}
-                        {logged.distance_km != null ? ')' : ''}
-                      </span>
-                    </p>
+                    <>
+                      <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
+                        <span>✓</span>
+                        <span>
+                          Run logged
+                          {logged.distance_km != null ? ` (${logged.distance_km}km` : ''}
+                          {logged.note ? `, "${logged.note}"` : ''}
+                          {logged.distance_km != null ? ')' : ''}
+                        </span>
+                      </p>
+                      {logged.strava_activity_id != null && (
+                        <StravaActivityLink activityId={logged.strava_activity_id} className="text-xs font-semibold text-[#FC5200] hover:underline mt-0.5 inline-block" />
+                      )}
+                    </>
                   ) : (
                     athleteCues[a.athlete_id] && (
                       <p className="text-xs text-text-secondary">
@@ -180,6 +189,11 @@ export default function AssignmentSection({
           </div>
         )}
       </div>
+
+      {/* Powered by Strava — shown if any logged run is from Strava */}
+      {Object.values(loggedRuns).some(r => r.sync_source === 'strava_webhook') && (
+        <PoweredByStrava className="flex justify-end mb-2" />
+      )}
 
       {/* Group log sheet */}
       {trainingSessionId && sessionDate && logSheetOpen && (
