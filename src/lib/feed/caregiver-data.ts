@@ -52,7 +52,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     // Issue 3: Supabase joins fetch athlete + coach names in one query
     adminClient
       .from('sessions')
-      .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, sync_source, athletes(name), users!sessions_coach_user_id_fkey(name)')
+      .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, sync_source, garmin_sourced, athletes(name), users!sessions_coach_user_id_fkey(name)')
       .eq('status', 'completed')
       .is('strava_deleted_at', null)
       .order('date', { ascending: false })
@@ -139,6 +139,7 @@ export async function loadCaregiverFeedData(userId: string): Promise<CaregiverFe
     coach_user_id: s.coach_user_id,
     strava_title: s.strava_title,
     sync_source: (s as unknown as { sync_source?: string }).sync_source ?? null,
+    garmin_sourced: (s as unknown as { garmin_sourced?: boolean | null }).garmin_sourced ?? null,
     athlete_name: (s as unknown as { athletes?: { name?: string } }).athletes?.name ?? 'Unknown athlete',
     coach_name: (s as unknown as { users?: { name?: string } }).users?.name ?? null,
   }))

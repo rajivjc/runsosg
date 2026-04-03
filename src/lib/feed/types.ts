@@ -46,6 +46,7 @@ export interface AssignmentAthleteLoggedRun {
   distance_km: number | null
   note: string | null
   sync_source: string | null
+  garmin_sourced: boolean | null
 }
 
 export interface AssignmentCardData {
@@ -95,6 +96,7 @@ export interface FeedSession {
   coach_user_id: string | null
   strava_title: string | null
   sync_source: string | null
+  garmin_sourced: boolean | null
   athlete_name: string
   coach_name: string | null
 }

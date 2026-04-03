@@ -10,6 +10,7 @@ import type { WeeklyVolume, FeelPoint, DistancePoint, MilestonePin } from '@/lib
 import { updateManualSession, updateSessionFeel, deleteSession } from '@/app/athletes/[id]/actions'
 import StravaActivityLink from '@/components/feed/StravaActivityLink'
 import PoweredByStrava from '@/components/strava/PoweredByStrava'
+import GarminAttribution from '@/components/garmin/GarminAttribution'
 import CertificateButton from '@/components/milestone/CertificateButton'
 import PhotoLightbox from './PhotoLightbox'
 
@@ -288,7 +289,12 @@ function SessionCard({ session: s, athleteId, athleteName, isReadOnly, onUpdated
             )}
           </div>
           {s.sync_source === 'strava_webhook' && (
-            <PoweredByStrava className="flex justify-end mt-1.5" />
+            <div className="flex flex-col items-end gap-3 mt-1.5">
+              <PoweredByStrava className="" />
+              {s.garmin_sourced === true && (
+                <GarminAttribution className="" />
+              )}
+            </div>
           )}
         </div>
       </button>

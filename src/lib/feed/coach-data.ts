@@ -60,7 +60,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     // Issue 3: Supabase joins fetch athlete + coach names in one query
     adminClient
       .from('sessions')
-      .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, sync_source, athletes(name), users!sessions_coach_user_id_fkey(name)')
+      .select('id, date, distance_km, duration_seconds, feel, note, athlete_id, coach_user_id, strava_title, sync_source, garmin_sourced, athletes(name), users!sessions_coach_user_id_fkey(name)')
       .eq('status', 'completed')
       .is('strava_deleted_at', null)
       .order('date', { ascending: false })
@@ -131,6 +131,7 @@ export async function loadCoachFeedData(userId: string): Promise<CoachFeedData> 
     coach_user_id: s.coach_user_id,
     strava_title: s.strava_title,
     sync_source: (s as unknown as { sync_source?: string }).sync_source ?? null,
+    garmin_sourced: (s as unknown as { garmin_sourced?: boolean | null }).garmin_sourced ?? null,
     athlete_name: (s as unknown as { athletes?: { name?: string } }).athletes?.name ?? 'Unknown athlete',
     coach_name: (s as unknown as { users?: { name?: string } }).users?.name ?? null,
   }))
@@ -383,7 +384,7 @@ async function buildCoachSessionCards(
       .single(),
     adminClient
       .from('sessions')
-      .select('training_session_id, athlete_id, distance_km, note, sync_source')
+      .select('training_session_id, athlete_id, distance_km, note, sync_source, garmin_sourced')
       .in('training_session_id', sessionIds)
       .eq('status', 'completed'),
     adminClient
@@ -425,7 +426,7 @@ async function buildCoachSessionCards(
   }
 
   // Index logged runs by training_session_id → athlete_id
-  const loggedRunsBySession: Record<string, Record<string, { distance_km: number | null; note: string | null; sync_source: string | null }>> = {}
+  const loggedRunsBySession: Record<string, Record<string, { distance_km: number | null; note: string | null; sync_source: string | null; garmin_sourced: boolean | null }>> = {}
   for (const r of loggedRuns ?? []) {
     if (!r.training_session_id) continue
     if (!loggedRunsBySession[r.training_session_id]) loggedRunsBySession[r.training_session_id] = {}
@@ -433,6 +434,7 @@ async function buildCoachSessionCards(
       distance_km: r.distance_km,
       note: r.note,
       sync_source: r.sync_source ?? null,
+      garmin_sourced: r.garmin_sourced ?? null,
     }
   }
 

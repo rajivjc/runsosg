@@ -68,18 +68,18 @@ async function main() {
 
   // Set garmin_sourced = NULL for all Strava-sourced sessions
   // This is idempotent: NULL → NULL is a no-op in practice
-  const { error: updateError, count: updatedCount } = await adminClient
+  const { error: updateError, data: updatedRows } = await adminClient
     .from('sessions')
     .update({ garmin_sourced: null })
     .not('strava_activity_id', 'is', null)
-    .select('*', { count: 'exact', head: true })
+    .select('id')
 
   if (updateError) {
     console.error('Failed to update sessions:', updateError.message)
     process.exit(1)
   }
 
-  console.log(`\nSessions updated (garmin_sourced → NULL): ${updatedCount}`)
+  console.log(`\nSessions updated (garmin_sourced → NULL): ${updatedRows?.length ?? 0}`)
   console.log('Done.')
 }
 
