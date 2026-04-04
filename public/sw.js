@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kita-v16'
+const CACHE_NAME = 'kita-v17'
 const NAV_CACHE = 'kita-pending-nav'
 const SHELL_ASSETS = ['/icon-192.png', '/icon-512.png']
 

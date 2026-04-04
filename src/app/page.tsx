@@ -11,10 +11,10 @@ import styles from './landing.module.css'
 export const metadata: Metadata = {
   metadataBase: new URL('https://kitarun.com'),
   title: 'Kita — The running app where every athlete belongs',
-  description: 'Coaches log sessions. Caregivers see progress. Athletes celebrate milestones. One app that keeps your whole club connected.',
+  description: 'Coaches spend less time on admin. Caregivers finally see what\'s happening. Athletes get the recognition they\'ve earned. One app that keeps your whole club connected.',
   openGraph: {
     title: 'Kita — The running app where every athlete belongs',
-    description: 'Coaches log sessions. Caregivers see progress. Athletes celebrate milestones. One app that keeps your whole club connected.',
+    description: 'Coaches spend less time on admin. Caregivers finally see what\'s happening. Athletes get the recognition they\'ve earned. One app that keeps your whole club connected.',
     url: 'https://kitarun.com',
     siteName: 'Kita',
     type: 'website',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Kita — The running app where every athlete belongs',
-    description: 'Coaches log sessions. Caregivers see progress. Athletes celebrate milestones. One app that keeps your whole club connected.',
+    description: 'Coaches spend less time on admin. Caregivers finally see what\'s happening. Athletes get the recognition they\'ve earned. One app that keeps your whole club connected.',
   },
 }
 
@@ -82,11 +82,17 @@ export default async function Home() {
           <h1 className={styles.heroTitle}>
             The running app where <span className={styles.heroTitleAccent}>every athlete</span> belongs
           </h1>
+          <p className={styles.heroProblem}>
+            Stop losing your athletes&apos; progress to group chats and coach memory.
+          </p>
           <p className={styles.heroSubtitle}>
-            Coaches log sessions. Caregivers see progress. Athletes celebrate milestones. One app that keeps your whole club connected.
+            Coaches spend less time on admin. Caregivers finally see what&apos;s happening. Athletes get the recognition they&apos;ve earned. One app that keeps your whole club connected.
+          </p>
+          <p className={styles.heroDifferentiator}>
+            The only running app designed from the ground up for inclusive and adaptive sports.
           </p>
           <p className={styles.heroAudience}>
-            For Special Olympics clubs, inclusive running groups, and adaptive sports programmes.
+            For Special Olympics clubs, community running groups, and adaptive programmes.
           </p>
           <div className={styles.heroCtas}>
             <Link href="/demo" className={styles.ctaPrimary}>
