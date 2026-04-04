@@ -83,16 +83,10 @@ export default async function Home() {
             The running app where <span className={styles.heroTitleAccent}>every athlete</span> belongs
           </h1>
           <p className={styles.heroProblem}>
-            Your athletes&apos; progress shouldn&apos;t live in a WhatsApp thread that scrolls away by Monday.
+            Your athletes&apos; progress shouldn&apos;t disappear into a group chat.
           </p>
           <p className={styles.heroSubtitle}>
-            Coaches replace WhatsApp coordination and paper logs with one dashboard. Caregivers get weekly progress updates without being at every session. Athletes celebrate milestones on their own Journey page — no app download, no account needed.
-          </p>
-          <p className={styles.heroDifferentiator}>
-            Built for inclusive sports from day one — with sensory-safe celebrations, cognitive accessibility, QR code access that needs no account, and caregiver visibility built in. No other running app does this.
-          </p>
-          <p className={styles.heroAudience}>
-            For Special Olympics clubs, community running groups, and adaptive programmes.
+            One dashboard replaces WhatsApp coordination and paper logs. Caregivers see weekly progress without attending every session. Athletes celebrate milestones on their own page — no account needed.
           </p>
           <div className={styles.heroCtas}>
             <Link href="/demo" className={styles.ctaPrimary}>
@@ -101,6 +95,14 @@ export default async function Home() {
             <a href="#contact" className={styles.ctaSecondary}>
               Get your club running — free &rarr;
             </a>
+          </div>
+          <div className={styles.heroFooter}>
+            <p className={styles.heroDifferentiator}>
+              Built for inclusive sports from day one — sensory-safe, cognitively accessible, private by design.
+            </p>
+            <p className={styles.heroAudience}>
+              For Special Olympics clubs, community running groups, and adaptive programmes.
+            </p>
           </div>
         </div>
       </section>
