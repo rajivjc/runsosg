@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-function StravaConnectedInner({ clubName }: { clubName: string }) {
+function StravaConnectedInner() {
   const searchParams = useSearchParams()
   const isDenied = searchParams.get('error') === 'denied'
   const [isStandalone, setIsStandalone] = useState(false)
@@ -64,10 +64,10 @@ function StravaConnectedInner({ clubName }: { clubName: string }) {
           <div className="pt-2 space-y-3">
             <div className="rounded-lg bg-teal-50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-400/20 px-4 py-3">
               <p className="text-sm font-medium text-teal-800 dark:text-teal-300 mb-1">
-                Go back to the {clubName} app
+                Go back to the Kita app
               </p>
               <p className="text-xs text-teal-600 dark:text-teal-300">
-                Tap your {clubName} icon on the home screen. You can close this browser tab.
+                Tap your Kita icon on the home screen. You can close this browser tab.
               </p>
             </div>
             <a
@@ -83,10 +83,10 @@ function StravaConnectedInner({ clubName }: { clubName: string }) {
   )
 }
 
-export default function StravaConnectedContent({ clubName }: { clubName: string }) {
+export default function StravaConnectedContent() {
   return (
     <Suspense fallback={null}>
-      <StravaConnectedInner clubName={clubName} />
+      <StravaConnectedInner />
     </Suspense>
   )
 }

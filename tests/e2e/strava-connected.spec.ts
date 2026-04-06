@@ -9,7 +9,7 @@ test('Strava connected page shows success state', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Strava connected!' })).toBeVisible();
   await expect(page.getByText('Your runs will now sync automatically')).toBeVisible();
-  await expect(page.getByText('Go back to the SOSG Run app')).toBeVisible();
+  await expect(page.getByText('Go back to the Kita app')).toBeVisible();
 });
 
 test('Strava connected page shows denied state', async ({ page }) => {
