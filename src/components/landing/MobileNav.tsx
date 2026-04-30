@@ -49,7 +49,7 @@ export default function MobileNav() {
 
       <div className={open ? styles.mobileMenuOpen : styles.mobileMenu} role="menu">
         <Link href="/demo" className={styles.mobileMenuItem} onClick={close} role="menuitem">
-          See the app
+          Try the demo
         </Link>
         <a
           href="https://github.com/rajivjc/kita"

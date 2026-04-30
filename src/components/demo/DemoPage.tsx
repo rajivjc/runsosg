@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import LandingNav from '@/components/landing/LandingNav'
+import landingStyles from '@/app/landing.module.css'
 import { ROLES, type RoleId } from './demo-data'
 import PhoneFrame from './PhoneFrame'
 import CoachFeed from './screens/CoachFeed'
@@ -68,15 +70,30 @@ export default function DemoPage() {
   }, [screenIdx, screens.length, goTo])
 
   const CurrentComponent = current.component
+  const [hoveredArrow, setHoveredArrow] = useState<'prev' | 'next' | null>(null)
+
+  const prevDisabled = screenIdx === 0
+  const nextDisabled = screenIdx === screens.length - 1
+
+  const arrowStyle = (disabled: boolean, hovered: boolean): React.CSSProperties => ({
+    width: 44, height: 44, borderRadius: 22, border: '1px solid #D3D1C7',
+    background: !disabled && hovered ? '#F1EFE8' : 'white',
+    cursor: disabled ? 'default' : 'pointer',
+    opacity: disabled ? 0.3 : 1, fontSize: 18, color: '#2C2C2A',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+    transition: 'opacity 0.2s, background 0.2s',
+  })
 
   return (
-    <div style={{
-      fontFamily: "'Nunito Sans', system-ui, sans-serif",
-      maxWidth: 680, margin: '0 auto', padding: '20px 16px',
-      color: '#2C2C2A',
-      paddingBottom: 0,
-      marginBottom: -64,
-    }}>
+    <div className={landingStyles.page}>
+      <LandingNav />
+      <div style={{
+        fontFamily: "'Nunito Sans', system-ui, sans-serif",
+        maxWidth: 680, margin: '0 auto', padding: '96px 16px 20px',
+        color: '#2C2C2A',
+      }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 2, color: '#888780', fontWeight: 600, marginBottom: 6 }}>Interactive demo</div>
         <div style={{ fontSize: 24, fontWeight: 700, color: '#2C2C2A', lineHeight: 1.2 }}>
@@ -117,14 +134,11 @@ export default function DemoPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <button
           onClick={() => goTo(Math.max(0, screenIdx - 1))}
-          disabled={screenIdx === 0}
-          style={{
-            width: 36, height: 36, borderRadius: 18, border: '1px solid #E8E6E0',
-            background: 'white', cursor: screenIdx === 0 ? 'default' : 'pointer',
-            opacity: screenIdx === 0 ? 0.3 : 1, fontSize: 16, color: '#5F5E5A',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, transition: 'opacity 0.2s',
-          }}
+          onMouseEnter={() => setHoveredArrow('prev')}
+          onMouseLeave={() => setHoveredArrow((h) => (h === 'prev' ? null : h))}
+          disabled={prevDisabled}
+          aria-label="Previous screen"
+          style={arrowStyle(prevDisabled, hoveredArrow === 'prev')}
         >←</button>
 
         <div
@@ -143,14 +157,11 @@ export default function DemoPage() {
 
         <button
           onClick={() => goTo(Math.min(screens.length - 1, screenIdx + 1))}
-          disabled={screenIdx === screens.length - 1}
-          style={{
-            width: 36, height: 36, borderRadius: 18, border: '1px solid #E8E6E0',
-            background: 'white', cursor: screenIdx === screens.length - 1 ? 'default' : 'pointer',
-            opacity: screenIdx === screens.length - 1 ? 0.3 : 1, fontSize: 16, color: '#5F5E5A',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, transition: 'opacity 0.2s',
-          }}
+          onMouseEnter={() => setHoveredArrow('next')}
+          onMouseLeave={() => setHoveredArrow((h) => (h === 'next' ? null : h))}
+          disabled={nextDisabled}
+          aria-label="Next screen"
+          style={arrowStyle(nextDisabled, hoveredArrow === 'next')}
         >→</button>
       </div>
 
@@ -193,6 +204,7 @@ export default function DemoPage() {
         <div style={{ fontSize: 12, color: '#888780', marginTop: 8 }}>
           We&apos;ll set you up and walk you through your first session
         </div>
+      </div>
       </div>
     </div>
   )
