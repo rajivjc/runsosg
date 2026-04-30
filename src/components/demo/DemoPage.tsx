@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import LandingNav from '@/components/landing/LandingNav'
-import landingStyles from '@/app/landing.module.css'
 import { ROLES, type RoleId } from './demo-data'
 import PhoneFrame from './PhoneFrame'
 import CoachFeed from './screens/CoachFeed'
@@ -87,13 +85,13 @@ export default function DemoPage() {
   })
 
   return (
-    <div className={landingStyles.page}>
-      <LandingNav />
-      <div style={{
-        fontFamily: "'Nunito Sans', system-ui, sans-serif",
-        maxWidth: 680, margin: '0 auto', padding: '96px 16px 20px',
-        color: '#2C2C2A',
-      }}>
+    <div style={{
+      fontFamily: "'Nunito Sans', system-ui, sans-serif",
+      maxWidth: 680, margin: '0 auto', padding: '20px 16px',
+      color: '#2C2C2A',
+      paddingBottom: 0,
+      marginBottom: -64,
+    }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 2, color: '#888780', fontWeight: 600, marginBottom: 6 }}>Interactive demo</div>
         <div style={{ fontSize: 24, fontWeight: 700, color: '#2C2C2A', lineHeight: 1.2 }}>
@@ -204,7 +202,6 @@ export default function DemoPage() {
         <div style={{ fontSize: 12, color: '#888780', marginTop: 8 }}>
           We&apos;ll set you up and walk you through your first session
         </div>
-      </div>
       </div>
     </div>
   )
