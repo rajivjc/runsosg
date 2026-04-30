@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import DemoPage from '@/components/demo/DemoPage'
+import LandingNav from '@/components/landing/LandingNav'
 
 export const metadata: Metadata = {
   title: 'See Kita in action — Interactive demo',
@@ -22,5 +23,12 @@ export const metadata: Metadata = {
 }
 
 export default function DemoPageRoute() {
-  return <DemoPage />
+  return (
+    <>
+      <LandingNav />
+      <div style={{ paddingTop: 64 }}>
+        <DemoPage />
+      </div>
+    </>
+  )
 }

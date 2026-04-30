@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-
 interface PhoneFrameProps {
   children: React.ReactNode
 }
@@ -9,36 +7,6 @@ interface PhoneFrameProps {
 const FRAME_BG = '#FBF9F7'
 
 export default function PhoneFrame({ children }: PhoneFrameProps) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [atBottom, setAtBottom] = useState(false)
-  const [hintVisible, setHintVisible] = useState(true)
-
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-
-    const update = () => {
-      const reached = el.scrollTop + el.clientHeight >= el.scrollHeight - 1
-      setAtBottom(reached)
-    }
-    update()
-
-    const onScroll = () => {
-      update()
-      setHintVisible(false)
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-
-    const timer = window.setTimeout(() => setHintVisible(false), 3000)
-
-    return () => {
-      el.removeEventListener('scroll', onScroll)
-      window.clearTimeout(timer)
-    }
-  }, [children])
-
-  const fadeVisible = !atBottom
-
   return (
     <div style={{
       width: 320, minHeight: 580, maxHeight: 640,
@@ -58,32 +26,22 @@ export default function PhoneFrame({ children }: PhoneFrameProps) {
           width: 80, height: 22, background: '#2C2C2A', borderRadius: 12,
         }} />
       </div>
-      <div ref={scrollRef} style={{ height: 'calc(100% - 44px)', overflowY: 'auto', overflowX: 'hidden' }}>
+      <div style={{ height: 'calc(100% - 44px)', overflowY: 'auto', overflowX: 'hidden' }}>
         {children}
       </div>
       <div
         aria-hidden="true"
         style={{
-          position: 'absolute', left: 0, right: 0, bottom: 0,
-          height: 40, pointerEvents: 'none',
-          background: `linear-gradient(to top, ${FRAME_BG}, rgba(251, 249, 247, 0))`,
-          opacity: fadeVisible ? 1 : 0,
-          transition: 'opacity 0.3s',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 48,
+          background: 'linear-gradient(to bottom, transparent, white)',
+          pointerEvents: 'none',
+          borderRadius: '0 0 32px 32px',
         }}
       />
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute', left: 0, right: 0, bottom: 8,
-          textAlign: 'center', fontSize: 11, fontWeight: 600,
-          color: '#888780', letterSpacing: 0.4,
-          pointerEvents: 'none',
-          opacity: hintVisible && fadeVisible ? 1 : 0,
-          transition: 'opacity 0.3s',
-        }}
-      >
-        Scroll to explore ↓
-      </div>
     </div>
   )
 }
