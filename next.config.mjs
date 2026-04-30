@@ -36,6 +36,7 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' blob: data:${supabaseDomain ? ` ${supabaseDomain}` : ''}`,
   "font-src 'self'",
+  "media-src 'self' https://*.public.blob.vercel-storage.com",
   `connect-src 'self'${supabaseDomain ? ` ${supabaseDomain}` : ''}${supabaseWsDomain ? ` ${supabaseWsDomain}` : ''}`,
   "worker-src 'self' blob:",
   "frame-ancestors 'none'",
