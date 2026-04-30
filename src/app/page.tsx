@@ -120,13 +120,6 @@ export default async function Home() {
                   src="https://odqxyrel4xyhql1d.public.blob.vercel-storage.com/kita-overview-2026.mp4"
                   type="video/mp4"
                 />
-                <track
-                  kind="captions"
-                  src="/images/landing/kita-overview-2026.en.vtt"
-                  srcLang="en"
-                  label="English"
-                  default
-                />
                 Your browser does not support video playback.{' '}
                 <a href="https://odqxyrel4xyhql1d.public.blob.vercel-storage.com/kita-overview-2026.mp4">
                   Download the video
