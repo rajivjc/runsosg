@@ -163,6 +163,19 @@ export default function DemoPage() {
         >→</button>
       </div>
 
+      <div style={{
+        textAlign: 'center',
+        fontSize: 12,
+        color: '#888780',
+        marginTop: 8,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 4,
+      }}>
+        <span style={{ fontSize: 14 }}>↕</span> Scroll inside to explore
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
         {screens.map((s, i) => (
           <button
