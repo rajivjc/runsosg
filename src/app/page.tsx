@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ScrollReveal from '@/components/landing/ScrollReveal'
 import ScreenshotGallery from '@/components/landing/ScreenshotGallery'
 import ClubInquiryForm from '@/components/landing/ClubInquiryForm'
+import HeroVideo from '@/components/landing/HeroVideo'
 import KitaLogo from '@/components/ui/KitaLogo'
 import MobileNav from '@/components/landing/MobileNav'
 import styles from './landing.module.css'
@@ -57,7 +58,7 @@ export default async function Home() {
             </span>
           </a>
           <div className={styles.navLinks}>
-            <a href="#story" className={styles.navLink}>Our story</a>
+            <Link href="/story" className={styles.navLink}>Our story</Link>
             <a href="#features" className={styles.navLink}>Features</a>
             <a href="#inclusive" className={styles.navLink}>Accessibility</a>
             <Link href="/demo" className={styles.navDemo}>See the app</Link>
@@ -107,38 +108,12 @@ export default async function Home() {
           </div>
 
           <div className={styles.heroVideoColumn}>
-            <div className={styles.heroVideoFrame}>
-              <video
-                controls
-                preload="metadata"
-                playsInline
-                poster="/images/landing/kita-overview-poster.jpg"
-                className={styles.heroVideo}
-                aria-label="Kita overview video, 4 minutes 12 seconds, silent walkthrough with captions"
-              >
-                <source
-                  src="https://odqxyrel4xyhql1d.public.blob.vercel-storage.com/kita-overview-2026.mp4"
-                  type="video/mp4"
-                />
-                Your browser does not support video playback.{' '}
-                <a href="https://odqxyrel4xyhql1d.public.blob.vercel-storage.com/kita-overview-2026.mp4">
-                  Download the video
-                </a>.
-              </video>
-            </div>
-            <p className={styles.heroVideoCaption}>Watch overview · 4:12</p>
-            <details className={styles.heroVideoDetails}>
-              <summary className={styles.heroVideoDetailsSummary}>What&apos;s in the video</summary>
-              <div className={styles.heroVideoDetailsBody}>
-                <p>A 4-minute silent walkthrough with background music. On-screen captions appear for each section.</p>
-                <p>The video shows four perspectives: the coach view (club feed, athlete profiles, weekly summaries), coaching tools (planning sessions, pairing coaches with athletes), Strava integration (@-mentioning athletes in activity titles to sync runs into Kita), the caregiver view (progress and cheers from anywhere), and the athlete view (their personal QR-coded Journey page with stats and milestones).</p>
-              </div>
-            </details>
+            <HeroVideo />
           </div>
         </div>
       </section>
 
-      {/* ========== STORY ========== */}
+      {/* ========== STORY (teaser) ========== */}
       <section id="story" className={`${styles.section} ${styles.storySection}`}>
         <div className={styles.sectionInner}>
           <ScrollReveal>
@@ -149,33 +124,12 @@ export default async function Home() {
               </blockquote>
 
               <p className={styles.storyParagraph}>
-                We were. But by next week, the only proof lived in a coach&apos;s memory and a group chat that had already moved on. These weren&apos;t casual jogs. These were hard-won kilometres by people who&apos;d been told, in a hundred small ways, that sport wasn&apos;t really for them.
+                We were. But by next week, the only proof lived in a coach&apos;s memory and a group chat that had already moved on.
               </p>
 
-              <p className={styles.storyHighlight}>
-                Then a caregiver asked: &ldquo;How&apos;s she doing at running?&rdquo; Not therapy. Not behaviour. Just running — the way any parent asks about their kid&apos;s sport.
-              </p>
-
-              <p className={styles.storyParagraph}>
-                I didn&apos;t have a good answer. Not because I didn&apos;t know. Because nothing I had could show her.
-              </p>
-
-              <p className={styles.storyClosing}>
-                So I built it.
-              </p>
-
-              <div className={styles.storyEtymology}>
-                <span className={styles.storyEtymologyKita}>Kita</span> means &ldquo;we&rdquo; in Malay and Indonesian — specifically the inclusive form that includes the listener. Not &ldquo;us and them.&rdquo; Just &ldquo;us.&rdquo;
-              </div>
-
-              <a
-                href="https://medium.com/@rajiv.cheriyan/i-built-a-running-app-for-athletes-with-intellectual-disabilities-heres-what-i-had-to-unlearn-c9fcb6d36a18"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.storyMediumLink}
-              >
-                Read the full essay &rarr;
-              </a>
+              <Link href="/story" className={styles.storyMediumLink}>
+                Read the full story &rarr;
+              </Link>
             </div>
           </ScrollReveal>
         </div>

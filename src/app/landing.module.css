@@ -99,15 +99,20 @@
 }
 
 .navDemo {
+  display: inline-flex;
+  align-items: center;
   font-size: 14px;
-  font-weight: 600;
-  color: #0F766E;
+  font-weight: 500;
+  color: #FFFFFF;
+  background: #0F766E;
+  padding: 6px 16px;
+  border-radius: 9999px;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: background 0.2s;
 }
 
 .navDemo:hover {
-  color: #0D9488;
+  background: rgba(15, 118, 110, 0.9);
 }
 
 .navGithub {
@@ -249,6 +254,13 @@
   max-width: 600px;
 }
 
+@media (min-width: 1024px) {
+  .heroProblem {
+    font-size: 22px;
+    line-height: 1.5;
+  }
+}
+
 .heroFooter {
   margin-top: 32px;
 }
@@ -305,6 +317,50 @@
   display: block;
 }
 
+.heroVideoPlayButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.heroVideoPlayCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s, background 0.2s;
+  /* Optical centring of the play triangle inside the circle */
+  padding-left: 4px;
+}
+
+.heroVideoPlayButton:hover .heroVideoPlayCircle,
+.heroVideoPlayButton:focus-visible .heroVideoPlayCircle {
+  background: #FFFFFF;
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroVideoPlayButton:hover .heroVideoPlayCircle,
+  .heroVideoPlayButton:focus-visible .heroVideoPlayCircle {
+    transform: translate(-50%, -50%);
+  }
+}
+
 .heroVideoCaption {
   font-size: 13px;
   color: #6B7280;
@@ -312,20 +368,20 @@
 }
 
 .heroVideoDetails {
-  width: 280px;
-  background: rgba(15, 118, 110, 0.04);
-  border: 1px solid rgba(15, 118, 110, 0.12);
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-top: 4px;
+  max-width: 28rem;
+  margin-top: 0;
 }
 
 .heroVideoDetailsSummary {
   font-size: 14px;
-  font-weight: 600;
-  color: #0F766E;
+  font-weight: 500;
+  color: #6B7280;
   cursor: pointer;
   list-style: none;
+}
+
+.heroVideoDetailsSummary:hover {
+  color: #0F766E;
 }
 
 .heroVideoDetailsSummary::-webkit-details-marker {
@@ -347,7 +403,7 @@
 
 .heroVideoDetailsBody {
   margin-top: 10px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   color: #4B5563;
 }
@@ -427,7 +483,7 @@
     height: 490px;
   }
   .heroVideoDetails {
-    width: 240px;
+    max-width: 240px;
   }
 }
 
