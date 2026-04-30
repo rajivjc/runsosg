@@ -60,7 +60,7 @@ export default async function Home() {
             <a href="#story" className={styles.navLink}>Our story</a>
             <a href="#features" className={styles.navLink}>Features</a>
             <a href="#inclusive" className={styles.navLink}>Accessibility</a>
-            <Link href="/demo" className={styles.navDemo}>Watch the demo</Link>
+            <Link href="/demo" className={styles.navDemo}>See the app</Link>
             <a
               href="https://github.com/rajivjc/kita"
               target="_blank"
@@ -81,30 +81,66 @@ export default async function Home() {
       {/* ========== HERO ========== */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <h1 className={styles.heroTitle}>
-            The running app where <span className={styles.heroTitleAccent}>every athlete</span> belongs
-          </h1>
-          <p className={styles.heroProblem}>
-            Every hard-won kilometre deserves more than a message that scrolls away by Monday.
-          </p>
-          <p className={styles.heroSubtitle}>
-            Coaches log sessions and the app handles the rest — milestones detected, caregivers updated, progress remembered. Athletes celebrate on their own Journey page. No app download, no account, no fuss.
-          </p>
-          <div className={styles.heroCtas}>
-            <Link href="/demo" className={styles.ctaPrimary}>
-              Watch the demo &rarr;
-            </Link>
-            <a href="#contact" className={styles.ctaSecondary}>
-              Get your club running — free &rarr;
-            </a>
+          <div className={styles.heroCopy}>
+            <h1 className={styles.heroTitle}>
+              The running app where <span className={styles.heroTitleAccent}>every athlete</span> belongs
+            </h1>
+            <p className={styles.heroProblem}>
+              Every hard-won kilometre deserves more than a message that scrolls away by Monday.
+            </p>
+            <div className={styles.heroCtas}>
+              <Link href="/demo" className={styles.ctaPrimary}>
+                See the app &rarr;
+              </Link>
+              <a href="#contact" className={styles.ctaSecondary}>
+                Get your club running — free &rarr;
+              </a>
+            </div>
+            <div className={styles.heroFooter}>
+              <p className={styles.heroDifferentiator}>
+                Designed so every celebration is safe, every word is clear, and every athlete is treated like an athlete.
+              </p>
+              <p className={styles.heroAudience}>
+                For Special Olympics clubs, community running groups, and adaptive programmes.
+              </p>
+            </div>
           </div>
-          <div className={styles.heroFooter}>
-            <p className={styles.heroDifferentiator}>
-              Designed so every celebration is safe, every word is clear, and every athlete is treated like an athlete.
-            </p>
-            <p className={styles.heroAudience}>
-              For Special Olympics clubs, community running groups, and adaptive programmes.
-            </p>
+
+          <div className={styles.heroVideoColumn}>
+            <div className={styles.heroVideoFrame}>
+              <video
+                controls
+                preload="metadata"
+                playsInline
+                poster="/images/landing/kita-overview-poster.jpg"
+                className={styles.heroVideo}
+                aria-label="Kita overview video, 4 minutes 12 seconds, silent walkthrough with captions"
+              >
+                <source
+                  src="https://odqxyrel4xyhql1d.public.blob.vercel-storage.com/kita-overview-2026.mp4"
+                  type="video/mp4"
+                />
+                <track
+                  kind="captions"
+                  src="/images/landing/kita-overview-2026.en.vtt"
+                  srcLang="en"
+                  label="English"
+                  default
+                />
+                Your browser does not support video playback.{' '}
+                <a href="https://odqxyrel4xyhql1d.public.blob.vercel-storage.com/kita-overview-2026.mp4">
+                  Download the video
+                </a>.
+              </video>
+            </div>
+            <p className={styles.heroVideoCaption}>Watch overview · 4:12</p>
+            <details className={styles.heroVideoDetails}>
+              <summary className={styles.heroVideoDetailsSummary}>What&apos;s in the video</summary>
+              <div className={styles.heroVideoDetailsBody}>
+                <p>A 4-minute silent walkthrough with background music. On-screen captions appear for each section.</p>
+                <p>The video shows four perspectives: the coach view (club feed, athlete profiles, weekly summaries), coaching tools (planning sessions, pairing coaches with athletes), Strava integration (@-mentioning athletes in activity titles to sync runs into Kita), the caregiver view (progress and cheers from anywhere), and the athlete view (their personal QR-coded Journey page with stats and milestones).</p>
+              </div>
+            </details>
           </div>
         </div>
       </section>
@@ -160,6 +196,9 @@ export default async function Home() {
             <h2 className={styles.sectionTitle}>Three roles. One app. Zero clutter.</h2>
             <p className={styles.sectionSubtitle}>
               Coaches log runs. Caregivers see progress. Athletes celebrate milestones. Each gets exactly the view they need.
+            </p>
+            <p className={styles.sectionBody}>
+              Coaches log sessions and the app handles the rest — milestones detected, caregivers updated, progress remembered. Athletes celebrate on their own Journey page. No app download, no account, no fuss.
             </p>
           </ScrollReveal>
           <ScreenshotGallery />

@@ -81,12 +81,14 @@ jobs:
           # Advisories with no fix in Next.js 14.x (require 15+ upgrade):
           #   GHSA-9g9p-9gw9-jx7f  Image Optimizer DoS
           #   GHSA-h25m-26qc-wcjf  HTTP deserialization DoS
+          #   GHSA-q4gf-8mx6-v5v3  Server Components DoS
           # TODO: Remove allowlist entries after upgrading to Next.js 15.
           cat > /tmp/audit-check.js << 'AUDIT_SCRIPT'
           const audit = JSON.parse(require('fs').readFileSync('/tmp/audit.json', 'utf8'));
           const allowlist = new Set([
             'GHSA-9g9p-9gw9-jx7f',
             'GHSA-h25m-26qc-wcjf',
+            'GHSA-q4gf-8mx6-v5v3',
           ]);
           const vulns = Object.entries(audit.vulnerabilities || {});
           const blocked = vulns.filter(([name, v]) => {
