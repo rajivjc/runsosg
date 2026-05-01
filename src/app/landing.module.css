@@ -231,6 +231,18 @@
   max-width: 640px;
 }
 
+.heroBadge {
+  display: inline-block;
+  padding: 6px 14px;
+  margin: 0 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F766E;
+  background: rgba(15, 118, 110, 0.08);
+  border-radius: 9999px;
+  letter-spacing: 0.005em;
+}
+
 .heroTitle {
   font-family: 'Nunito Sans', system-ui, sans-serif;
   font-size: 48px;
@@ -491,6 +503,11 @@
   .hero {
     padding: 110px 20px 48px;
   }
+  .heroBadge {
+    font-size: 12px;
+    padding: 5px 12px;
+    margin-bottom: 16px;
+  }
   .heroTitle {
     font-size: 32px;
     margin-bottom: 16px;
@@ -507,6 +524,27 @@
   }
   .heroAudience {
     font-size: 13px;
+  }
+}
+
+/* ============================================
+   PROOF STRIP
+   ============================================ */
+.proofStrip {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #6B7280;
+}
+
+@media (max-width: 640px) {
+  .proofStrip {
+    padding: 20px 20px;
+    font-size: 13px;
+    line-height: 1.7;
   }
 }
 
@@ -824,6 +862,15 @@
   font-size: 20px;
   font-weight: 700;
   color: #111827;
+  margin: 0 0 8px;
+}
+
+.personaOutcome {
+  font-size: 15px;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.5;
+  color: #4B5563;
   margin: 0 0 20px;
 }
 
@@ -896,6 +943,79 @@
 .inclusiveSubtitle {
   color: rgba(255, 255, 255, 0.7);
   max-width: 700px;
+}
+
+.comparison {
+  margin: 0 0 48px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.comparisonHeader {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comparisonHeaderCell {
+  padding: 14px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.comparisonHeaderOther {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.comparisonHeaderKita {
+  color: #2DD4BF;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.comparisonRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.comparisonRow:last-child {
+  border-bottom: none;
+}
+
+.comparisonRow:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.comparisonCell {
+  padding: 16px 20px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.comparisonCellOther {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.comparisonCellKita {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 500;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 640px) {
+  .comparisonHeaderCell {
+    padding: 12px 14px;
+    font-size: 11px;
+  }
+  .comparisonCell {
+    padding: 14px;
+    font-size: 14px;
+  }
 }
 
 .inclusiveGrid {

@@ -54,26 +54,24 @@ export default async function Home() {
       <section className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
+            <span className={styles.heroBadge}>Free &amp; open-source for inclusive running clubs</span>
             <h1 className={styles.heroTitle}>
               The running app where <span className={styles.heroTitleAccent}>every athlete</span> belongs
             </h1>
             <p className={styles.heroProblem}>
-              Every hard-won kilometre deserves more than a message that scrolls away by Monday.
+              One place for coaches to log runs, caregivers to see progress, and athletes to own every hard-won kilometre.
             </p>
             <div className={styles.heroCtas}>
               <Link href="/demo" className={styles.ctaPrimary}>
                 Try the demo &rarr;
               </Link>
               <a href="#contact" className={styles.ctaSecondary}>
-                Get your club running — free &rarr;
+                Set up my club — free &rarr;
               </a>
             </div>
             <div className={styles.heroFooter}>
-              <p className={styles.heroDifferentiator}>
-                Designed so every celebration is safe, every word is clear, and every athlete is treated like an athlete.
-              </p>
               <p className={styles.heroAudience}>
-                For Special Olympics clubs, community running groups, and adaptive programmes.
+                For Special Olympics clubs, adaptive programmes, and community running groups.
               </p>
             </div>
           </div>
@@ -83,6 +81,11 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ========== PROOF STRIP ========== */}
+      <div className={styles.proofStrip}>
+        Free forever &middot; Open source &middot; No athlete email needed &middot; Caregiver privacy controls &middot; Strava sync &middot; Built by a volunteer coach
+      </div>
 
       {/* ========== STORY (teaser) ========== */}
       <section id="story" className={`${styles.section} ${styles.storySection}`}>
@@ -115,9 +118,6 @@ export default async function Home() {
             <p className={styles.sectionSubtitle}>
               Coaches log runs. Caregivers see progress. Athletes celebrate milestones. Each gets exactly the view they need.
             </p>
-            <p className={styles.sectionBody}>
-              Coaches log sessions and the app handles the rest — milestones detected, caregivers updated, progress remembered. Athletes celebrate on their own Journey page. No app download, no account, no fuss.
-            </p>
           </ScrollReveal>
           <ScreenshotGallery />
         </div>
@@ -128,22 +128,21 @@ export default async function Home() {
         <div className={styles.sectionInner}>
           <ScrollReveal>
             <p className={styles.sectionLabel}>BUILT FOR THREE ROLES</p>
-            <h2 className={styles.sectionTitle}>Everyone has their own view</h2>
+            <h2 className={styles.sectionTitle}>Coaches log runs. Caregivers see progress. Athletes own their journey.</h2>
           </ScrollReveal>
 
           <div className={styles.personaGrid}>
             <ScrollReveal>
               <div className={`${styles.personaCard} ${styles.personaCardCoach}`}>
                 <h3 className={styles.personaName}>Coach</h3>
+                <p className={styles.personaOutcome}>Spend less time chasing updates, more time coaching.</p>
                 <ul className={styles.personaList}>
                   {[
-                    'Log runs manually or sync from Strava',
-                    'Schedule sessions with coach RSVP',
-                    'Track per-athlete cues, mood, and feel trends',
-                    'Automatic milestone detection and coaching alerts',
-                    'Weekly narrative digests — not just numbers',
+                    'Log runs manually or sync from Strava — milestones detected automatically',
+                    'Schedule sessions with coach pairings and RSVP',
+                    'Weekly narrative digests for every athlete, not just numbers',
                   ].map((item) => (
-                    <li key={item} className={`${styles.personaItem} ${item === 'Weekly narrative digests — not just numbers' ? styles.personaItemHighlight : ''}`}>
+                    <li key={item} className={styles.personaItem}>
                       <CheckIcon className={`${styles.personaCheck} ${styles.personaCheckCoach}`} />
                       <span>{item}</span>
                     </li>
@@ -155,15 +154,14 @@ export default async function Home() {
             <ScrollReveal>
               <div className={`${styles.personaCard} ${styles.personaCardCaregiver}`}>
                 <h3 className={styles.personaName}>Caregiver</h3>
+                <p className={styles.personaOutcome}>See progress without needing to be at every session.</p>
                 <ul className={styles.personaList}>
                   {[
-                    'See every session, distance, and milestone',
+                    'Every session, distance, and milestone in one place',
                     'Send cheers that coaches and athletes see',
-                    'Control what gets shared publicly — with veto power',
-                    'Weekly email digests with progress summaries',
-                    'Peace of mind without being at every session',
+                    'Control what gets shared — with veto power over public visibility',
                   ].map((item) => (
-                    <li key={item} className={`${styles.personaItem} ${item === 'Control what gets shared publicly — with veto power' ? styles.personaItemHighlight : ''}`}>
+                    <li key={item} className={styles.personaItem}>
                       <CheckIcon className={`${styles.personaCheck} ${styles.personaCheckCaregiver}`} />
                       <span>{item}</span>
                     </li>
@@ -175,15 +173,14 @@ export default async function Home() {
             <ScrollReveal>
               <div className={`${styles.personaCard} ${styles.personaCardAthlete}`}>
                 <h3 className={styles.personaName}>Athlete</h3>
+                <p className={styles.personaOutcome}>A personal page that says: this progress is yours.</p>
                 <ul className={styles.personaList}>
                   {[
-                    'Personal Journey page — scan a QR code, enter a PIN',
-                    'Choose your avatar, colour, and running goals',
-                    'Sensory-safe milestone celebrations',
-                    'Send preset messages to your coach',
-                    'No email needed. No account needed. Just run.',
+                    'Scan a QR code, enter a PIN — no email, no account, just run',
+                    'Choose your own avatar, colour, and running goals',
+                    'Milestone celebrations designed to feel safe, not overwhelming',
                   ].map((item) => (
-                    <li key={item} className={`${styles.personaItem} ${item === 'No email needed. No account needed. Just run.' ? styles.personaItemHighlight : ''}`}>
+                    <li key={item} className={styles.personaItem}>
                       <CheckIcon className={`${styles.personaCheck} ${styles.personaCheckAthlete}`} />
                       <span>{item}</span>
                     </li>
@@ -206,6 +203,28 @@ export default async function Home() {
             <p className={`${styles.sectionSubtitle} ${styles.inclusiveSubtitle}`}>
               Every design decision is tested against one question: &ldquo;Would I say this to a neurotypical adult runner?&rdquo; If not, it doesn&apos;t belong here.
             </p>
+          </ScrollReveal>
+
+          <ScrollReveal>
+            <div className={styles.comparison} role="table" aria-label="How Kita compares to other running apps">
+              <div className={styles.comparisonHeader} role="row">
+                <div className={`${styles.comparisonHeaderCell} ${styles.comparisonHeaderOther}`} role="columnheader">Other apps</div>
+                <div className={`${styles.comparisonHeaderCell} ${styles.comparisonHeaderKita}`} role="columnheader">Kita</div>
+              </div>
+              {[
+                ['“You’re on fire! 🔥”', '“Great run today.”'],
+                ['Public leaderboards', 'Private milestones'],
+                ['Confetti explosions', 'Calm, gentle celebration'],
+                ['Requires email + password', 'QR code + 4-digit PIN'],
+                ['Tiny icons, dense menus', 'Large buttons, clear labels'],
+                ['Progress shared by default', 'Sharing is opt-in, caregiver veto'],
+              ].map(([other, kita]) => (
+                <div key={kita} className={styles.comparisonRow} role="row">
+                  <div className={`${styles.comparisonCell} ${styles.comparisonCellOther}`} role="cell">{other}</div>
+                  <div className={`${styles.comparisonCell} ${styles.comparisonCellKita}`} role="cell">{kita}</div>
+                </div>
+              ))}
+            </div>
           </ScrollReveal>
 
           <ScrollReveal>

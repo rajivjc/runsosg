@@ -49,9 +49,9 @@ export default function ClubInquiryForm() {
 
   return (
     <div className={styles.ctaCard}>
-      <h2 className={styles.ctaTitle}>Let&apos;s get your club running</h2>
+      <h2 className={styles.ctaTitle}>Ready to make every kilometre count?</h2>
       <p className={styles.ctaDesc}>
-        We&apos;ll set up your club and walk you through your first session. Takes less than a week.
+        We&apos;ll set up your club and walk you through your first session. No payment. No sales call. Takes less than a week.
       </p>
 
       <form onSubmit={handleSubmit} className={styles.inquiryForm} noValidate>
