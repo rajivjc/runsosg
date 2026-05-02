@@ -1294,50 +1294,77 @@
 }
 
 .howGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .howStep {
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 24px 20px;
 }
 
 .howNumber {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: rgba(15, 118, 110, 0.08);
   color: #0F766E;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .howStepTitle {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 8px;
+  margin: 0;
+  line-height: 1.3;
 }
 
-.howStepDesc {
-  font-size: 15px;
+.howReassurance {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
   color: #6B7280;
-  margin: 0;
-  line-height: 1.5;
 }
 
 @media (max-width: 640px) {
   .howGrid {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .howStep {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 14px;
+    padding: 16px 20px;
+  }
+
+  .howNumber {
+    margin-bottom: 0;
+  }
+
+  .howStepTitle {
+    font-size: 16px;
   }
 }
 
@@ -1358,7 +1385,6 @@
 }
 
 .faqItem {
-  padding: 24px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
@@ -1366,12 +1392,56 @@
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+.faqQuestionButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.faqQuestionButton:focus-visible {
+  outline: 2px solid #0F766E;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 .faqQuestion {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 8px;
   line-height: 1.4;
+}
+
+.faqChevron {
+  flex-shrink: 0;
+  color: #6B7280;
+  transition: transform 0.25s ease;
+}
+
+.faqChevronOpen {
+  transform: rotate(180deg);
+}
+
+.faqPanel {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease;
+}
+
+.faqPanelOpen {
+  max-height: 500px;
+}
+
+.faqPanelInner {
+  padding-bottom: 20px;
 }
 
 .faqAnswer {
@@ -1383,8 +1453,8 @@
 
 .faqLink {
   color: #0F766E;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  font-weight: 600;
+  text-decoration: none;
   transition: opacity 0.2s;
 }
 
@@ -1392,9 +1462,20 @@
   opacity: 0.75;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .faqChevron,
+  .faqPanel {
+    transition: none;
+  }
+}
+
 @media (max-width: 640px) {
-  .faqItem {
-    padding: 20px 0;
+  .faqQuestionButton {
+    padding: 18px 0;
+  }
+
+  .faqQuestion {
+    font-size: 16px;
   }
 }
 
