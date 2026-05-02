@@ -62,38 +62,89 @@ export default function StoryPage() {
               Why I Built Kita
             </h1>
 
-            <blockquote className={styles.blockquote}>
-              An athlete finished a 5km run and looked around to see if anyone was watching.
-            </blockquote>
+            <p className={styles.storyLede}>
+              <em>An athlete finished a 5km run and looked around to see if anyone was watching.</em>
+            </p>
+
+            <p className={styles.storySectionMarker}>THE PROBLEM</p>
 
             <p className={styles.storyParagraph}>
               We were. But by next week, the only proof lived in a coach&apos;s memory and a group chat that had already moved on. These weren&apos;t casual jogs. These were hard-won kilometres by people who&apos;d been told, in a hundred small ways, that sport wasn&apos;t really for them.
             </p>
 
-            <p className={styles.storyHighlight}>
+            <blockquote className={styles.storyCaregiverPullQuote}>
               Then a caregiver asked: &ldquo;How&apos;s she doing at running?&rdquo; Not therapy. Not behaviour. Just running &mdash; the way any parent asks about their kid&apos;s sport.
-            </p>
+              <span className={styles.storyCaregiverCaption}>A Caregiver, after practice</span>
+            </blockquote>
+
+            <p className={styles.storySectionMarker}>THE GAP</p>
 
             <p className={styles.storyParagraph}>
               I didn&apos;t have a good answer. Not because I didn&apos;t know. Because nothing I had could show her.
             </p>
 
-            <p className={styles.storyClosing}>
+            <p className={styles.storyMoment}>
               So I built it.
             </p>
 
-            <div className={styles.storyEtymology}>
-              <span className={styles.storyEtymologyKita}>Kita</span> means &ldquo;we&rdquo; in Malay and Indonesian &mdash; specifically the inclusive form that includes the listener. Not &ldquo;us and them.&rdquo; Just &ldquo;us.&rdquo;
+            <p className={styles.storySectionMarker}>WHAT IT BECAME</p>
+
+            <div className={styles.storyKitaCard}>
+              <span className={styles.storyKitaDisplay}>kita</span>
+              <p className={styles.storyKitaText}>
+                <span className={styles.storyEtymologyKita}>Kita</span> means &ldquo;we&rdquo; in Malay and Indonesian &mdash; specifically the inclusive form that includes the listener. Not &ldquo;us and them.&rdquo; Just &ldquo;us.&rdquo;
+              </p>
             </div>
 
-            <a
-              href="https://medium.com/@rajiv.cheriyan/i-built-a-running-app-for-athletes-with-intellectual-disabilities-heres-what-i-had-to-unlearn-c9fcb6d36a18"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.storyMediumLink}
-            >
-              Read the full essay &rarr;
-            </a>
+            <p className={styles.storySectionMarker}>WHAT IT STANDS FOR</p>
+
+            <div className={styles.storyValueGrid}>
+              <div className={styles.storyValueCard}>
+                <p className={styles.storyValueCardTitle}>Dignity first</p>
+                <p className={styles.storyValueCardDesc}>
+                  Athletes are athletes. Not clients, not participants, not &ldquo;special.&rdquo; The language, design, and celebrations all reflect that.
+                </p>
+              </div>
+              <div className={styles.storyValueCard}>
+                <p className={styles.storyValueCardTitle}>Privacy by design</p>
+                <p className={styles.storyValueCardDesc}>
+                  Medical info, coaching notes, and mood ratings are never public. Caregivers have veto power over what gets shared.
+                </p>
+              </div>
+              <div className={styles.storyValueCard}>
+                <p className={styles.storyValueCardTitle}>Sensory safety</p>
+                <p className={styles.storyValueCardDesc}>
+                  No flashing animations. No overwhelming sounds. Celebrations that feel warm, not startling.
+                </p>
+              </div>
+              <div className={styles.storyValueCard}>
+                <p className={styles.storyValueCardTitle}>Free and open source</p>
+                <p className={styles.storyValueCardDesc}>
+                  MIT licensed. No premium tier. No investor pressure. Built for clubs that need it, by someone who runs one.
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.storyClosingCta}>
+              <a
+                href="https://medium.com/@rajiv.cheriyan/i-built-a-running-app-for-athletes-with-intellectual-disabilities-heres-what-i-had-to-unlearn-c9fcb6d36a18"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.storyMediumLinkCentered}
+              >
+                Originally published on Medium. Read the original essay &rarr;
+              </a>
+
+              <p className={styles.storyCtaTitle} style={{ marginTop: '32px' }}>
+                Ready to make every kilometre count?
+              </p>
+              <p className={styles.storyCtaDesc}>
+                We&apos;ll set up your club and walk you through your first session.
+              </p>
+              <Link href="/#contact" className={styles.storyCtaButton}>
+                Set up my club &mdash; free &rarr;
+              </Link>
+            </div>
           </div>
         </div>
       </main>

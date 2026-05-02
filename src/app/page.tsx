@@ -93,7 +93,8 @@ export default async function Home() {
           <ScrollReveal>
             <div className={styles.storyContent}>
               <p className={styles.sectionLabel}>WHY I BUILT THIS</p>
-              <blockquote className={styles.blockquote}>
+              <div className={styles.storyDivider} aria-hidden="true" />
+              <blockquote className={styles.storyPullQuote}>
                 An athlete finished a 5km run and looked around to see if anyone was watching.
               </blockquote>
 
