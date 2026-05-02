@@ -757,6 +757,231 @@
   }
 }
 
+/* ---- Story teaser additions (landing page) ---- */
+.storyDivider {
+  width: 48px;
+  height: 3px;
+  margin: 0 0 20px;
+  background: linear-gradient(90deg, #0F766E 0%, #0D9488 100%);
+  border-radius: 9999px;
+}
+
+.storyPullQuote {
+  margin: 0 0 28px;
+  padding: 4px 0 4px 20px;
+  border-left: 3px solid #0F766E;
+  font-family: inherit;
+  font-style: italic;
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #1E1C1A;
+}
+
+@media (max-width: 640px) {
+  .storyPullQuote {
+    font-size: 19px;
+  }
+}
+
+/* ---- Full /story page additions ---- */
+.storyLede {
+  margin: 0 0 32px;
+  padding: 0 0 28px;
+  border-bottom: 1px solid #E5E7EB;
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #1E1C1A;
+}
+
+@media (max-width: 640px) {
+  .storyLede {
+    font-size: 20px;
+    padding-bottom: 22px;
+  }
+}
+
+.storySectionMarker {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F766E;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin: 48px 0 16px;
+}
+
+.storyCaregiverPullQuote {
+  text-align: center;
+  margin: 40px 0;
+  padding: 32px 8px;
+  border-top: 1px solid #E5E7EB;
+  border-bottom: 1px solid #E5E7EB;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.5;
+  color: #1E1C1A;
+}
+
+.storyCaregiverCaption {
+  display: block;
+  margin-top: 16px;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F766E;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 640px) {
+  .storyCaregiverPullQuote {
+    font-size: 19px;
+    padding: 24px 4px;
+  }
+}
+
+.storyMoment {
+  text-align: center;
+  margin: 48px 0;
+  padding: 32px 8px;
+  border-top: 1px solid #E5E7EB;
+  border-bottom: 1px solid #E5E7EB;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: #111827;
+}
+
+@media (max-width: 640px) {
+  .storyMoment {
+    font-size: 24px;
+    padding: 24px 4px;
+  }
+}
+
+.storyKitaCard {
+  text-align: center;
+  margin: 48px 0;
+  padding: 36px 28px;
+  background: rgba(15, 118, 110, 0.06);
+  border-radius: 16px;
+}
+
+.storyKitaDisplay {
+  display: block;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #0F766E;
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+
+.storyKitaText {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #4B5563;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .storyKitaCard {
+    padding: 28px 20px;
+  }
+  .storyKitaDisplay {
+    font-size: 28px;
+  }
+}
+
+.storyValueGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 24px 0 48px;
+}
+
+.storyValueCard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  border-left: 3px solid #0F766E;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.storyValueCardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px;
+}
+
+.storyValueCardDesc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4B5563;
+  margin: 0;
+}
+
+.storyClosingCta {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 48px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.storyCtaTitle {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.storyCtaDesc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #6B7280;
+  margin: 0 0 24px;
+}
+
+.storyMediumLinkCentered {
+  display: inline-block;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0F766E;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.storyMediumLinkCentered:hover {
+  opacity: 0.75;
+}
+
+.storyCtaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 32px;
+  background: #0F766E;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.storyCtaButton:hover {
+  background: #0D9488;
+  transform: translateY(-1px);
+}
+
 /* ============================================
    SCREENSHOT GALLERY
    ============================================ */
