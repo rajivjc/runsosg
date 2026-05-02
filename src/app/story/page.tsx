@@ -87,8 +87,6 @@ export default function StoryPage() {
               So I built it.
             </p>
 
-            <p className={styles.storySectionMarker}>WHAT IT BECAME</p>
-
             <div className={styles.storyKitaCard}>
               <span className={styles.storyKitaDisplay}>kita</span>
               <p className={styles.storyKitaText}>
