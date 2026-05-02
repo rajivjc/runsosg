@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ScrollReveal from '@/components/landing/ScrollReveal'
 import ScreenshotGallery from '@/components/landing/ScreenshotGallery'
 import ClubInquiryForm from '@/components/landing/ClubInquiryForm'
+import FaqAccordion from '@/components/landing/FaqAccordion'
 import HeroVideo from '@/components/landing/HeroVideo'
 import KitaLogo from '@/components/ui/KitaLogo'
 import LandingNav from '@/components/landing/LandingNav'
@@ -269,25 +270,19 @@ export default async function Home() {
               <div className={styles.howStep}>
                 <div className={styles.howNumber}>1</div>
                 <p className={styles.howStepTitle}>Create your club</p>
-                <p className={styles.howStepDesc}>
-                  Get in touch and we&apos;ll set up your club with your name, timezone, and branding.
-                </p>
               </div>
               <div className={styles.howStep}>
                 <div className={styles.howNumber}>2</div>
                 <p className={styles.howStepTitle}>Add your athletes</p>
-                <p className={styles.howStepDesc}>
-                  Invite coaches and caregivers, add athletes, and configure personal cues.
-                </p>
               </div>
               <div className={styles.howStep}>
                 <div className={styles.howNumber}>3</div>
                 <p className={styles.howStepTitle}>Start logging runs</p>
-                <p className={styles.howStepDesc}>
-                  Log sessions manually or sync from Strava. Milestones, badges, and digests happen automatically.
-                </p>
               </div>
             </div>
+            <p className={styles.howReassurance}>
+              We help you with setup. No technical skills needed.
+            </p>
           </ScrollReveal>
         </div>
       </section>
@@ -300,49 +295,46 @@ export default async function Home() {
               <p className={styles.sectionLabel}>COMMON QUESTIONS</p>
               <h2 className={styles.sectionTitle}>Everything you need to know</h2>
 
-              <div className={styles.faqList}>
-                <div className={styles.faqItem}>
-                  <h3 className={styles.faqQuestion}>Is Kita free?</h3>
-                  <p className={styles.faqAnswer}>
-                    Yes. Kita is free for any inclusive running club and always will be. The code is <a href="https://github.com/rajivjc/kita" target="_blank" rel="noopener noreferrer" className={styles.faqLink}>open source on GitHub</a>.
-                  </p>
-                </div>
-
-                <div className={styles.faqItem}>
-                  <h3 className={styles.faqQuestion}>Do athletes need an email account or smartphone?</h3>
-                  <p className={styles.faqAnswer}>
-                    No. Athletes access their personal Journey page by scanning a QR code and entering a 4-digit PIN. No email, no password, no app download required.
-                  </p>
-                </div>
-
-                <div className={styles.faqItem}>
-                  <h3 className={styles.faqQuestion}>Who can see athlete data?</h3>
-                  <p className={styles.faqAnswer}>
-                    Only people with a role in your club. Coaches see their athletes. Caregivers see only the athlete linked to them. Athletes see everything their caregiver sees. Medical information, coach notes, and feel ratings are never shown on public pages. Caregivers have veto power over what gets shared.
-                  </p>
-                </div>
-
-                <div className={styles.faqItem}>
-                  <h3 className={styles.faqQuestion}>Does it work with Strava?</h3>
-                  <p className={styles.faqAnswer}>
-                    Yes. Coaches can connect Strava and runs are automatically matched to athletes. You can also log sessions manually.
-                  </p>
-                </div>
-
-                <div className={styles.faqItem}>
-                  <h3 className={styles.faqQuestion}>Who built this?</h3>
-                  <p className={styles.faqAnswer}>
-                    One person &mdash; a volunteer running coach in Singapore who needed a better way to track sessions and share progress with caregivers. The code is <a href="https://github.com/rajivjc/kita" target="_blank" rel="noopener noreferrer" className={styles.faqLink}>open source</a> and the full story is in the essay above.
-                  </p>
-                </div>
-
-                <div className={styles.faqItem}>
-                  <h3 className={styles.faqQuestion}>Can I use Kita for other inclusive sports?</h3>
-                  <p className={styles.faqAnswer}>
-                    Kita is built for running clubs right now. The session tracking, milestones, and coaching tools are designed around running. If you run a different sport and want to explore it, get in touch &mdash; we&apos;d love to hear what you need.
-                  </p>
-                </div>
-              </div>
+              <FaqAccordion
+                items={[
+                  {
+                    question: 'Is Kita free?',
+                    answer: (
+                      <>
+                        Yes. Kita is free for any inclusive running club and always will be. The code is <a href="https://github.com/rajivjc/kita" target="_blank" rel="noopener noreferrer" className={styles.faqLink}>open source on GitHub</a>.
+                      </>
+                    ),
+                  },
+                  {
+                    question: 'Do athletes need an email account or smartphone?',
+                    answer:
+                      'No. Athletes access their personal Journey page by scanning a QR code and entering a 4-digit PIN. No email, no password, no app download required.',
+                  },
+                  {
+                    question: 'Who can see athlete data?',
+                    answer:
+                      'Only people with a role in your club. Coaches see their athletes. Caregivers see only the athlete linked to them. Athletes see everything their caregiver sees. Medical information, coach notes, and feel ratings are never shown on public pages. Caregivers have veto power over what gets shared.',
+                  },
+                  {
+                    question: 'Does it work with Strava?',
+                    answer:
+                      'Yes. Coaches can connect Strava and runs are automatically matched to athletes. You can also log sessions manually.',
+                  },
+                  {
+                    question: 'Who built this?',
+                    answer: (
+                      <>
+                        One person &mdash; a volunteer running coach in Singapore who needed a better way to track sessions and share progress with caregivers. The code is <a href="https://github.com/rajivjc/kita" target="_blank" rel="noopener noreferrer" className={styles.faqLink}>open source</a> and the full story is in the essay above.
+                      </>
+                    ),
+                  },
+                  {
+                    question: 'Can I use Kita for other inclusive sports?',
+                    answer:
+                      "Kita is built for running clubs right now. The session tracking, milestones, and coaching tools are designed around running. If you run a different sport and want to explore it, get in touch — we'd love to hear what you need.",
+                  },
+                ]}
+              />
             </div>
           </ScrollReveal>
         </div>
