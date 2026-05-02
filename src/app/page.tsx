@@ -118,7 +118,7 @@ export default async function Home() {
             <p className={styles.sectionLabel}>SEE IT IN ACTION</p>
             <h2 className={styles.sectionTitle}>Three roles. One app. Zero clutter.</h2>
             <p className={styles.sectionSubtitle}>
-              Coaches log runs. Caregivers see progress. Athletes celebrate milestones. Each gets exactly the view they need.
+              Every screen is designed for the person using it — nothing more, nothing less.
             </p>
           </ScrollReveal>
           <ScreenshotGallery />
